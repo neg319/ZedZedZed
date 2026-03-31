@@ -14,8 +14,7 @@ namespace CustomizableZombieHorde
         {
             BodyPartDefOf.Arm,
             BodyPartDefOf.Hand,
-            BodyPartDefOf.Leg,
-            BodyPartDefOf.Foot
+            BodyPartDefOf.Leg
         };
 
         public static bool IsZombie(Pawn pawn)
@@ -283,7 +282,7 @@ namespace CustomizableZombieHorde
 
             ApplyVariantHediffs(pawn);
             RefreshDrownedState(pawn);
-            pawn.Drawer?.renderer?.graphics?.SetAllGraphicsDirty();
+            MarkPawnGraphicsDirty(pawn);
         }
 
         public static bool IsWaterCell(IntVec3 cell, Map map)
@@ -342,5 +341,67 @@ namespace CustomizableZombieHorde
                 }
             }
         }
+
+        public static void MarkPawnGraphicsDirty(Pawn pawn)
+        {
+            object renderer = pawn?.Drawer?.renderer;
+            if (renderer == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var directMethod = AccessTools.Method(renderer.GetType(), "SetAllGraphicsDirty");
+                if (directMethod != null)
+                {
+                    directMethod.Invoke(renderer, null);
+                    return;
+                }
+
+                object graphics = Traverse.Create(renderer).Property("graphics").GetValue();
+                if (graphics == null)
+                {
+                    return;
+                }
+
+                var graphicsMethod = AccessTools.Method(graphics.GetType(), "SetAllGraphicsDirty");
+                graphicsMethod?.Invoke(graphics, null);
+            }
+            catch
+            {
+            }
+        }
+
+        public static bool TryResurrectZombie(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                var resurrectMethod = AccessTools.Method(typeof(ResurrectionUtility), "Resurrect", new[] { typeof(Pawn) });
+                if (resurrectMethod != null)
+                {
+                    resurrectMethod.Invoke(null, new object[] { pawn });
+                    return true;
+                }
+
+                var tryResurrectMethod = AccessTools.Method(typeof(ResurrectionUtility), "TryResurrect", new[] { typeof(Pawn) });
+                if (tryResurrectMethod != null)
+                {
+                    object result = tryResurrectMethod.Invoke(null, new object[] { pawn });
+                    return !(result is bool success) || success;
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
+        }
+
     }
 }

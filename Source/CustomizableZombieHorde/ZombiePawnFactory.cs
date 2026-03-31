@@ -1,3 +1,5 @@
+using UnityEngine;
+using HarmonyLib;
 using RimWorld;
 using Verse;
 
@@ -7,41 +9,7 @@ namespace CustomizableZombieHorde
     {
         public static Pawn GenerateZombie(PawnKindDef kind, Faction faction)
         {
-            PawnGenerationRequest request = new PawnGenerationRequest(
-                kind,
-                faction,
-                PawnGenerationContext.NonPlayer,
-                tile: -1,
-                forceGenerateNewPawn: true,
-                allowDead: false,
-                allowDowned: false,
-                canGeneratePawnRelations: false,
-                mustBeCapableOfViolence: true,
-                colonistRelationChanceFactor: 0f,
-                forceAddFreeWarmLayerIfNeeded: false,
-                allowGay: true,
-                allowPregnant: false,
-                allowFood: false,
-                inhabitant: false,
-                certainlyBeenInCryptosleep: false,
-                forceRedressWorldPawnIfFormerColonist: false,
-                worldPawnFactionDoesntMatter: false,
-                biocodeApparelChance: 0f,
-                biocodeWeaponChance: 0f,
-                relationWithExtraPawnChanceFactor: 0f,
-                validatorPreGear: null,
-                validatorPostGear: null,
-                forcedTraits: null,
-                prohibitedTraits: null,
-                minChanceToRedressWorldPawn: null,
-                fixedBiologicalAge: null,
-                fixedChronologicalAge: null,
-                fixedGender: null,
-                fixedBirthName: null,
-                fixedLastName: null,
-                allowedDevelopmentalStages: DevelopmentalStage.Adult);
-
-            return PawnGenerator.GeneratePawn(request);
+            return PawnGenerator.GeneratePawn(kind, faction);
         }
 
         public static void FinalizeZombie(Pawn pawn, bool initialSpawn)
@@ -60,7 +28,7 @@ namespace CustomizableZombieHorde
             {
                 ZombieVariant variant = ZombieUtility.GetVariant(pawn);
                 pawn.story.skinColorOverride = ZombieVisualUtility.GetSkinColor(variant);
-                pawn.story.hairColor = ZombieVisualUtility.GetHairColor(pawn.story.hairColor, variant);
+                TrySetHairColor(pawn, ZombieVisualUtility.GetHairColor(Color.gray, variant));
                 pawn.story.bodyType = ZombieVisualUtility.GetBodyType(variant, pawn.story.bodyType);
                 if (pawn.style != null)
                 {
@@ -85,7 +53,27 @@ namespace CustomizableZombieHorde
                 pawn.needs.mood.CurLevel = 0.05f;
             }
 
-            pawn.Drawer?.renderer?.graphics?.SetAllGraphicsDirty();
+            ZombieUtility.MarkPawnGraphicsDirty(pawn);
+        }
+
+        private static void TrySetHairColor(Pawn pawn, Color hairColor)
+        {
+            if (pawn?.story == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var hairColorProperty = AccessTools.Property(pawn.story.GetType(), "hairColor");
+                if (hairColorProperty != null && hairColorProperty.CanWrite)
+                {
+                    hairColorProperty.SetValue(pawn.story, hairColor, null);
+                }
+            }
+            catch
+            {
+            }
         }
     }
 }

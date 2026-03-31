@@ -1,3 +1,4 @@
+using System.Reflection;
 using System;
 using System.Collections.Generic;
 using HarmonyLib;
@@ -11,6 +12,31 @@ namespace CustomizableZombieHorde
     public static class Patch_PawnRenderer_RenderPawnAt
     {
         private static readonly Material DirtMat = MaterialPool.MatFrom("PawnOverlays/ZombieDirtBody", ShaderDatabase.CutoutSkin, Color.white);
+        private static readonly PropertyInfo HumanlikeBodySetProperty = AccessTools.Property(typeof(MeshPool), "humanlikeBodySet") ?? AccessTools.Property(typeof(MeshPool), "humanlikeSet");
+
+        private static Mesh GetHumanlikeBodyMesh(Rot4 rot)
+        {
+            try
+            {
+                object bodySet = HumanlikeBodySetProperty?.GetValue(null, null);
+                if (bodySet == null)
+                {
+                    return null;
+                }
+
+                MethodInfo meshAt = AccessTools.Method(bodySet.GetType(), "MeshAt", new[] { typeof(Rot4) });
+                if (meshAt == null)
+                {
+                    return null;
+                }
+
+                return meshAt.Invoke(bodySet, new object[] { rot }) as Mesh;
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
         public static void Postfix(PawnRenderer __instance, Vector3 drawLoc, Rot4? rotOverride = null, bool neverAimWeapon = false)
         {
@@ -21,7 +47,11 @@ namespace CustomizableZombieHorde
             }
 
             Rot4 rot = rotOverride ?? pawn.Rotation;
-            Mesh mesh = MeshPool.humanlikeBodySet.MeshAt(rot);
+            Mesh mesh = GetHumanlikeBodyMesh(rot);
+            if (mesh == null)
+            {
+                return;
+            }
             Vector3 loc = drawLoc;
             loc.y += 0.003f;
 

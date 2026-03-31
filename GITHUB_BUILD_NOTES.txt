@@ -6,3 +6,5 @@ Main changes:
 - switched the project to NuGet reference packages for RimWorld and Harmony
 - added a manual workflow at .github/workflows/build.yml
 - added a visible copy file for iPhone upload fallback
+
+Patched for GitHub-hosted build compatibility with current RimWorld reference package APIs.

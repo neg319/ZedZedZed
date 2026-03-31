@@ -327,7 +327,11 @@ namespace CustomizableZombieHorde
                     }
 
                     corpseWakeTicks.Remove(corpseId);
-                    ResurrectionUtility.Resurrect(pawn);
+                    if (!ZombieUtility.TryResurrectZombie(pawn))
+                    {
+                        continue;
+                    }
+
                     ZombieUtility.PrepareZombieForReanimation(pawn);
                     ZombiePawnFactory.FinalizeZombie(pawn, initialSpawn: false);
                     if (pawn.MapHeld != null && pawn.Faction != null)
