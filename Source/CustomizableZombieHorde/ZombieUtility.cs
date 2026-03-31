@@ -19,7 +19,17 @@ namespace CustomizableZombieHorde
 
         public static bool IsZombie(Pawn pawn)
         {
-            return pawn?.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_ZombieRot) == true;
+            if (pawn == null)
+            {
+                return false;
+            }
+
+            if (pawn.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_ZombieRot) == true)
+            {
+                return true;
+            }
+
+            return pawn.kindDef?.defName?.StartsWith("CZH_Zombie_") == true;
         }
 
         public static ZombieVariant GetVariant(Pawn pawn)

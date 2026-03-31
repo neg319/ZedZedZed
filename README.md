@@ -40,3 +40,6 @@ The workflow builds:
 - This workflow uses NuGet reference packages for RimWorld and Harmony, so it does not require a self-hosted runner.
 - The repository keeps the source files. The workflow artifact gives you the installable mod package.
 - The mod still depends on the Harmony mod at runtime.
+
+
+Runtime hotfix: custom rotten flesh, rotten leather, and filth graphics now use single-file graphics so RimWorld 1.6 can load them without collection folders.

@@ -25,7 +25,7 @@
     <description>Foul strips of zombie meat. It is not fit to eat, but a skilled crafter can still render it into rough leather.</description>
     <graphicData>
       <texPath>Things/Item/Resource/RottenFlesh</texPath>
-      <graphicClass>Graphic_StackCount</graphicClass>
+      <graphicClass>Graphic_Single</graphicClass>
     </graphicData>
     <tradeability>Sellable</tradeability>
     <stackLimit>75</stackLimit>
@@ -45,7 +45,7 @@
     <description>Rendered hide salvaged from zombie remains. It is crude and foul smelling, but still useful as a crafting material.</description>
     <graphicData>
       <texPath>Things/Item/Resource/RottenLeather</texPath>
-      <graphicClass>Graphic_StackCount</graphicClass>
+      <graphicClass>Graphic_Single</graphicClass>
     </graphicData>
     <tradeability>Sellable</tradeability>
     <stackLimit>75</stackLimit>
@@ -85,7 +85,7 @@
     </statBases>
     <graphicData>
       <texPath>Things/Filth/ZombieBlood</texPath>
-      <graphicClass>Graphic_Cluster</graphicClass>
+      <graphicClass>Graphic_Single</graphicClass>
       <shaderType>Transparent</shaderType>
     </graphicData>
     <filth>
@@ -106,7 +106,7 @@
     </statBases>
     <graphicData>
       <texPath>Things/Filth/SickZombieBlood</texPath>
-      <graphicClass>Graphic_Cluster</graphicClass>
+      <graphicClass>Graphic_Single</graphicClass>
       <shaderType>Transparent</shaderType>
     </graphicData>
     <filth>
@@ -127,7 +127,7 @@
     </statBases>
     <graphicData>
       <texPath>Things/Filth/ZombieAcid</texPath>
-      <graphicClass>Graphic_Cluster</graphicClass>
+      <graphicClass>Graphic_Single</graphicClass>
       <shaderType>Transparent</shaderType>
     </graphicData>
     <filth>

@@ -105,9 +105,16 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            bool anyHomeMapHasZombies = Find.Maps.Any(map => map.IsPlayerHome && map.mapPawns?.AllPawnsSpawned?.Any(ZombieUtility.IsZombie) == true);
+            int emergencyLeadTime = HoursToTicks(0.75f);
+            if (!anyHomeMapHasZombies && (nextTrickleTick < 0 || nextTrickleTick - ticksGame > emergencyLeadTime))
+            {
+                nextTrickleTick = ticksGame + HoursToTicks(0.35f);
+            }
+
             if (nextTrickleTick < 0)
             {
-                ScheduleNextTrickle(ticksGame);
+                nextTrickleTick = ticksGame + HoursToTicks(0.35f);
                 return;
             }
 
@@ -272,6 +279,11 @@ namespace CustomizableZombieHorde
                     if (!ZombieUtility.IsZombie(pawn))
                     {
                         continue;
+                    }
+
+                    if (pawn.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_ZombieRot) != true)
+                    {
+                        ZombiePawnFactory.FinalizeZombie(pawn, initialSpawn: false);
                     }
 
                     ZombieUtility.StripWeaponsAndWeaponInventory(pawn);

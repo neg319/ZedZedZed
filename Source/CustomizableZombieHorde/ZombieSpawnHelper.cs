@@ -54,7 +54,7 @@ namespace CustomizableZombieHorde
             }
 
             IntVec3 edgeCell;
-            if (!RCellFinder.TryFindRandomPawnEntryCell(out edgeCell, map, CellFinder.EdgeRoadChance_Ignore))
+            if (!TryFindZombieEntryCell(map, out edgeCell))
             {
                 return false;
             }
@@ -226,6 +226,35 @@ namespace CustomizableZombieHorde
             }
 
             return true;
+        }
+
+
+        private static bool TryFindZombieEntryCell(Map map, out IntVec3 edgeCell)
+        {
+            if (RCellFinder.TryFindRandomPawnEntryCell(out edgeCell, map, CellFinder.EdgeRoadChance_Ignore))
+            {
+                return true;
+            }
+
+            List<IntVec3> fallbackCells = map.AllCells.Where(cell => IsEdgeCell(cell, map) && cell.Standable(map) && !cell.Fogged(map)).ToList();
+            if (fallbackCells.Count == 0)
+            {
+                fallbackCells = map.AllCells.Where(cell => IsEdgeCell(cell, map) && cell.Standable(map)).ToList();
+            }
+
+            if (fallbackCells.Count > 0)
+            {
+                edgeCell = fallbackCells.RandomElement();
+                return true;
+            }
+
+            edgeCell = IntVec3.Invalid;
+            return false;
+        }
+
+        private static bool IsEdgeCell(IntVec3 cell, Map map)
+        {
+            return cell.x <= 0 || cell.z <= 0 || cell.x >= map.Size.x - 1 || cell.z >= map.Size.z - 1;
         }
 
         private static IntVec3 FindWaterSpawnCell(Map map)
