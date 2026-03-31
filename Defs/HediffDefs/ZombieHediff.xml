@@ -65,7 +65,6 @@
     <stages>
       <li>
         <label>decayed</label>
-        <partEfficiencyFactor>0.72</partEfficiencyFactor>
         <painFactor>0.1</painFactor>
       </li>
     </stages>
@@ -84,7 +83,6 @@
     <stages>
       <li>
         <label>opened</label>
-        <partEfficiencyFactor>0.86</partEfficiencyFactor>
         <painFactor>0.1</painFactor>
       </li>
     </stages>
@@ -147,7 +145,6 @@
       <li>
         <label>hulking</label>
         <statOffsets>
-          <BodySize>1.0</BodySize>
           <MoveSpeed>-0.18</MoveSpeed>
           <MeleeDamageFactor>0.50</MeleeDamageFactor>
         </statOffsets>
@@ -225,9 +222,6 @@
             <offset>-0.08</offset>
           </li>
         </capMods>
-        <statOffsets>
-          <RestFallRate>0.15</RestFallRate>
-        </statOffsets>
       </li>
     </stages>
   </HediffDef>

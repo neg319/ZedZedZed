@@ -13,14 +13,8 @@
       <min>-80</min>
       <max>60</max>
     </allowedArrivalTemperatureRange>
-    <naturalColonyGoodwill>
-      <min>-100</min>
-      <max>-100</max>
-    </naturalColonyGoodwill>
-    <startingGoodwill>-100</startingGoodwill>
     <earliestRaidDays>0</earliestRaidDays>
     <factionIconPath>UI/Faction/Zombies</factionIconPath>
-    <colorFromSpectrum>(0.48,0.55,0.42)</colorFromSpectrum>
     <basicMemberKind>CZH_Zombie_Biter</basicMemberKind>
     <techLevel>Neolithic</techLevel>
   </FactionDef>

@@ -6,11 +6,9 @@
     <jobString>Rendering rotten flesh into leather.</jobString>
     <workAmount>900</workAmount>
     <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
-    <effectWorking>Butcher</effectWorking>
-    <soundWorking>Recipe_ButcherCorpse</soundWorking>
     <recipeUsers>
-      <li>ButcherTable</li>
-      <li>TableButcherSpot</li>
+      <li>ButcherSpot</li>
+      <li>TableButcher</li>
       <li>CraftingSpot</li>
     </recipeUsers>
     <ingredients>

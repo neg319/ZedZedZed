@@ -6,7 +6,6 @@
     <race>Human</race>
     <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
     <combatPower>45</combatPower>
-    <baseHealthScale>0.75</baseHealthScale>
     <apparelMoney>
       <min>0</min>
       <max>160</max>
@@ -17,7 +16,6 @@
     </weaponMoney>
     <canArriveManhunter>false</canArriveManhunter>
     <canBeSapper>false</canBeSapper>
-    <tradeTags />
     <backstoryCryptosleepCommonality>0</backstoryCryptosleepCommonality>
   </PawnKindDef>
 
@@ -27,7 +25,6 @@
     <race>Human</race>
     <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
     <combatPower>30</combatPower>
-    <baseHealthScale>0.45</baseHealthScale>
     <apparelMoney>
       <min>0</min>
       <max>120</max>
@@ -46,7 +43,6 @@
     <race>Human</race>
     <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
     <combatPower>55</combatPower>
-    <baseHealthScale>0.70</baseHealthScale>
     <apparelMoney>
       <min>0</min>
       <max>175</max>
@@ -65,7 +61,6 @@
     <race>Human</race>
     <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
     <combatPower>52</combatPower>
-    <baseHealthScale>0.70</baseHealthScale>
     <apparelMoney>
       <min>0</min>
       <max>165</max>
@@ -84,7 +79,6 @@
     <race>Human</race>
     <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
     <combatPower>48</combatPower>
-    <baseHealthScale>0.65</baseHealthScale>
     <apparelMoney>
       <min>0</min>
       <max>155</max>
@@ -103,7 +97,6 @@
     <race>Human</race>
     <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
     <combatPower>120</combatPower>
-    <baseHealthScale>1.55</baseHealthScale>
     <apparelMoney>
       <min>0</min>
       <max>240</max>
