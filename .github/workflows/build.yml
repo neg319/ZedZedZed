@@ -1,6 +1,6 @@
 name: Build Zed Zed Zed
 
-on:
+"on":
   workflow_dispatch:
 
 jobs:
@@ -14,7 +14,7 @@ jobs:
       - name: Set up .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: "8.0.x"
 
       - name: Restore packages
         run: dotnet restore Source/CustomizableZombieHorde/ZedZedZed.csproj
@@ -25,9 +25,9 @@ jobs:
       - name: Stage installable mod folder
         shell: pwsh
         run: |
-          $stage = Join-Path $PWD 'artifact/ZedZedZed'
+          $stage = Join-Path $PWD "artifact/ZedZedZed"
           New-Item -ItemType Directory -Force -Path $stage | Out-Null
-          foreach ($name in 'About', 'Assemblies', 'Defs', 'Textures') {
+          foreach ($name in "About", "Assemblies", "Defs", "Textures") {
             Copy-Item -Recurse -Force $name (Join-Path $stage $name)
           }
 
