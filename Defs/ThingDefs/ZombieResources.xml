@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <ThingDef Name="CZH_ResourceBase" Abstract="True">
+    <thingClass>ThingWithComps</thingClass>
+    <label>unspecified resource</label>
+    <category>Item</category>
+    <stackLimit>75</stackLimit>
+    <altitudeLayer>Item</altitudeLayer>
+    <alwaysHaulable>true</alwaysHaulable>
+    <drawGUIOverlay>true</drawGUIOverlay>
+    <rotatable>false</rotatable>
+    <selectable>true</selectable>
+    <useHitPoints>true</useHitPoints>
+    <pathCost>15</pathCost>
+    <comps>
+      <li>
+        <compClass>CompForbiddable</compClass>
+      </li>
+    </comps>
+  </ThingDef>
+
+  <ThingDef ParentName="CZH_ResourceBase">
+    <defName>CZH_RottenFlesh</defName>
+    <label>rotten flesh</label>
+    <description>Foul strips of zombie meat. It is not fit to eat, but a skilled crafter can still render it into rough leather.</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/Meat/MeatRaw</texPath>
+      <graphicClass>Graphic_StackCount</graphicClass>
+      <color>(0.36,0.27,0.24)</color>
+    </graphicData>
+    <tradeability>Sellable</tradeability>
+    <stackLimit>75</stackLimit>
+    <thingCategories>
+      <li>Items</li>
+    </thingCategories>
+    <statBases>
+      <MarketValue>0.55</MarketValue>
+      <Mass>0.02</Mass>
+      <Flammability>0.35</Flammability>
+    </statBases>
+    <storeCategories>
+      <li>Corpses</li>
+      <li>Manufactured</li>
+    </storeCategories>
+  </ThingDef>
+
+  <ThingDef ParentName="CZH_ResourceBase">
+    <defName>CZH_RottenLeather</defName>
+    <label>rotten leather</label>
+    <description>Rendered hide salvaged from zombie remains. It is crude and foul smelling, but still useful as a crafting material.</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/Leather/Plainleather</texPath>
+      <graphicClass>Graphic_StackCount</graphicClass>
+      <color>(0.32,0.23,0.18)</color>
+    </graphicData>
+    <tradeability>Sellable</tradeability>
+    <stackLimit>75</stackLimit>
+    <thingCategories>
+      <li>Leathers</li>
+      <li>Items</li>
+    </thingCategories>
+    <statBases>
+      <MarketValue>1.05</MarketValue>
+      <Mass>0.03</Mass>
+      <Flammability>0.25</Flammability>
+      <Beauty>-2</Beauty>
+    </statBases>
+    <stuffProps>
+      <categories>
+        <li>Leathery</li>
+      </categories>
+      <commonality>0.20</commonality>
+      <color>(0.32,0.23,0.18)</color>
+      <statFactors>
+        <ArmorRating_Blunt>0.75</ArmorRating_Blunt>
+        <ArmorRating_Sharp>0.80</ArmorRating_Sharp>
+        <MaxHitPoints>0.75</MaxHitPoints>
+        <MarketValue>0.85</MarketValue>
+        <Beauty>-1.0</Beauty>
+      </statFactors>
+    </stuffProps>
+    <storeCategories>
+      <li>Leathers</li>
+    </storeCategories>
+  </ThingDef>
+
+  <ThingDef ParentName="FilthBase">
+    <defName>CZH_Filth_ZombieBlood</defName>
+    <label>zombie blood</label>
+    <description>Dark red blood from the undead.</description>
+    <graphicData>
+      <texPath>Things/Filth/Blood</texPath>
+      <graphicClass>Graphic_Random</graphicClass>
+      <color>(0.26,0.02,0.02)</color>
+    </graphicData>
+    <filth>
+      <thickness>1</thickness>
+    </filth>
+  </ThingDef>
+
+  <ThingDef ParentName="FilthBase">
+    <defName>CZH_Filth_SickZombieBlood</defName>
+    <label>black zombie blood</label>
+    <description>Almost black blood sprayed from a diseased zombie.</description>
+    <graphicData>
+      <texPath>Things/Filth/Blood</texPath>
+      <graphicClass>Graphic_Random</graphicClass>
+      <color>(0.06,0.04,0.04)</color>
+    </graphicData>
+    <filth>
+      <thickness>1</thickness>
+    </filth>
+  </ThingDef>
+
+  <ThingDef ParentName="FilthBase">
+    <defName>CZH_Filth_ZombieAcid</defName>
+    <label>zombie acid</label>
+    <description>A caustic slick sprayed from an exploding zombie boomer.</description>
+    <graphicData>
+      <texPath>Things/Filth/Blood</texPath>
+      <graphicClass>Graphic_Random</graphicClass>
+      <color>(0.30,0.45,0.09)</color>
+    </graphicData>
+    <filth>
+      <thickness>1</thickness>
+    </filth>
+  </ThingDef>
+</Defs>

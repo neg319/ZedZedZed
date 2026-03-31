@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <DamageDef>
+    <defName>CZH_ZombieAcidBurn</defName>
+    <label>acid burn</label>
+    <workerClass>DamageWorker_AddInjury</workerClass>
+    <externalViolenceForMe>true</externalViolenceForMe>
+    <hediff>Burn</hediff>
+    <deathMessage>{0} dissolved in zombie acid.</deathMessage>
+  </DamageDef>
+</Defs>

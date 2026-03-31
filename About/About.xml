@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ModMetaData>
+  <name>Zed Zed Zed</name>
+  <author>OpenAI for Johnny Berry</author>
+  <packageId>vyberware.zedzedzed</packageId>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases</downloadUrl>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+    </li>
+  </modDependencies>
+  <description>
+Zed Zed Zed is a configurable zombie horde mod with changeable zombie naming, tainted apparel, bite and scratch melee attacks, edge trickle spawning, top-corner zombie count UI, ground-burst infestations, full moon horde events, rare blood moons, dirty humanlike visuals, handcrafted variant-specific RimWorld-style overlays, weakened limbs, rare fast zombies, and reanimation unless the head is damaged.
+
+Includes source files and a GitHub Actions workflow for building an installable package.
+  </description>
+</ModMetaData>

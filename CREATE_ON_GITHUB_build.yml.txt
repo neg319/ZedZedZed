@@ -1,0 +1,56 @@
+Create this hidden file in your GitHub repo if the upload page refuses to upload the .github folder:
+
+Path:
+.github/workflows/build.yml
+
+Contents:
+
+name: Build Zed Zed Zed
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore packages
+        run: dotnet restore Source/CustomizableZombieHorde/ZedZedZed.csproj
+
+      - name: Build mod DLL
+        run: dotnet build Source/CustomizableZombieHorde/ZedZedZed.csproj -c Release --no-restore
+
+      - name: Stage installable mod folder
+        shell: pwsh
+        run: |
+          $stage = Join-Path $PWD 'artifact/ZedZedZed'
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          foreach ($name in 'About', 'Assemblies', 'Defs', 'Textures') {
+            Copy-Item -Recurse -Force $name (Join-Path $stage $name)
+          }
+
+      - name: Create install zip
+        shell: pwsh
+        run: |
+          Compress-Archive -Path artifact/ZedZedZed -DestinationPath artifact/ZedZedZed_install.zip -Force
+
+      - name: Upload installable mod folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZedZedZed-ModFolder
+          path: artifact/ZedZedZed
+
+      - name: Upload install zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZedZedZed-InstallZip
+          path: artifact/ZedZedZed_install.zip

@@ -1,0 +1,346 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using HarmonyLib;
+using RimWorld;
+using UnityEngine;
+using Verse;
+
+namespace CustomizableZombieHorde
+{
+    public static class ZombieUtility
+    {
+        private static readonly HashSet<BodyPartDef> LimbPartDefs = new HashSet<BodyPartDef>
+        {
+            BodyPartDefOf.Arm,
+            BodyPartDefOf.Hand,
+            BodyPartDefOf.Leg,
+            BodyPartDefOf.Foot
+        };
+
+        public static bool IsZombie(Pawn pawn)
+        {
+            return pawn?.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_ZombieRot) == true;
+        }
+
+        public static ZombieVariant GetVariant(Pawn pawn)
+        {
+            string defName = pawn?.kindDef?.defName ?? string.Empty;
+            switch (defName)
+            {
+                case "CZH_Zombie_Crawler":
+                    return ZombieVariant.Crawler;
+                case "CZH_Zombie_Boomer":
+                    return ZombieVariant.Boomer;
+                case "CZH_Zombie_Sick":
+                    return ZombieVariant.Sick;
+                case "CZH_Zombie_Drowned":
+                    return ZombieVariant.Drowned;
+                case "CZH_Zombie_Tank":
+                    return ZombieVariant.Tank;
+                default:
+                    return ZombieVariant.Biter;
+            }
+        }
+
+        public static bool IsVariant(Pawn pawn, ZombieVariant variant)
+        {
+            return IsZombie(pawn) && GetVariant(pawn) == variant;
+        }
+
+        public static BodyPartRecord GetHeadPart(Pawn pawn)
+        {
+            if (pawn?.RaceProps?.body?.AllParts == null || pawn.health?.hediffSet == null)
+            {
+                return null;
+            }
+
+            foreach (BodyPartRecord part in pawn.RaceProps.body.AllParts)
+            {
+                if (part?.def == BodyPartDefOf.Head && !pawn.health.hediffSet.PartIsMissing(part))
+                {
+                    return part;
+                }
+            }
+
+            return null;
+        }
+
+        public static bool ShouldZombiesIgnore(Pawn pawn)
+        {
+            return pawn != null && ZombieTraitUtility.IsIgnoredByZombies(pawn);
+        }
+
+        public static bool HasHeadDamageOrDestruction(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet == null)
+            {
+                return true;
+            }
+
+            if (!pawn.health.hediffSet.HasHead)
+            {
+                return true;
+            }
+
+            BodyPartRecord head = pawn.RaceProps?.body?.AllParts?.FirstOrDefault(part => part.def == BodyPartDefOf.Head);
+            if (head == null)
+            {
+                return true;
+            }
+
+            return pawn.health.hediffSet.hediffs.Any(hediff => IsHeadPartOrChild(hediff.Part, head) && (hediff is Hediff_Injury || hediff is Hediff_MissingPart));
+        }
+
+        private static bool IsHeadPartOrChild(BodyPartRecord part, BodyPartRecord head)
+        {
+            for (BodyPartRecord current = part; current != null; current = current.parent)
+            {
+                if (current == head)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static IEnumerable<BodyPartRecord> GetZombieLimbParts(Pawn pawn)
+        {
+            if (pawn?.RaceProps?.body?.AllParts == null)
+            {
+                yield break;
+            }
+
+            foreach (BodyPartRecord part in pawn.RaceProps.body.AllParts)
+            {
+                if (part != null && LimbPartDefs.Contains(part.def))
+                {
+                    yield return part;
+                }
+            }
+        }
+
+        public static void ApplyLimbDecay(Pawn pawn)
+        {
+            if (pawn?.health == null)
+            {
+                return;
+            }
+
+            foreach (BodyPartRecord part in GetZombieLimbParts(pawn))
+            {
+                if (!pawn.health.hediffSet.PartIsMissing(part) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieLimbDecay, part))
+                {
+                    pawn.health.AddHediff(ZombieDefOf.CZH_ZombieLimbDecay, part);
+                }
+            }
+        }
+
+        public static void ApplyVisibleDecayInjuries(Pawn pawn)
+        {
+            if (pawn?.health == null)
+            {
+                return;
+            }
+
+            List<BodyPartRecord> parts = GetZombieLimbParts(pawn)
+                .Where(part => !pawn.health.hediffSet.PartIsMissing(part))
+                .InRandomOrder()
+                .ToList();
+
+            int woundCount = Math.Min(parts.Count, Rand.RangeInclusive(1, 4));
+            for (int i = 0; i < woundCount; i++)
+            {
+                BodyPartRecord part = parts[i];
+                if (!pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieOpenWound, part))
+                {
+                    pawn.health.AddHediff(ZombieDefOf.CZH_ZombieOpenWound, part);
+                }
+            }
+        }
+
+        public static void ApplyVariantHediffs(Pawn pawn)
+        {
+            if (pawn?.health == null)
+            {
+                return;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Crawler) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieCrawler))
+            {
+                pawn.health.AddHediff(ZombieDefOf.CZH_ZombieCrawler);
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Tank) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieTank))
+            {
+                pawn.health.AddHediff(ZombieDefOf.CZH_ZombieTank);
+            }
+        }
+
+        public static void StripWeaponsAndWeaponInventory(Pawn pawn)
+        {
+            if (pawn?.equipment != null && pawn.equipment.Primary != null)
+            {
+                pawn.equipment.DestroyAllEquipment();
+            }
+
+            if (pawn?.inventory?.innerContainer == null)
+            {
+                return;
+            }
+
+            for (int i = pawn.inventory.innerContainer.Count - 1; i >= 0; i--)
+            {
+                Thing thing = pawn.inventory.innerContainer[i];
+                if (thing?.def?.IsWeapon == true)
+                {
+                    thing.Destroy(DestroyMode.Vanish);
+                }
+            }
+        }
+
+        public static void MarkZombieApparelTainted(Pawn pawn, bool degradeApparel)
+        {
+            if (pawn?.apparel?.WornApparel == null)
+            {
+                return;
+            }
+
+            foreach (Apparel apparel in pawn.apparel.WornApparel)
+            {
+                if (apparel == null)
+                {
+                    continue;
+                }
+
+                SetApparelTainted(apparel);
+                if (degradeApparel)
+                {
+                    int minHitPoints = Math.Max(1, Mathf.RoundToInt(apparel.MaxHitPoints * 0.20f));
+                    int maxHitPoints = Math.Max(minHitPoints, Mathf.RoundToInt(apparel.MaxHitPoints * 0.70f));
+                    apparel.HitPoints = Math.Min(apparel.HitPoints, Rand.RangeInclusive(minHitPoints, maxHitPoints));
+                }
+            }
+        }
+
+        public static void SetApparelTainted(Apparel apparel)
+        {
+            if (apparel == null)
+            {
+                return;
+            }
+
+            try
+            {
+                AccessTools.PropertySetter(typeof(Apparel), "WornByCorpse")?.Invoke(apparel, new object[] { true });
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                Traverse.Create(apparel).Field("wornByCorpseInt").SetValue(true);
+            }
+            catch
+            {
+            }
+        }
+
+        public static void GiveRunnerSpeedIfRolled(Pawn pawn)
+        {
+            if (pawn?.health == null)
+            {
+                return;
+            }
+
+            float chance = CustomizableZombieHordeMod.Settings?.fastZombieChance ?? 0.04f;
+            if (chance > 0f && Rand.Chance(chance) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieRunner))
+            {
+                pawn.health.AddHediff(ZombieDefOf.CZH_ZombieRunner);
+            }
+        }
+
+        public static void PrepareZombieForReanimation(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            if (pawn.Faction == null)
+            {
+                pawn.SetFactionDirect(ZombieFactionUtility.GetOrCreateZombieFaction());
+            }
+
+            StripWeaponsAndWeaponInventory(pawn);
+            MarkZombieApparelTainted(pawn, degradeApparel: false);
+            if (!pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieRot))
+            {
+                pawn.health.AddHediff(ZombieDefOf.CZH_ZombieRot);
+            }
+
+            ApplyVariantHediffs(pawn);
+            RefreshDrownedState(pawn);
+            pawn.Drawer?.renderer?.graphics?.SetAllGraphicsDirty();
+        }
+
+        public static bool IsWaterCell(IntVec3 cell, Map map)
+        {
+            if (map == null || !cell.IsValid || !cell.InBounds(map))
+            {
+                return false;
+            }
+
+            TerrainDef terrain = cell.GetTerrain(map);
+            if (terrain == null)
+            {
+                return false;
+            }
+
+            string terrainName = (terrain.defName ?? string.Empty) + " " + (terrain.label ?? string.Empty);
+            return terrainName.IndexOf("water", StringComparison.OrdinalIgnoreCase) >= 0
+                || terrainName.IndexOf("ocean", StringComparison.OrdinalIgnoreCase) >= 0
+                || terrainName.IndexOf("river", StringComparison.OrdinalIgnoreCase) >= 0
+                || terrainName.IndexOf("marsh", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        public static void RefreshDrownedState(Pawn pawn)
+        {
+            if (!IsVariant(pawn, ZombieVariant.Drowned) || pawn?.health?.hediffSet == null)
+            {
+                return;
+            }
+
+            bool inWater = pawn.Spawned && IsWaterCell(pawn.Position, pawn.Map);
+            bool hasWater = pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieDrownedWater);
+            bool hasLand = pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieDrownedLand);
+
+            if (inWater)
+            {
+                if (hasLand)
+                {
+                    pawn.health.RemoveHediff(pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieDrownedLand));
+                }
+
+                if (!hasWater)
+                {
+                    pawn.health.AddHediff(ZombieDefOf.CZH_ZombieDrownedWater);
+                }
+            }
+            else
+            {
+                if (hasWater)
+                {
+                    pawn.health.RemoveHediff(pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieDrownedWater));
+                }
+
+                if (!hasLand)
+                {
+                    pawn.health.AddHediff(ZombieDefOf.CZH_ZombieDrownedLand);
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <RecipeDef>
+    <defName>CZH_RenderRottenFleshToLeather</defName>
+    <label>render rotten flesh into rotten leather</label>
+    <jobString>Rendering rotten flesh into leather.</jobString>
+    <workAmount>900</workAmount>
+    <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
+    <effectWorking>Butcher</effectWorking>
+    <soundWorking>Recipe_ButcherCorpse</soundWorking>
+    <recipeUsers>
+      <li>ButcherTable</li>
+      <li>TableButcherSpot</li>
+      <li>CraftingSpot</li>
+    </recipeUsers>
+    <ingredients>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>CZH_RottenFlesh</li>
+          </thingDefs>
+        </filter>
+        <count>40</count>
+      </li>
+    </ingredients>
+    <products>
+      <CZH_RottenLeather>25</CZH_RottenLeather>
+    </products>
+    <defaultIngredientFilter>
+      <thingDefs>
+        <li>CZH_RottenFlesh</li>
+      </thingDefs>
+    </defaultIngredientFilter>
+    <workSkill>Crafting</workSkill>
+    <workSkillLearnFactor>0.25</workSkillLearnFactor>
+  </RecipeDef>
+</Defs>

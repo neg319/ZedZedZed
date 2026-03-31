@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <TraitDef>
+    <defName>CZH_Trait_ZombieSickImmune</defName>
+    <description>This pawn is naturally resistant to the sickness spread by diseased zombies and their blood.</description>
+    <commonality>0.28</commonality>
+    <degreeDatas>
+      <li>
+        <label>zombie-plague immune</label>
+        <description>This pawn cannot catch the sickness spread by sick zombies or their blood.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>CZH_Trait_HeadHunter</defName>
+    <description>This pawn instinctively goes for the head in combat and tries to put enemies down with precise cranial strikes.</description>
+    <commonality>0.18</commonality>
+    <degreeDatas>
+      <li>
+        <label>head hunter</label>
+        <description>This pawn always aims for the head in combat when the target has one.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>CZH_Trait_DeadScent</defName>
+    <description>This pawn carries a corpse-like scent and presence that leaves zombies strangely uninterested.</description>
+    <commonality>0.08</commonality>
+    <degreeDatas>
+      <li>
+        <label>dead scent</label>
+        <description>Zombies do not treat this pawn as hostile and usually ignore them unless caught in collateral damage.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+</Defs>

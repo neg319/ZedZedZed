@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <FactionDef>
+    <defName>CZH_ZombieHorde</defName>
+    <label>zombie horde</label>
+    <description>Shambling undead that converge on living settlements.</description>
+    <isPlayer>false</isPlayer>
+    <humanlikeFaction>true</humanlikeFaction>
+    <hidden>false</hidden>
+    <canMakeRandomly>false</canMakeRandomly>
+    <settlementGenerationWeight>0</settlementGenerationWeight>
+    <allowedArrivalTemperatureRange>
+      <min>-80</min>
+      <max>60</max>
+    </allowedArrivalTemperatureRange>
+    <naturalColonyGoodwill>
+      <min>-100</min>
+      <max>-100</max>
+    </naturalColonyGoodwill>
+    <startingGoodwill>-100</startingGoodwill>
+    <earliestRaidDays>0</earliestRaidDays>
+    <factionIconPath>UI/Faction/Zombies</factionIconPath>
+    <colorFromSpectrum>(0.48,0.55,0.42)</colorFromSpectrum>
+    <basicMemberKind>CZH_Zombie_Biter</basicMemberKind>
+    <techLevel>Neolithic</techLevel>
+  </FactionDef>
+</Defs>

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <HediffDef>
+    <defName>CZH_ZombieRot</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>zombie rot</label>
+    <description>This pawn is an undead zombie. Its body is decayed, slow, and unnaturally persistent unless the head is damaged.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <comps>
+      <li Class="CustomizableZombieHorde.HediffCompProperties_ZombieRot" />
+      <li Class="HediffCompProperties_VerbGiver">
+        <verbs>
+          <li>
+            <verbClass>Verb_MeleeAttack</verbClass>
+            <label>bite</label>
+            <range>1</range>
+            <meleeDamageDef>Bite</meleeDamageDef>
+            <meleeDamageBaseAmount>7</meleeDamageBaseAmount>
+            <defaultCooldownTime>2.1</defaultCooldownTime>
+          </li>
+          <li>
+            <verbClass>Verb_MeleeAttack</verbClass>
+            <label>scratch</label>
+            <range>1</range>
+            <meleeDamageDef>Scratch</meleeDamageDef>
+            <meleeDamageBaseAmount>5</meleeDamageBaseAmount>
+            <defaultCooldownTime>1.6</defaultCooldownTime>
+          </li>
+        </verbs>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>rotting</label>
+        <painFactor>0.2</painFactor>
+        <capMods>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.22</offset>
+          </li>
+          <li>
+            <capacity>Manipulation</capacity>
+            <offset>-0.08</offset>
+          </li>
+        </capMods>
+        <statOffsets>
+          <MoveSpeed>-0.40</MoveSpeed>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieLimbDecay</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>limb decay</label>
+    <description>The limb is rotted and weaker than a healthy pawn limb.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>decayed</label>
+        <partEfficiencyFactor>0.72</partEfficiencyFactor>
+        <painFactor>0.1</painFactor>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieOpenWound</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>rotting wound</label>
+    <description>A visible decayed wound left on the zombie's body.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <displayWound>true</displayWound>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>opened</label>
+        <partEfficiencyFactor>0.86</partEfficiencyFactor>
+        <painFactor>0.1</painFactor>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieRunner</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>runner strain</label>
+    <description>This rare zombie strain still moves unnaturally quickly.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>runner</label>
+        <capMods>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>0.10</offset>
+          </li>
+        </capMods>
+        <statOffsets>
+          <MoveSpeed>0.65</MoveSpeed>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieCrawler</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>crawler body</label>
+    <description>This zombie drags itself forward on ruined limbs.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>crawling</label>
+        <statOffsets>
+          <MoveSpeed>-0.55</MoveSpeed>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieTank</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>tank strain</label>
+    <description>This massive zombie strain is much stronger and larger than normal undead.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>hulking</label>
+        <statOffsets>
+          <BodySize>1.0</BodySize>
+          <MoveSpeed>-0.18</MoveSpeed>
+          <MeleeDamageFactor>0.50</MeleeDamageFactor>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieDrownedLand</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>drowned on land</label>
+    <description>Out of water, this drowned corpse becomes sluggish and weak.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>land-bound</label>
+        <capMods>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.15</offset>
+          </li>
+        </capMods>
+        <statOffsets>
+          <MoveSpeed>-0.55</MoveSpeed>
+          <MeleeDamageFactor>-0.20</MeleeDamageFactor>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieDrownedWater</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>drowned in water</label>
+    <description>Back in water, this drowned corpse becomes fast and violent.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>water-fed</label>
+        <statOffsets>
+          <MoveSpeed>0.55</MoveSpeed>
+          <MeleeDamageFactor>0.35</MeleeDamageFactor>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieSickness</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>zombie sickness</label>
+    <description>Contact with sick zombie blood has left this pawn feverish and weak.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>true</tendable>
+    <makesAlert>true</makesAlert>
+    <initialSeverity>0.20</initialSeverity>
+    <maxSeverity>1.0</maxSeverity>
+    <stages>
+      <li>
+        <label>infected</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.05</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.08</offset>
+          </li>
+        </capMods>
+        <statOffsets>
+          <RestFallRate>0.15</RestFallRate>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+</Defs>
