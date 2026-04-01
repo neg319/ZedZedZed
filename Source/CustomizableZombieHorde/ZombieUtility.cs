@@ -359,11 +359,8 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (pawn.CurLord != null)
-            {
-                return;
-            }
-
+            // RimWorld 1.6 reference assemblies used by the GitHub build do not expose Pawn.CurLord here.
+            // We skip the lord check and only avoid re-triggering aggression if the pawn is already in a mental state.
             if (pawn.mindState?.mentalStateHandler == null)
             {
                 return;
