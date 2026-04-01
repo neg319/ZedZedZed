@@ -110,7 +110,6 @@ namespace CustomizableZombieHorde
                 return true;
             }
 
-            ZombieSpecialUtility.DropZombieBlood(pawn);
             return false;
         }
     }
@@ -126,7 +125,6 @@ namespace CustomizableZombieHorde
                 return true;
             }
 
-            ZombieSpecialUtility.DropZombieBlood(pawn);
             return false;
         }
     }

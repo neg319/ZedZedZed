@@ -117,7 +117,7 @@ namespace CustomizableZombieHorde
         {
             Map map = pawn.MapHeld;
             List<IntVec3> options = GenRadial.RadialCellsAround(pawn.PositionHeld, 10f, true)
-                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToEdge(cell, map) >= 2 && DistanceToEdge(cell, map) <= 8)
+                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToEdge(cell, map) >= 3 && DistanceToEdge(cell, map) <= 10)
                 .ToList();
 
             if (options.Count > 0)
@@ -133,7 +133,7 @@ namespace CustomizableZombieHorde
         {
             foreach (IntVec3 cell in map.AllCells.InRandomOrder())
             {
-                if (cell.Standable(map) && DistanceToEdge(cell, map) >= 2 && DistanceToEdge(cell, map) <= 8)
+                if (cell.Standable(map) && DistanceToEdge(cell, map) >= 3 && DistanceToEdge(cell, map) <= 10)
                 {
                     return cell;
                 }

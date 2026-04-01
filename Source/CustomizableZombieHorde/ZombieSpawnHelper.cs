@@ -517,7 +517,7 @@ namespace CustomizableZombieHorde
         private static bool IsInsideNearEdgeCell(IntVec3 cell, Map map)
         {
             int distance = DistanceToEdge(cell, map);
-            return distance >= 1 && distance <= 8;
+            return distance >= 3 && distance <= 10;
         }
 
         private static IntVec3 FindAnyStandableCell(Map map)
