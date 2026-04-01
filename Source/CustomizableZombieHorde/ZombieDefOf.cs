@@ -22,6 +22,14 @@ namespace CustomizableZombieHorde
         public static ThingDef CZH_Filth_SickZombieBlood;
         public static ThingDef CZH_Filth_ZombieAcid;
 
+        public static ThingDef CZH_Grave_Biter;
+        public static ThingDef CZH_Grave_Crawler;
+        public static ThingDef CZH_Grave_Boomer;
+        public static ThingDef CZH_Grave_Sick;
+        public static ThingDef CZH_Grave_Drowned;
+        public static ThingDef CZH_Grave_Tank;
+        public static ThingDef CZH_Grave_Grabber;
+
         public static DamageDef CZH_ZombieAcidBurn;
 
         public static TraitDef CZH_Trait_ZombieSickImmune;

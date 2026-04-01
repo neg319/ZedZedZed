@@ -43,3 +43,13 @@ The workflow builds:
 
 
 Runtime hotfix: custom rotten flesh, rotten leather, and filth graphics now use single-file graphics so RimWorld 1.6 can load them without collection folders.
+
+
+Spawn events now rotate between edge wanderers, huddled packs, colony pushes, and ground bursts so the undead feel less predictable.
+
+
+## New in this build
+- rare zombie grave events
+- type specific biter, crawler, boomer, sick, drowned, and tank graves
+- destroy the grave to stop that event from spawning more zombies
+- debug buttons to force random or specific grave events

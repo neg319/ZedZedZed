@@ -48,6 +48,8 @@ namespace CustomizableZombieHorde
                     return ZombieVariant.Drowned;
                 case "CZH_Zombie_Tank":
                     return ZombieVariant.Tank;
+                case "CZH_Zombie_Grabber":
+                    return ZombieVariant.Grabber;
                 default:
                     return ZombieVariant.Biter;
             }
@@ -159,7 +161,7 @@ namespace CustomizableZombieHorde
                 .InRandomOrder()
                 .ToList();
 
-            int woundCount = Math.Min(parts.Count, Rand.RangeInclusive(2, 5));
+            int woundCount = Math.Min(parts.Count, IsVariant(pawn, ZombieVariant.Crawler) ? Rand.RangeInclusive(1, 2) : Rand.RangeInclusive(1, 3));
             for (int i = 0; i < woundCount; i++)
             {
                 BodyPartRecord part = parts[i];
@@ -193,14 +195,14 @@ namespace CustomizableZombieHorde
                     return;
                 }
 
-                float severity = torsoSeverity ? Rand.Range(4.5f, 7.5f) : Rand.Range(3.5f, 6.5f);
+                float severity = torsoSeverity ? Rand.Range(1.6f, 3.0f) : Rand.Range(0.8f, 2.0f);
                 if (IsVariant(pawn, ZombieVariant.Tank))
                 {
                     severity *= 0.60f;
                 }
                 else if (IsVariant(pawn, ZombieVariant.Crawler))
                 {
-                    severity *= 1.15f;
+                    severity *= 0.85f;
                 }
 
                 injury.Severity = severity;
@@ -454,9 +456,11 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            TryEndZombieMentalState(pawn);
-            StripAllUsableItems(pawn);
-            SetZombieDisplayName(pawn);
+            PrepareSpawnedZombie(pawn);
+            if (pawn.Downed)
+            {
+                return;
+            }
 
             Pawn currentTarget = pawn.CurJob?.targetA.Thing as Pawn;
             if (currentTarget != null && IsZombie(currentTarget))
@@ -470,12 +474,12 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (pawn.CurJob != null && pawn.CurJob.def == JobDefOf.Goto && pawn.pather?.Moving == true)
+            if (IsBadZombieJob(pawn.CurJob, pawn.MapHeld))
             {
-                return;
+                pawn.jobs.StopAll();
             }
 
-            AssignHordeJob(pawn);
+            AssignBehaviorJob(pawn);
         }
 
         private static void TryEndZombieMentalState(Pawn pawn)
@@ -498,22 +502,163 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private static void AssignHordeJob(Pawn pawn)
+        public static void PrepareSpawnedZombie(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            TryEndZombieMentalState(pawn);
+            StripAllUsableItems(pawn);
+            SetZombieDisplayName(pawn);
+            TryRecoverFromSpawnIncap(pawn);
+        }
+
+        public static LocomotionUrgency GetZombieUrgency(Pawn pawn)
+        {
+            if (IsVariant(pawn, ZombieVariant.Crawler))
+            {
+                return LocomotionUrgency.Amble;
+            }
+
+            return IsVariant(pawn, ZombieVariant.Grabber) ? LocomotionUrgency.Walk : LocomotionUrgency.Walk;
+        }
+
+        public static void AssignInitialShambleJob(Pawn pawn)
+        {
+            ZombieSpawnEventType behavior = Current.Game?.GetComponent<ZombieGameComponent>()?.GetAssignedBehavior(pawn) ?? ZombieSpawnEventType.AssaultBase;
+            AssignInitialShambleJob(pawn, behavior);
+        }
+
+        public static void AssignInitialShambleJob(Pawn pawn, ZombieSpawnEventType behavior)
+        {
+            if (pawn?.MapHeld == null || pawn.jobs == null || pawn.Downed)
+            {
+                return;
+            }
+
+            IntVec3 targetCell = ZombieSpecialUtility.FindInitialBehaviorCell(pawn, behavior);
+            if (!targetCell.IsValid || targetCell == pawn.PositionHeld)
+            {
+                return;
+            }
+
+            try
+            {
+                Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, targetCell);
+                moveJob.expiryInterval = behavior == ZombieSpawnEventType.HuddledPack ? 1500 : 1100;
+                moveJob.checkOverrideOnExpire = true;
+                moveJob.locomotionUrgency = GetZombieUrgency(pawn);
+                pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);
+            }
+            catch
+            {
+            }
+        }
+
+        private static bool IsBadZombieJob(Job job, Map map)
+        {
+            if (job == null)
+            {
+                return true;
+            }
+
+            string defName = job.def?.defName ?? string.Empty;
+            if (defName.Contains("ExitMap") || defName.Contains("LeaveMap"))
+            {
+                return true;
+            }
+
+            if (map != null && job.def == JobDefOf.Goto && job.targetA.IsValid)
+            {
+                IntVec3 cell = job.targetA.Cell;
+                if (!cell.IsValid || !cell.InBounds(map) || ZombieSpecialUtility.DistanceToNearestEdge(cell, map) < 5)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static void TryRecoverFromSpawnIncap(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet == null || !pawn.Downed)
+            {
+                return;
+            }
+
+            List<Hediff_Injury> injuries = pawn.health.hediffSet.hediffs.OfType<Hediff_Injury>().OrderByDescending(injury => injury.Severity).ToList();
+            for (int pass = 0; pass < 3 && pawn.Downed; pass++)
+            {
+                for (int i = 0; i < injuries.Count && pawn.Downed; i++)
+                {
+                    Hediff_Injury injury = injuries[i];
+                    if (injury == null)
+                    {
+                        continue;
+                    }
+
+                    injury.Severity *= 0.45f;
+                    if (injury.Severity < 0.20f)
+                    {
+                        try
+                        {
+                            pawn.health.RemoveHediff(injury);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+
+            if (pawn.Downed)
+            {
+                try
+                {
+                    Traverse.Create(pawn.health).Field("forceIncap").SetValue(false);
+                }
+                catch
+                {
+                }
+
+                try
+                {
+                    Traverse.Create(pawn.health).Field("forceDowned").SetValue(false);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static void AssignBehaviorJob(Pawn pawn)
         {
             if (pawn?.MapHeld == null || pawn.jobs == null)
             {
                 return;
             }
 
-            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(pawn, 10f);
+            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(pawn, ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) ? 12f : 10f);
             if (prey != null)
             {
+                if (IsVariant(pawn, ZombieVariant.Grabber) && Current.Game != null)
+                {
+                    var component = Current.Game.GetComponent<ZombieGameComponent>();
+                    if (component != null && component.HasActiveGrabberTongue(pawn))
+                    {
+                        return;
+                    }
+                }
+
                 try
                 {
                     Job attackJob = JobMaker.MakeJob(JobDefOf.AttackMelee, prey);
                     attackJob.expiryInterval = 700;
                     attackJob.checkOverrideOnExpire = true;
-                    attackJob.locomotionUrgency = LocomotionUrgency.Walk;
+                    attackJob.locomotionUrgency = GetZombieUrgency(pawn);
                     pawn.jobs.TryTakeOrderedJob(attackJob, JobTag.Misc);
                     return;
                 }
@@ -530,7 +675,7 @@ namespace CustomizableZombieHorde
                     Job feedJob = JobMaker.MakeJob(JobDefOf.Goto, corpse.Position);
                     feedJob.expiryInterval = 450;
                     feedJob.checkOverrideOnExpire = true;
-                    feedJob.locomotionUrgency = LocomotionUrgency.Walk;
+                    feedJob.locomotionUrgency = GetZombieUrgency(pawn);
                     pawn.jobs.TryTakeOrderedJob(feedJob, JobTag.Misc);
                     return;
                 }
@@ -539,7 +684,8 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            IntVec3 shambleCell = ZombieSpecialUtility.FindHordeShambleCell(pawn);
+            ZombieSpawnEventType behavior = Current.Game?.GetComponent<ZombieGameComponent>()?.GetAssignedBehavior(pawn) ?? ZombieSpawnEventType.AssaultBase;
+            IntVec3 shambleCell = ZombieSpecialUtility.FindBehaviorCell(pawn, behavior);
             if (!shambleCell.IsValid || shambleCell == pawn.PositionHeld)
             {
                 return;
@@ -548,9 +694,9 @@ namespace CustomizableZombieHorde
             try
             {
                 Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, shambleCell);
-                moveJob.expiryInterval = 900;
+                moveJob.expiryInterval = behavior == ZombieSpawnEventType.HuddledPack ? 1500 : 900;
                 moveJob.checkOverrideOnExpire = true;
-                moveJob.locomotionUrgency = LocomotionUrgency.Walk;
+                moveJob.locomotionUrgency = GetZombieUrgency(pawn);
                 pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);
             }
             catch

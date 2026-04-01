@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using RimWorld;
+using UnityEngine;
 using Verse;
-using Verse.AI.Group;
 
 namespace CustomizableZombieHorde
 {
@@ -90,7 +91,47 @@ namespace CustomizableZombieHorde
             return desiredCount > remaining ? remaining : desiredCount;
         }
 
-        public static bool SpawnWave(Map map, Faction faction = null, int? forcedCount = null, bool sendLetter = true, string customLetterLabel = null, string customLetterText = null, bool applyDifficulty = true)
+        private static int FinalizeSpawnCount(Map map, int count, bool applyDifficulty, bool applyTimeOfDay, bool ignoreCap)
+        {
+            if (count < 1)
+            {
+                count = 1;
+            }
+
+            if (applyDifficulty)
+            {
+                count = ApplyDifficultyMultiplier(count);
+            }
+
+            if (applyTimeOfDay)
+            {
+                count = ApplyTimeOfDayMultiplier(map, count);
+            }
+
+            if (!ignoreCap)
+            {
+                count = ClampSpawnCountToMapCap(map, count);
+            }
+
+            return count;
+        }
+
+        public static bool SpawnByBehavior(Map map, ZombieSpawnEventType behavior, int? forcedCount = null, bool sendLetter = true, bool applyDifficulty = true, bool ignoreCap = false, bool ignoreTimeOfDay = false)
+        {
+            switch (behavior)
+            {
+                case ZombieSpawnEventType.HuddledPack:
+                    return SpawnHuddledPack(map, forcedCount, sendLetter, ignoreCap, ignoreTimeOfDay, applyDifficulty);
+                case ZombieSpawnEventType.EdgeWander:
+                    return SpawnEdgeWanderers(map, forcedCount, sendLetter, ignoreCap, ignoreTimeOfDay, applyDifficulty);
+                case ZombieSpawnEventType.GroundBurst:
+                    return SpawnGroundBurst(map, forcedCount, sendLetter, ignoreCap, ignoreTimeOfDay, allowCenterFallback: true);
+                default:
+                    return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.AssaultBase);
+            }
+        }
+
+        public static bool SpawnWave(Map map, Faction faction = null, int? forcedCount = null, bool sendLetter = true, string customLetterLabel = null, string customLetterText = null, bool applyDifficulty = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, ZombieSpawnEventType behavior = ZombieSpawnEventType.AssaultBase)
         {
             if (map == null)
             {
@@ -110,84 +151,49 @@ namespace CustomizableZombieHorde
             }
 
             int count = forcedCount ?? Rand.RangeInclusive(CustomizableZombieHordeMod.Settings.minGroupSize, CustomizableZombieHordeMod.Settings.maxGroupSize);
-            if (applyDifficulty)
-            {
-                count = ApplyDifficultyMultiplier(count);
-            }
-            count = ApplyTimeOfDayMultiplier(map, count);
-            count = ClampSpawnCountToMapCap(map, count);
+            count = FinalizeSpawnCount(map, count, applyDifficulty, !ignoreTimeOfDay, ignoreCap);
             if (count < 1)
             {
                 return false;
             }
 
-            List<Pawn> pawns = new List<Pawn>();
-            for (int i = 0; i < count; i++)
-            {
-                PawnKindDef kind = ZombieKindSelector.GetRandomKind(map);
-                Pawn pawn = ZombiePawnFactory.GenerateZombie(kind, faction);
-                if (pawn == null)
-                {
-                    continue;
-                }
-
-                if (pawn.Faction == null && faction != null)
-                {
-                    try
-                    {
-                        pawn.SetFactionDirect(faction);
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                IntVec3 spawnCell = ChooseSpawnCell(map, edgeCell, pawn);
-                if (!spawnCell.IsValid)
-                {
-                    pawn.Destroy(DestroyMode.Vanish);
-                    continue;
-                }
-
-                try
-                {
-                    GenSpawn.Spawn(pawn, spawnCell, map, WipeMode.Vanish);
-                    ZombieUtility.EnsureZombieAggression(pawn);
-                    pawns.Add(pawn);
-                }
-                catch
-                {
-                    pawn.Destroy(DestroyMode.Vanish);
-                }
-            }
-
+            List<Pawn> pawns = SpawnPack(map, faction, count, behavior, edgeCell, canUseWater: true);
             if (pawns.Count == 0)
             {
-                return SpawnEmergencyPack(map, count, sendLetter, customLetterLabel, customLetterText);
+                return SpawnEmergencyPack(map, count, sendLetter, customLetterLabel, customLetterText, ignoreCap: ignoreCap, behavior: behavior);
             }
-
-            TryAssignAssaultLordOrAggression(faction, map, pawns);
 
             if (sendLetter)
             {
                 string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
                 string label = customLetterLabel ?? (prefix + " Horde");
-                string text = customLetterText ?? ("A group of " + prefix.ToLowerInvariant() + "s has entered from the map edge and is converging on your colony.");
+                string text = customLetterText ?? DescribeBehavior(prefix, behavior);
                 Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.ThreatBig, new TargetInfo(edgeCell, map));
             }
 
             return true;
         }
 
-        public static bool SpawnHorde(Map map, int totalCount, int groups, string letterLabel, string letterText)
+        public static bool SpawnHuddledPack(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool applyDifficulty = true)
+        {
+            string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
+            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Huddle", customLetterText: "A knot of " + prefix.ToLowerInvariant() + "s has gathered in a restless huddle. They may stay put until something riles them.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.HuddledPack);
+        }
+
+        public static bool SpawnEdgeWanderers(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool applyDifficulty = true)
+        {
+            string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
+            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Edge Wanderers", customLetterText: "A band of " + prefix.ToLowerInvariant() + "s is slowly drifting along the edge of the map.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.EdgeWander);
+        }
+
+        public static bool SpawnHorde(Map map, int totalCount, int groups, string letterLabel, string letterText, bool ignoreCap = false, bool ignoreTimeOfDay = false)
         {
             if (map == null)
             {
                 return false;
             }
 
-            int adjustedCount = ApplyDifficultyMultiplier(totalCount);
-            adjustedCount = ApplyTimeOfDayMultiplier(map, adjustedCount);
+            int adjustedCount = FinalizeSpawnCount(map, totalCount, applyDifficulty: true, applyTimeOfDay: !ignoreTimeOfDay, ignoreCap: ignoreCap);
             groups = groups < 1 ? 1 : groups;
             int basePerGroup = adjustedCount / groups;
             int remainder = adjustedCount % groups;
@@ -201,7 +207,7 @@ namespace CustomizableZombieHorde
                     thisGroup = 1;
                 }
 
-                if (SpawnWave(map, forcedCount: thisGroup, sendLetter: false, applyDifficulty: false))
+                if (SpawnWave(map, forcedCount: thisGroup, sendLetter: false, applyDifficulty: false, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.AssaultBase))
                 {
                     anySpawned = true;
                 }
@@ -215,7 +221,7 @@ namespace CustomizableZombieHorde
             return anySpawned;
         }
 
-        public static bool SpawnGroundBurst(Map map, int? forcedCount = null, bool sendLetter = true)
+        public static bool SpawnGroundBurst(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool allowCenterFallback = true)
         {
             if (map == null)
             {
@@ -224,15 +230,20 @@ namespace CustomizableZombieHorde
 
             Faction faction = ZombieFactionUtility.GetOrCreateZombieFaction();
             List<IntVec3> homeCells = map.areaManager?.Home?.ActiveCells?.Where(cell => cell.Standable(map) && !cell.Fogged(map)).ToList();
+            if ((homeCells == null || homeCells.Count == 0) && allowCenterFallback)
+            {
+                homeCells = GenRadial.RadialCellsAround(map.Center, 12f, true)
+                    .Where(cell => cell.InBounds(map) && cell.Standable(map) && !cell.Fogged(map))
+                    .ToList();
+            }
+
             if (homeCells == null || homeCells.Count == 0)
             {
                 return false;
             }
 
             int count = forcedCount ?? Rand.RangeInclusive(CustomizableZombieHordeMod.Settings.groundBurstMinGroupSize, CustomizableZombieHordeMod.Settings.groundBurstMaxGroupSize);
-            count = ApplyDifficultyMultiplier(count);
-            count = ApplyTimeOfDayMultiplier(map, count);
-            count = ClampSpawnCountToMapCap(map, count);
+            count = FinalizeSpawnCount(map, count, applyDifficulty: true, applyTimeOfDay: !ignoreTimeOfDay, ignoreCap: ignoreCap);
             if (count < 1)
             {
                 return false;
@@ -240,7 +251,6 @@ namespace CustomizableZombieHorde
 
             List<Pawn> pawns = new List<Pawn>();
             IntVec3 firstCell = IntVec3.Invalid;
-
             for (int i = 0; i < count; i++)
             {
                 IntVec3 spawnCell = homeCells.RandomElement();
@@ -265,16 +275,13 @@ namespace CustomizableZombieHorde
                     }
                 }
 
-                try
+                if (SpawnZombiePawn(map, pawn, spawnCell, ZombieSpawnEventType.GroundBurst))
                 {
-                    GenSpawn.Spawn(pawn, spawnCell, map, WipeMode.Vanish);
-                    ZombieUtility.EnsureZombieAggression(pawn);
                     pawns.Add(pawn);
                 }
-                catch
+                else
                 {
                     pawn.Destroy(DestroyMode.Vanish);
-                    continue;
                 }
 
                 for (int j = 0; j < 2; j++)
@@ -288,7 +295,6 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            TryAssignAssaultLordOrAggression(faction, map, pawns);
             if (sendLetter)
             {
                 string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
@@ -302,21 +308,254 @@ namespace CustomizableZombieHorde
             return true;
         }
 
-        public static bool SpawnEmergencyPack(Map map, int forcedCount, bool sendLetter = false, string customLetterLabel = null, string customLetterText = null)
+        public static bool SpawnRandomGraveEvent(Map map, bool sendLetter = true)
         {
             if (map == null)
             {
                 return false;
             }
 
-            forcedCount = ClampSpawnCountToMapCap(map, forcedCount);
+            List<ZombieVariant> options = new List<ZombieVariant>();
+            foreach (ZombieVariant variant in new[] { ZombieVariant.Biter, ZombieVariant.Crawler, ZombieVariant.Boomer, ZombieVariant.Sick, ZombieVariant.Drowned, ZombieVariant.Tank, ZombieVariant.Grabber })
+            {
+                if (ZombieKindSelector.IsVariantEnabled(variant, map))
+                {
+                    options.Add(variant);
+                }
+            }
+
+            if (options.Count == 0)
+            {
+                options.Add(ZombieVariant.Biter);
+            }
+
+            return SpawnVariantGraveEvent(map, options.RandomElement(), sendLetter);
+        }
+
+        public static bool SpawnVariantGraveEvent(Map map, ZombieVariant variant, bool sendLetter = true)
+        {
+            if (map == null)
+            {
+                return false;
+            }
+
+            ThingDef graveDef = GetGraveThingDef(variant);
+            if (graveDef == null)
+            {
+                return false;
+            }
+
+            IntVec3 graveCell = FindGraveEventCell(map);
+            if (!graveCell.IsValid)
+            {
+                return false;
+            }
+
+            Thing grave = ThingMaker.MakeThing(graveDef);
+            if (grave == null)
+            {
+                return false;
+            }
+
+            Faction faction = ZombieFactionUtility.GetOrCreateZombieFaction();
+            if (faction != null)
+            {
+                try
+                {
+                    var setFactionTwoArgs = AccessTools.Method(grave.GetType(), "SetFaction", new[] { typeof(Faction), typeof(Pawn) });
+                    if (setFactionTwoArgs != null)
+                    {
+                        setFactionTwoArgs.Invoke(grave, new object[] { faction, null });
+                    }
+                    else
+                    {
+                        var setFactionOneArg = AccessTools.Method(grave.GetType(), "SetFaction", new[] { typeof(Faction) });
+                        if (setFactionOneArg != null)
+                        {
+                            setFactionOneArg.Invoke(grave, new object[] { faction });
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            try
+            {
+                GenSpawn.Spawn(grave, graveCell, map, WipeMode.Vanish);
+            }
+            catch
+            {
+                grave.Destroy(DestroyMode.Vanish);
+                return false;
+            }
+
+            ThingWithComps graveWithComps = grave as ThingWithComps;
+            CompZombieGraveSpawner comp = graveWithComps?.GetComp<CompZombieGraveSpawner>();
+            comp?.TriggerInitialBurst();
+
+            if (sendLetter)
+            {
+                string label = ZombieDefUtility.GetGraveLetterLabel(variant);
+                string text = ZombieDefUtility.GetGraveLetterText(variant);
+                Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.ThreatBig, new TargetInfo(graveCell, map));
+            }
+
+            return true;
+        }
+
+        public static bool SpawnVariantPackAround(Map map, IntVec3 center, ZombieVariant variant, int count, ZombieSpawnEventType behavior = ZombieSpawnEventType.HuddledPack, bool ignoreCap = true)
+        {
+            if (map == null || !center.IsValid)
+            {
+                return false;
+            }
+
+            if (!ignoreCap)
+            {
+                count = ClampSpawnCountToMapCap(map, count);
+            }
+
+            if (count < 1)
+            {
+                return false;
+            }
+
+            PawnKindDef kind = ZombieKindSelector.GetKindForVariant(variant, map) ?? DefDatabase<PawnKindDef>.GetNamedSilentFail("CZH_Zombie_Biter");
+            if (kind == null)
+            {
+                return false;
+            }
+
+            Faction faction = ZombieFactionUtility.GetOrCreateZombieFaction();
+            bool anySpawned = false;
+            for (int i = 0; i < count; i++)
+            {
+                Pawn pawn = ZombiePawnFactory.GenerateZombie(kind, faction);
+                if (pawn == null)
+                {
+                    continue;
+                }
+
+                IntVec3 spawnCell = FindBurstCellNear(map, center, i == 0 ? 1 : 4, i == 0 ? 2 : 7);
+                if (!spawnCell.IsValid)
+                {
+                    pawn.Destroy(DestroyMode.Vanish);
+                    continue;
+                }
+
+                if (SpawnZombiePawn(map, pawn, spawnCell, behavior))
+                {
+                    anySpawned = true;
+                    for (int j = 0; j < 2; j++)
+                    {
+                        FilthMaker.TryMakeFilth(spawnCell, map, ThingDefOf.Filth_Dirt);
+                    }
+                }
+                else
+                {
+                    pawn.Destroy(DestroyMode.Vanish);
+                }
+            }
+
+            return anySpawned;
+        }
+
+        private static ThingDef GetGraveThingDef(ZombieVariant variant)
+        {
+            switch (variant)
+            {
+                case ZombieVariant.Crawler:
+                    return ZombieDefOf.CZH_Grave_Crawler;
+                case ZombieVariant.Boomer:
+                    return ZombieDefOf.CZH_Grave_Boomer;
+                case ZombieVariant.Sick:
+                    return ZombieDefOf.CZH_Grave_Sick;
+                case ZombieVariant.Drowned:
+                    return ZombieDefOf.CZH_Grave_Drowned;
+                case ZombieVariant.Tank:
+                    return ZombieDefOf.CZH_Grave_Tank;
+                case ZombieVariant.Grabber:
+                    return ZombieDefOf.CZH_Grave_Grabber;
+                default:
+                    return ZombieDefOf.CZH_Grave_Biter;
+            }
+        }
+
+        private static IntVec3 FindGraveEventCell(Map map)
+        {
+            List<IntVec3> homeCells = map.areaManager?.Home?.ActiveCells?.Where(cell => cell.InBounds(map) && cell.Walkable(map) && cell.GetEdifice(map) == null).ToList();
+            if (homeCells != null && homeCells.Count > 0)
+            {
+                for (int i = 0; i < 40; i++)
+                {
+                    IntVec3 candidate = homeCells.RandomElement();
+                    if (candidate.Standable(map) && DistanceToBaseCenter(candidate, map) <= 16f)
+                    {
+                        return candidate;
+                    }
+                }
+
+                return homeCells.RandomElement();
+            }
+
+            List<IntVec3> centerCells = GenRadial.RadialCellsAround(map.Center, 14f, true)
+                .Where(cell => cell.InBounds(map) && cell.Walkable(map) && cell.GetEdifice(map) == null)
+                .ToList();
+            if (centerCells.Count > 0)
+            {
+                return centerCells.RandomElement();
+            }
+
+            return FindAnyStandableCell(map);
+        }
+
+        private static float DistanceToBaseCenter(IntVec3 cell, Map map)
+        {
+            IntVec3 center = ZombieSpecialUtility.GetPlayerBaseCenter(map);
+            if (!center.IsValid)
+            {
+                center = map.Center;
+            }
+
+            return cell.DistanceTo(center);
+        }
+
+        private static IntVec3 FindBurstCellNear(Map map, IntVec3 center, int minRadius, int maxRadius)
+        {
+            List<IntVec3> cells = GenRadial.RadialCellsAround(center, maxRadius, true)
+                .Where(cell => cell.InBounds(map)
+                    && cell.Walkable(map)
+                    && cell.GetEdifice(map) == null
+                    && cell.DistanceTo(center) >= minRadius)
+                .ToList();
+            if (cells.Count > 0)
+            {
+                return cells.RandomElement();
+            }
+
+            return CellFinder.RandomClosewalkCellNear(center, map, Mathf.Max(1, maxRadius));
+        }
+
+        public static bool SpawnEmergencyPack(Map map, int forcedCount, bool sendLetter = false, string customLetterLabel = null, string customLetterText = null, bool ignoreCap = false, ZombieSpawnEventType behavior = ZombieSpawnEventType.AssaultBase)
+        {
+            if (map == null)
+            {
+                return false;
+            }
+
+            if (!ignoreCap)
+            {
+                forcedCount = ClampSpawnCountToMapCap(map, forcedCount);
+            }
+
             if (forcedCount < 1)
             {
                 return false;
             }
 
             Faction faction = ZombieFactionUtility.GetOrCreateZombieFaction();
-            List<Pawn> pawns = new List<Pawn>();
             IntVec3 anchor = FindAnyStandableCellNearEdge(map, insideOnly: true);
             if (!anchor.IsValid)
             {
@@ -333,7 +572,27 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            for (int i = 0; i < forcedCount; i++)
+            List<Pawn> pawns = SpawnPack(map, faction, forcedCount, behavior, anchor, canUseWater: true);
+            if (pawns.Count == 0)
+            {
+                return false;
+            }
+
+            if (sendLetter)
+            {
+                string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
+                string label = customLetterLabel ?? (prefix + " Horde");
+                string text = customLetterText ?? DescribeBehavior(prefix, behavior);
+                Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.ThreatBig, new TargetInfo(anchor, map));
+            }
+
+            return true;
+        }
+
+        private static List<Pawn> SpawnPack(Map map, Faction faction, int count, ZombieSpawnEventType behavior, IntVec3 anchor, bool canUseWater)
+        {
+            List<Pawn> pawns = new List<Pawn>();
+            for (int i = 0; i < count; i++)
             {
                 PawnKindDef kind = ZombieKindSelector.GetRandomKind(map);
                 Pawn pawn = ZombiePawnFactory.GenerateZombie(kind, faction);
@@ -342,62 +601,91 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                IntVec3 spawnCell = FindInsideNearEdgeSpawnCell(map, anchor);
-                if (!spawnCell.IsValid)
+                if (pawn.Faction == null && faction != null)
                 {
-                    spawnCell = anchor;
+                    try
+                    {
+                        pawn.SetFactionDirect(faction);
+                    }
+                    catch
+                    {
+                    }
                 }
 
-                try
+                IntVec3 spawnCell = ChooseSpawnCell(map, anchor, pawn, behavior, canUseWater);
+                if (!spawnCell.IsValid)
                 {
-                    GenSpawn.Spawn(pawn, spawnCell, map, WipeMode.Vanish);
-                    ZombieUtility.EnsureZombieAggression(pawn);
+                    pawn.Destroy(DestroyMode.Vanish);
+                    continue;
+                }
+
+                if (SpawnZombiePawn(map, pawn, spawnCell, behavior))
+                {
                     pawns.Add(pawn);
                 }
-                catch
+                else
                 {
                     pawn.Destroy(DestroyMode.Vanish);
                 }
             }
 
-            if (pawns.Count == 0)
+            return pawns;
+        }
+
+        private static bool SpawnZombiePawn(Map map, Pawn pawn, IntVec3 spawnCell, ZombieSpawnEventType behavior)
+        {
+            try
+            {
+                GenSpawn.Spawn(pawn, spawnCell, map, WipeMode.Vanish);
+                Current.Game?.GetComponent<ZombieGameComponent>()?.RegisterBehavior(pawn, behavior);
+                ZombieUtility.PrepareSpawnedZombie(pawn);
+                if (pawn.Downed)
+                {
+                    return false;
+                }
+
+                ZombieUtility.AssignInitialShambleJob(pawn, behavior);
+                ZombieUtility.EnsureZombieAggression(pawn);
+                return true;
+            }
+            catch
             {
                 return false;
             }
-
-            TryAssignAssaultLordOrAggression(faction, map, pawns);
-            if (sendLetter)
-            {
-                string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
-                string label = customLetterLabel ?? (prefix + " Horde");
-                string text = customLetterText ?? ("A pack of " + prefix.ToLowerInvariant() + "s shambles onto the map and lurches toward your base.");
-                Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.ThreatBig, new TargetInfo(anchor, map));
-            }
-
-            return true;
         }
 
-        private static void TryAssignAssaultLordOrAggression(Faction faction, Map map, List<Pawn> pawns)
+        private static string DescribeBehavior(string prefix, ZombieSpawnEventType behavior)
         {
-            if (pawns == null || pawns.Count == 0)
+            switch (behavior)
             {
-                return;
-            }
-
-            foreach (Pawn pawn in pawns)
-            {
-                ZombieUtility.EnsureZombieAggression(pawn);
+                case ZombieSpawnEventType.HuddledPack:
+                    return "A knot of " + prefix.ToLowerInvariant() + "s has huddled together just inside the map, swaying and waiting to be stirred up.";
+                case ZombieSpawnEventType.EdgeWander:
+                    return "A group of " + prefix.ToLowerInvariant() + "s is wandering the outskirts of the map, circling the colony from a distance.";
+                case ZombieSpawnEventType.GroundBurst:
+                    return "A pack of " + prefix.ToLowerInvariant() + "s has burst from the ground inside your colony.";
+                default:
+                    return "A group of " + prefix.ToLowerInvariant() + "s has entered from the map edge and is drifting toward your colony.";
             }
         }
 
-        private static IntVec3 ChooseSpawnCell(Map map, IntVec3 edgeCell, Pawn pawn)
+        private static IntVec3 ChooseSpawnCell(Map map, IntVec3 edgeCell, Pawn pawn, ZombieSpawnEventType behavior, bool canUseWater)
         {
-            if (ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned))
+            if (canUseWater && ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned))
             {
                 IntVec3 waterCell = FindWaterSpawnCell(map);
                 if (waterCell.IsValid)
                 {
                     return waterCell;
+                }
+            }
+
+            if (behavior == ZombieSpawnEventType.HuddledPack)
+            {
+                IntVec3 huddleCell = ZombieSpecialUtility.FindInteriorNearEdgeCell(map, edgeCell);
+                if (huddleCell.IsValid)
+                {
+                    return huddleCell;
                 }
             }
 
@@ -484,10 +772,10 @@ namespace CustomizableZombieHorde
 
         private static IntVec3 FindAnyStandableCellNearEdge(Map map, bool insideOnly)
         {
-            List<IntVec3> nearEdgeCells = map.AllCells.Where(cell => cell.Standable(map) && !cell.Fogged(map) && (insideOnly ? IsInsideNearEdgeCell(cell, map) : DistanceToEdge(cell, map) <= 8)).ToList();
+            List<IntVec3> nearEdgeCells = map.AllCells.Where(cell => cell.Standable(map) && !cell.Fogged(map) && (insideOnly ? IsInsideNearEdgeCell(cell, map) : (DistanceToEdge(cell, map) >= 5 && DistanceToEdge(cell, map) <= 18))).ToList();
             if (nearEdgeCells.Count == 0)
             {
-                nearEdgeCells = map.AllCells.Where(cell => cell.Standable(map) && (insideOnly ? IsInsideNearEdgeCell(cell, map) : DistanceToEdge(cell, map) <= 8)).ToList();
+                nearEdgeCells = map.AllCells.Where(cell => cell.Standable(map) && (insideOnly ? IsInsideNearEdgeCell(cell, map) : (DistanceToEdge(cell, map) >= 5 && DistanceToEdge(cell, map) <= 18))).ToList();
             }
 
             return nearEdgeCells.Count > 0 ? nearEdgeCells.RandomElement() : IntVec3.Invalid;
@@ -517,7 +805,7 @@ namespace CustomizableZombieHorde
         private static bool IsInsideNearEdgeCell(IntVec3 cell, Map map)
         {
             int distance = DistanceToEdge(cell, map);
-            return distance >= 3 && distance <= 10;
+            return distance >= 6 && distance <= 18;
         }
 
         private static IntVec3 FindAnyStandableCell(Map map)

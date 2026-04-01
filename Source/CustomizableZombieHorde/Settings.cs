@@ -7,7 +7,7 @@ namespace CustomizableZombieHorde
     public sealed class CustomizableZombieHordeSettings : ModSettings
     {
         private Vector2 scrollPosition;
-        private float settingsViewHeight = 1600f;
+        private float settingsViewHeight = 2500f;
 
         public string zombiePrefix = "Zombie";
         public int minGroupSize = 3;
@@ -28,6 +28,10 @@ namespace CustomizableZombieHorde
         public int groundBurstMinGroupSize = 2;
         public int groundBurstMaxGroupSize = 4;
 
+        public bool enableGraveEvents = true;
+        public float graveEventMinDays = 8f;
+        public float graveEventMaxDays = 16f;
+
         public bool enableMoonEvents = true;
         public float bloodMoonChance = 0.10f;
         public int fullMoonBaseCount = 12;
@@ -42,6 +46,7 @@ namespace CustomizableZombieHorde
         public bool allowSick = true;
         public bool allowDrowned = true;
         public bool allowTanks = true;
+        public bool allowGrabbers = true;
 
         public override void ExposeData()
         {
@@ -64,6 +69,10 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref groundBurstMinGroupSize, "groundBurstMinGroupSize", 2);
             Scribe_Values.Look(ref groundBurstMaxGroupSize, "groundBurstMaxGroupSize", 4);
 
+            Scribe_Values.Look(ref enableGraveEvents, "enableGraveEvents", true);
+            Scribe_Values.Look(ref graveEventMinDays, "graveEventMinDays", 8f);
+            Scribe_Values.Look(ref graveEventMaxDays, "graveEventMaxDays", 16f);
+
             Scribe_Values.Look(ref enableMoonEvents, "enableMoonEvents", true);
             Scribe_Values.Look(ref bloodMoonChance, "bloodMoonChance", 0.10f);
             Scribe_Values.Look(ref fullMoonBaseCount, "fullMoonBaseCount", 12);
@@ -78,6 +87,7 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref allowSick, "allowSick", true);
             Scribe_Values.Look(ref allowDrowned, "allowDrowned", true);
             Scribe_Values.Look(ref allowTanks, "allowTanks", true);
+            Scribe_Values.Look(ref allowGrabbers, "allowGrabbers", true);
             base.ExposeData();
         }
 
@@ -142,6 +152,17 @@ namespace CustomizableZombieHorde
             }
             listing.GapLine();
 
+            listing.CheckboxLabeled("Rare zombie grave events", ref enableGraveEvents, "Rare special events can create a zombie grave that keeps spawning one type of zombie until the grave is destroyed.");
+            listing.Label($"Grave event minimum days between events: {graveEventMinDays:0.0}");
+            graveEventMinDays = listing.Slider(graveEventMinDays, 3f, 30f);
+            listing.Label($"Grave event maximum days between events: {graveEventMaxDays:0.0}");
+            graveEventMaxDays = listing.Slider(graveEventMaxDays, 3f, 40f);
+            if (graveEventMaxDays < graveEventMinDays)
+            {
+                graveEventMaxDays = graveEventMinDays;
+            }
+            listing.GapLine();
+
             listing.Label("Enabled zombie variants");
             listing.CheckboxLabeled("Standard Biters", ref allowBiters);
             listing.CheckboxLabeled("Crawlers", ref allowCrawlers);
@@ -149,6 +170,7 @@ namespace CustomizableZombieHorde
             listing.CheckboxLabeled("Sick", ref allowSick);
             listing.CheckboxLabeled("Drowned", ref allowDrowned);
             listing.CheckboxLabeled("Tanks", ref allowTanks);
+            listing.CheckboxLabeled("Grabbers", ref allowGrabbers);
             listing.GapLine();
 
             listing.Label($"Fast zombie chance: {fastZombieChance * 100f:0}%");
@@ -166,7 +188,7 @@ namespace CustomizableZombieHorde
                 maxGroupSize = minGroupSize;
             }
 
-            if (!allowBiters && !allowCrawlers && !allowBoomers && !allowSick && !allowDrowned && !allowTanks)
+            if (!allowBiters && !allowCrawlers && !allowBoomers && !allowSick && !allowDrowned && !allowTanks && !allowGrabbers)
             {
                 listing.GapLine();
                 listing.Label("Warning: no variants are enabled. Standard Biters will be used as a safe fallback.");
@@ -190,7 +212,7 @@ namespace CustomizableZombieHorde
 
             listing.End();
 
-            settingsViewHeight = Mathf.Max(1600f, listing.CurHeight + 24f);
+            settingsViewHeight = Mathf.Max(2500f, listing.CurHeight + 24f);
             Widgets.EndScrollView();
         }
 
@@ -217,9 +239,64 @@ namespace CustomizableZombieHorde
                 ShowDebugResult(component.DebugForceNightlyWave(), "Forced the nightly edge wave.", "Could not force the nightly edge wave.");
             }
 
+            if (listing.ButtonText("Force huddled pack now"))
+            {
+                ShowDebugResult(component.DebugForceHuddledPack(), "Forced a huddled pack.", "Could not force a huddled pack.");
+            }
+
+            if (listing.ButtonText("Force base push now"))
+            {
+                ShowDebugResult(component.DebugForceBasePush(), "Forced a base push.", "Could not force a base push.");
+            }
+
+            if (listing.ButtonText("Force edge wanderers now"))
+            {
+                ShowDebugResult(component.DebugForceEdgeWanderers(), "Forced edge wanderers.", "Could not force edge wanderers.");
+            }
+
             if (listing.ButtonText("Force ground burst now"))
             {
                 ShowDebugResult(component.DebugForceGroundBurst(), "Forced a ground burst.", "Could not force a ground burst.");
+            }
+
+            if (listing.ButtonText("Force random grave event now"))
+            {
+                ShowDebugResult(component.DebugForceRandomGraveEvent(), "Forced a grave event.", "Could not force a grave event.");
+            }
+
+            if (listing.ButtonText("Force biter grave now"))
+            {
+                ShowDebugResult(component.DebugForceVariantGraveEvent(ZombieVariant.Biter), "Forced a biter grave.", "Could not force a biter grave.");
+            }
+
+            if (listing.ButtonText("Force crawler grave now"))
+            {
+                ShowDebugResult(component.DebugForceVariantGraveEvent(ZombieVariant.Crawler), "Forced a crawler grave.", "Could not force a crawler grave.");
+            }
+
+            if (listing.ButtonText("Force boomer grave now"))
+            {
+                ShowDebugResult(component.DebugForceVariantGraveEvent(ZombieVariant.Boomer), "Forced a boomer grave.", "Could not force a boomer grave.");
+            }
+
+            if (listing.ButtonText("Force sick grave now"))
+            {
+                ShowDebugResult(component.DebugForceVariantGraveEvent(ZombieVariant.Sick), "Forced a sick grave.", "Could not force a sick grave.");
+            }
+
+            if (listing.ButtonText("Force drowned grave now"))
+            {
+                ShowDebugResult(component.DebugForceVariantGraveEvent(ZombieVariant.Drowned), "Forced a drowned grave.", "Could not force a drowned grave.");
+            }
+
+            if (listing.ButtonText("Force tank grave now"))
+            {
+                ShowDebugResult(component.DebugForceVariantGraveEvent(ZombieVariant.Tank), "Forced a tank grave.", "Could not force a tank grave.");
+            }
+
+            if (listing.ButtonText("Force grabber grave now"))
+            {
+                ShowDebugResult(component.DebugForceVariantGraveEvent(ZombieVariant.Grabber), "Forced a grabber grave.", "Could not force a grabber grave.");
             }
 
             if (listing.ButtonText("Force full moon horde now"))
@@ -255,6 +332,10 @@ namespace CustomizableZombieHorde
             groundBurstMinGroupSize = 2;
             groundBurstMaxGroupSize = 4;
 
+            enableGraveEvents = true;
+            graveEventMinDays = 8f;
+            graveEventMaxDays = 16f;
+
             enableMoonEvents = true;
             bloodMoonChance = 0.10f;
             fullMoonBaseCount = 12;
@@ -269,6 +350,7 @@ namespace CustomizableZombieHorde
             allowSick = true;
             allowDrowned = true;
             allowTanks = true;
+            allowGrabbers = true;
         }
 
         private static void ShowDebugResult(bool success, string successText, string failText)

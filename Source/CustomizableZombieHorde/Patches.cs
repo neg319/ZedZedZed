@@ -12,6 +12,7 @@ namespace CustomizableZombieHorde
     public static class Patch_PawnRenderer_RenderPawnAt
     {
         private static readonly Material DirtMat = MaterialPool.MatFrom("PawnOverlays/ZombieDirtBody", ShaderDatabase.CutoutSkin, Color.white);
+        private static readonly Material GrabberTongueMat = MaterialPool.MatFrom("Things/Effect/GrabberTongue", ShaderDatabase.Transparent, Color.white);
         private static readonly PropertyInfo HumanlikeBodySetProperty = AccessTools.Property(typeof(MeshPool), "humanlikeBodySet") ?? AccessTools.Property(typeof(MeshPool), "humanlikeSet");
 
         private static Mesh GetHumanlikeBodyMesh(Rot4 rot)
@@ -38,6 +39,40 @@ namespace CustomizableZombieHorde
             }
         }
 
+
+
+        private static void DrawGrabberTongue(Pawn pawn, Vector3 drawLoc)
+        {
+            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) || Current.Game == null)
+            {
+                return;
+            }
+
+            ZombieGameComponent component = Current.Game.GetComponent<ZombieGameComponent>();
+            Pawn target = component?.GetGrabberTongueTarget(pawn);
+            if (target == null || target.Destroyed || !target.Spawned || target.Map != pawn.Map)
+            {
+                return;
+            }
+
+            Vector3 start = drawLoc;
+            start.y = AltitudeLayer.MetaOverlays.AltitudeFor();
+            Vector3 end = target.DrawPos;
+            end.y = start.y;
+            Vector3 delta = end - start;
+            float length = delta.magnitude;
+            if (length < 0.1f)
+            {
+                return;
+            }
+
+            Vector3 center = (start + end) * 0.5f;
+            float angle = Mathf.Atan2(delta.x, delta.z) * Mathf.Rad2Deg;
+            float pulse = 0.12f + Mathf.Abs(Mathf.Sin((Find.TickManager?.TicksGame ?? 0) * 0.12f)) * 0.05f;
+            Matrix4x4 matrix = Matrix4x4.TRS(center, Quaternion.AngleAxis(angle, Vector3.up), new Vector3(pulse, 1f, length));
+            Graphics.DrawMesh(MeshPool.plane10, matrix, GrabberTongueMat, 0);
+        }
+
         public static void Postfix(PawnRenderer __instance, Vector3 drawLoc, Rot4? rotOverride = null, bool neverAimWeapon = false)
         {
             Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
@@ -57,9 +92,19 @@ namespace CustomizableZombieHorde
 
             Material variantMat = MaterialPool.MatFrom(ZombieVisualUtility.GetVariantOverlayPath(ZombieUtility.GetVariant(pawn)), ShaderDatabase.CutoutSkin, Color.white);
 
+            DrawGrabberTongue(pawn, drawLoc);
+
             if (ZombieUtility.IsVariant(pawn, ZombieVariant.Tank))
             {
                 Matrix4x4 matrix = Matrix4x4.TRS(loc, Quaternion.identity, new Vector3(2f, 1f, 2f));
+                Graphics.DrawMesh(mesh, matrix, DirtMat, 0);
+                Graphics.DrawMesh(mesh, matrix, variantMat, 0);
+            }
+            else if (ZombieUtility.IsVariant(pawn, ZombieVariant.Crawler))
+            {
+                Vector3 crawlLoc = loc + new Vector3(0f, 0f, 0.10f);
+                Quaternion crawlRotation = Quaternion.Euler(16f, 0f, 0f);
+                Matrix4x4 matrix = Matrix4x4.TRS(crawlLoc, crawlRotation, new Vector3(1.05f, 0.72f, 1.05f));
                 Graphics.DrawMesh(mesh, matrix, DirtMat, 0);
                 Graphics.DrawMesh(mesh, matrix, variantMat, 0);
             }

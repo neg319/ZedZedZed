@@ -73,21 +73,82 @@ namespace CustomizableZombieHorde
             return best;
         }
 
-        public static IntVec3 FindHordeShambleCell(Pawn pawn)
+        public static IntVec3 FindInitialBehaviorCell(Pawn pawn, ZombieSpawnEventType behavior)
         {
             if (pawn?.MapHeld == null)
             {
                 return IntVec3.Invalid;
             }
 
-            Map map = pawn.MapHeld;
+            switch (behavior)
+            {
+                case ZombieSpawnEventType.EdgeWander:
+                    return FindEdgePatrolCell(pawn);
+                case ZombieSpawnEventType.HuddledPack:
+                    return FindHuddleCell(pawn);
+                case ZombieSpawnEventType.GroundBurst:
+                    return FindAssaultCell(pawn);
+                default:
+                    return FindAssaultCell(pawn);
+            }
+        }
+
+        public static IntVec3 FindBehaviorCell(Pawn pawn, ZombieSpawnEventType behavior)
+        {
+            if (pawn?.MapHeld == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            switch (behavior)
+            {
+                case ZombieSpawnEventType.EdgeWander:
+                    return FindEdgePatrolCell(pawn);
+                case ZombieSpawnEventType.HuddledPack:
+                    return FindHuddleCell(pawn);
+                case ZombieSpawnEventType.GroundBurst:
+                    return FindAssaultCell(pawn);
+                default:
+                    return FindAssaultCell(pawn);
+            }
+        }
+
+        public static IntVec3 FindAssaultCell(Pawn pawn)
+        {
+            Map map = pawn?.MapHeld;
+            if (map == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            IntVec3 targetCenter = GetPlayerBaseCenter(map);
+            IntVec3 from = pawn.PositionHeld;
+            IntVec3 anchor = new IntVec3((from.x + targetCenter.x) / 2, 0, (from.z + targetCenter.z) / 2);
+            List<IntVec3> options = GenRadial.RadialCellsAround(anchor, 8f, true)
+                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 6)
+                .ToList();
+            if (options.Count > 0)
+            {
+                return options.RandomElement();
+            }
+
+            return targetCenter;
+        }
+
+        public static IntVec3 FindHuddleCell(Pawn pawn)
+        {
+            Map map = pawn?.MapHeld;
+            if (map == null)
+            {
+                return IntVec3.Invalid;
+            }
+
             List<Pawn> nearbyZombies = map.mapPawns.AllPawnsSpawned
                 .Where(other => other != pawn && ZombieUtility.IsZombie(other) && !other.Dead && !other.Destroyed && other.PositionHeld.DistanceToSquared(pawn.PositionHeld) <= 225f)
                 .ToList();
 
-            int ticksGame = Find.TickManager?.TicksGame ?? 0;
-            bool huddle = ((pawn.thingIDNumber / 7) + (ticksGame / 1800)) % 2 == 0;
-            if (nearbyZombies.Count >= 2 && huddle)
+            IntVec3 packCenter = pawn.PositionHeld;
+            if (nearbyZombies.Count > 0)
             {
                 int sumX = pawn.PositionHeld.x;
                 int sumZ = pawn.PositionHeld.z;
@@ -99,50 +160,120 @@ namespace CustomizableZombieHorde
                     sumZ += zombie.PositionHeld.z;
                 }
 
-                IntVec3 packCenter = new IntVec3(sumX / count, 0, sumZ / count);
-                for (int i = 0; i < 12; i++)
+                packCenter = new IntVec3(sumX / count, 0, sumZ / count);
+            }
+            else if (DistanceToNearestEdge(packCenter, map) < 7)
+            {
+                packCenter = FindInteriorNearEdgeCell(map, pawn.PositionHeld);
+            }
+
+            for (int i = 0; i < 12; i++)
+            {
+                IntVec3 candidate = CellFinder.RandomClosewalkCellNear(packCenter, map, 4);
+                if (candidate.IsValid && candidate.Standable(map) && DistanceToNearestEdge(candidate, map) >= 6)
                 {
-                    IntVec3 candidate = CellFinder.RandomClosewalkCellNear(packCenter, map, 3);
-                    if (candidate.IsValid && candidate.Standable(map))
-                    {
-                        return candidate;
-                    }
+                    return candidate;
                 }
             }
 
-            return FindEdgeShuffleCell(pawn);
+            return FindInteriorNearEdgeCell(map, packCenter);
         }
 
-        private static IntVec3 FindEdgeShuffleCell(Pawn pawn)
+        public static IntVec3 FindEdgePatrolCell(Pawn pawn)
         {
-            Map map = pawn.MapHeld;
-            List<IntVec3> options = GenRadial.RadialCellsAround(pawn.PositionHeld, 10f, true)
-                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToEdge(cell, map) >= 3 && DistanceToEdge(cell, map) <= 10)
+            Map map = pawn?.MapHeld;
+            if (map == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            List<IntVec3> options = GenRadial.RadialCellsAround(pawn.PositionHeld, 14f, true)
+                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 6 && DistanceToNearestEdge(cell, map) <= 16)
                 .ToList();
 
             if (options.Count > 0)
             {
-                int step = ((pawn.thingIDNumber / 11) + ((Find.TickManager?.TicksGame ?? 0) / 2500)) % options.Count;
+                int step = ((pawn.thingIDNumber / 11) + ((Find.TickManager?.TicksGame ?? 0) / 3200)) % options.Count;
                 return options[step];
             }
 
-            return FindAnyNearEdgeCell(map);
+            return FindInteriorNearEdgeCell(map, pawn.PositionHeld);
         }
 
-        private static IntVec3 FindAnyNearEdgeCell(Map map)
+        public static IntVec3 FindInteriorNearEdgeCell(Map map, IntVec3 anchor)
         {
+            if (map == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            List<IntVec3> options = GenRadial.RadialCellsAround(anchor, 16f, true)
+                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 6 && DistanceToNearestEdge(cell, map) <= 18)
+                .ToList();
+            if (options.Count > 0)
+            {
+                return options.RandomElement();
+            }
+
             foreach (IntVec3 cell in map.AllCells.InRandomOrder())
             {
-                if (cell.Standable(map) && DistanceToEdge(cell, map) >= 3 && DistanceToEdge(cell, map) <= 10)
+                if (cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 6 && DistanceToNearestEdge(cell, map) <= 18)
                 {
                     return cell;
                 }
             }
 
-            return map?.Center ?? IntVec3.Invalid;
+            return map.Center;
         }
 
-        private static int DistanceToEdge(IntVec3 cell, Map map)
+        public static IntVec3 GetPlayerBaseCenter(Map map)
+        {
+            if (map == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            List<IntVec3> homeCells = map.areaManager?.Home?.ActiveCells?.Where(cell => cell.Standable(map)).ToList();
+            if (homeCells != null && homeCells.Count > 0)
+            {
+                int sumX = 0;
+                int sumZ = 0;
+                foreach (IntVec3 cell in homeCells)
+                {
+                    sumX += cell.x;
+                    sumZ += cell.z;
+                }
+
+                return new IntVec3(sumX / homeCells.Count, 0, sumZ / homeCells.Count);
+            }
+
+            if (map.mapPawns?.FreeColonistsSpawned != null && map.mapPawns.FreeColonistsSpawned.Count > 0)
+            {
+                int sumX = 0;
+                int sumZ = 0;
+                int count = 0;
+                foreach (Pawn colonist in map.mapPawns.FreeColonistsSpawned)
+                {
+                    if (!colonist.Spawned)
+                    {
+                        continue;
+                    }
+
+                    count++;
+                    sumX += colonist.Position.x;
+                    sumZ += colonist.Position.z;
+                }
+
+                if (count > 0)
+                {
+                    return new IntVec3(sumX / count, 0, sumZ / count);
+                }
+            }
+
+            return map.Center;
+        }
+
+        public static int DistanceToNearestEdge(IntVec3 cell, Map map)
         {
             int xDistance = cell.x < map.Size.x - 1 - cell.x ? cell.x : map.Size.x - 1 - cell.x;
             int zDistance = cell.z < map.Size.z - 1 - cell.z ? cell.z : map.Size.z - 1 - cell.z;
@@ -275,120 +406,41 @@ namespace CustomizableZombieHorde
                 }
 
                 FilthMaker.TryMakeFilth(cell, map, ZombieDefOf.CZH_Filth_SickZombieBlood);
-                TryApplySicknessToLivingThings(cell, map, pawn, 0.22f);
+                foreach (Thing thing in cell.GetThingList(map))
+                {
+                    if (thing is Pawn target && target != pawn && !target.Dead && !ZombieUtility.ShouldZombiesIgnore(target))
+                    {
+                        ZombieTraitUtility.TryApplyZombieSickness(target, 0.22f);
+                    }
+                }
             }
         }
 
         public static void HandleSickBloodContact(Map map)
         {
-            if (map?.mapPawns?.AllPawnsSpawned == null)
+            if (map == null || ZombieDefOf.CZH_Filth_SickZombieBlood == null)
             {
                 return;
             }
 
-            foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned)
+            List<Thing> filth = map.listerThings.ThingsOfDef(ZombieDefOf.CZH_Filth_SickZombieBlood);
+            for (int i = 0; i < filth.Count; i++)
             {
-                if (pawn.Dead || pawn.Destroyed || !pawn.RaceProps.IsFlesh || ZombieUtility.IsZombie(pawn))
+                IntVec3 cell = filth[i].Position;
+                List<Thing> things = cell.GetThingList(map);
+                for (int j = 0; j < things.Count; j++)
                 {
-                    continue;
-                }
-
-                if (!CellContainsFilthDef(pawn.PositionHeld, map, ZombieDefOf.CZH_Filth_SickZombieBlood))
-                {
-                    continue;
-                }
-
-                if (ZombieTraitUtility.CanCatchZombieSickness(pawn) && Rand.Chance(0.08f))
-                {
-                    pawn.health.AddHediff(ZombieDefOf.CZH_ZombieSickness);
+                    if (things[j] is Pawn pawn && !pawn.Dead && !ZombieUtility.ShouldZombiesIgnore(pawn))
+                    {
+                        ZombieTraitUtility.TryApplyZombieSickness(pawn, 0.035f);
+                    }
                 }
             }
-        }
-
-        private static void TryApplySicknessToLivingThings(IntVec3 cell, Map map, Pawn source, float chance)
-        {
-            List<Thing> things = cell.GetThingList(map);
-            for (int i = 0; i < things.Count; i++)
-            {
-                if (things[i] is Pawn target && target != source && !ZombieUtility.IsZombie(target) && ZombieTraitUtility.CanCatchZombieSickness(target) && Rand.Chance(chance))
-                {
-                    target.health.AddHediff(ZombieDefOf.CZH_ZombieSickness);
-                }
-            }
-        }
-
-        private static bool CellContainsFilthDef(IntVec3 cell, Map map, ThingDef filthDef)
-        {
-            List<Thing> things = cell.GetThingList(map);
-            for (int i = 0; i < things.Count; i++)
-            {
-                if (things[i]?.def == filthDef)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static IEnumerable<Thing> BuildZombieButcherProducts(Pawn zombie)
-        {
-            List<Thing> things = new List<Thing>();
-            if (!ZombieUtility.IsZombie(zombie))
-            {
-                return things;
-            }
-
-            Thing flesh = ThingMaker.MakeThing(ZombieDefOf.CZH_RottenFlesh);
-            if (flesh != null)
-            {
-                flesh.stackCount = ZombieUtility.IsVariant(zombie, ZombieVariant.Tank) ? 55 : 28;
-                things.Add(flesh);
-            }
-
-            Thing leather = ThingMaker.MakeThing(ZombieDefOf.CZH_RottenLeather);
-            if (leather != null)
-            {
-                leather.stackCount = ZombieUtility.IsVariant(zombie, ZombieVariant.Tank) ? 34 : 18;
-                things.Add(leather);
-            }
-
-            return things;
-        }
-
-        public static bool NearbyLivingPawnDetected(Pawn pawn, float radius = 12f)
-        {
-            if (pawn?.MapHeld?.mapPawns?.AllPawnsSpawned == null)
-            {
-                return false;
-            }
-
-            float radiusSquared = radius * radius;
-            foreach (Pawn other in pawn.MapHeld.mapPawns.AllPawnsSpawned)
-            {
-                if (other == pawn || other.Dead || other.Destroyed || !other.RaceProps.IsFlesh || ZombieUtility.IsZombie(other) || ZombieUtility.ShouldZombiesIgnore(other))
-                {
-                    continue;
-                }
-
-                if (pawn.PositionHeld.DistanceToSquared(other.PositionHeld) <= radiusSquared)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         public static void HandleDrownedBehavior(Pawn pawn)
         {
-            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || !pawn.Spawned)
-            {
-                return;
-            }
-
-            ZombieUtility.RefreshDrownedState(pawn);
-            if (NearbyLivingPawnDetected(pawn, 8f))
+            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null)
             {
                 return;
             }
@@ -398,31 +450,40 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            IntVec3 nearestWater = FindNearestWaterCell(pawn.PositionHeld, pawn.MapHeld, 24);
-            if (nearestWater.IsValid)
+            Pawn prey = FindClosestLivingPrey(pawn, 8f);
+            if (prey == null)
             {
-                pawn.jobs?.StopAll();
-                pawn.pather?.StartPath(nearestWater, PathEndMode.OnCell);
+                IntVec3 waterCell = FindNearestWaterCell(pawn.PositionHeld, pawn.MapHeld, 20f);
+                if (waterCell.IsValid && pawn.CurJobDef != JobDefOf.Goto)
+                {
+                    Job returnToWater = JobMaker.MakeJob(JobDefOf.Goto, waterCell);
+                    returnToWater.expiryInterval = 700;
+                    returnToWater.locomotionUrgency = ZombieUtility.GetZombieUrgency(pawn);
+                    pawn.jobs.TryTakeOrderedJob(returnToWater, JobTag.Misc);
+                }
             }
         }
 
-        private static IntVec3 FindNearestWaterCell(IntVec3 origin, Map map, int maxRadius)
+        private static IntVec3 FindNearestWaterCell(IntVec3 origin, Map map, float radius)
         {
+            float radiusSquared = radius * radius;
             IntVec3 best = IntVec3.Invalid;
-            float bestDistance = 999999f;
-            foreach (IntVec3 cell in GenRadial.RadialCellsAround(origin, maxRadius, true))
+            float bestDistance = float.MaxValue;
+            foreach (IntVec3 cell in map.AllCells)
             {
-                if (!cell.InBounds(map) || !ZombieUtility.IsWaterCell(cell, map) || !cell.Walkable(map))
+                if (!ZombieUtility.IsWaterCell(cell, map) || !cell.Walkable(map))
                 {
                     continue;
                 }
 
                 float distance = origin.DistanceToSquared(cell);
-                if (distance < bestDistance)
+                if (distance > radiusSquared || distance >= bestDistance)
                 {
-                    best = cell;
-                    bestDistance = distance;
+                    continue;
                 }
+
+                best = cell;
+                bestDistance = distance;
             }
 
             return best;

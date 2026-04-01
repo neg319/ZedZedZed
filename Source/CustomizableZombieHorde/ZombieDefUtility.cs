@@ -13,7 +13,8 @@ namespace CustomizableZombieHorde
             { "CZH_Zombie_Boomer", "Boomer" },
             { "CZH_Zombie_Sick", "Sick" },
             { "CZH_Zombie_Drowned", "Drowned" },
-            { "CZH_Zombie_Tank", "Tank" }
+            { "CZH_Zombie_Tank", "Tank" },
+            { "CZH_Zombie_Grabber", "Grabber" }
         };
 
         public static void ApplyDynamicLabels()
@@ -51,6 +52,38 @@ namespace CustomizableZombieHorde
             }
 
             return kindDef.label.NullOrEmpty() ? prefix : kindDef.label.CapitalizeFirst();
+        }
+
+        public static string GetVariantLabel(ZombieVariant variant)
+        {
+            switch (variant)
+            {
+                case ZombieVariant.Crawler:
+                    return "Crawler";
+                case ZombieVariant.Boomer:
+                    return "Boomer";
+                case ZombieVariant.Sick:
+                    return "Sick";
+                case ZombieVariant.Drowned:
+                    return "Drowned";
+                case ZombieVariant.Tank:
+                    return "Tank";
+                case ZombieVariant.Grabber:
+                    return "Grabber";
+                default:
+                    return "Biter";
+            }
+        }
+
+        public static string GetGraveLetterLabel(ZombieVariant variant)
+        {
+            return GetVariantLabel(variant) + " Grave Awakened";
+        }
+
+        public static string GetGraveLetterText(ZombieVariant variant)
+        {
+            string type = GetVariantLabel(variant).ToLowerInvariant();
+            return "The ground has split open and a " + type + " grave has burst up like an infestation. Destroy the grave or more " + type + " zombies will keep crawling out of it.";
         }
 
         public static string ExampleNames(string prefix)

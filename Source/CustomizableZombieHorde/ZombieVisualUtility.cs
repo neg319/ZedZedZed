@@ -54,6 +54,14 @@ namespace CustomizableZombieHorde
             new Color(0.38f, 0.36f, 0.34f)
         };
 
+        private static readonly Color[] GrabberSkinPalette =
+        {
+            new Color(0.56f, 0.61f, 0.55f),
+            new Color(0.50f, 0.56f, 0.51f),
+            new Color(0.46f, 0.52f, 0.47f),
+            new Color(0.42f, 0.47f, 0.43f)
+        };
+
         public static Color GetSkinColor(ZombieVariant variant)
         {
             switch (variant)
@@ -68,6 +76,8 @@ namespace CustomizableZombieHorde
                     return DrownedSkinPalette.RandomElement();
                 case ZombieVariant.Tank:
                     return TankSkinPalette.RandomElement();
+                case ZombieVariant.Grabber:
+                    return GrabberSkinPalette.RandomElement();
                 default:
                     return BiterSkinPalette.RandomElement();
             }
@@ -90,6 +100,9 @@ namespace CustomizableZombieHorde
                 case ZombieVariant.Tank:
                     tint = new Color(0.22f, 0.22f, 0.20f);
                     break;
+                case ZombieVariant.Grabber:
+                    tint = new Color(0.40f, 0.33f, 0.35f);
+                    break;
                 default:
                     tint = Color.gray;
                     break;
@@ -108,6 +121,8 @@ namespace CustomizableZombieHorde
                     return BodyTypeDefOf.Fat;
                 case ZombieVariant.Tank:
                     return BodyTypeDefOf.Hulk;
+                case ZombieVariant.Grabber:
+                    return BodyTypeDefOf.Thin;
                 default:
                     return fallback ?? BodyTypeDefOf.Thin;
             }
@@ -127,6 +142,8 @@ namespace CustomizableZombieHorde
                     return "PawnOverlays/ZombieDrownedBody";
                 case ZombieVariant.Tank:
                     return "PawnOverlays/ZombieTankBody";
+                case ZombieVariant.Grabber:
+                    return "PawnOverlays/ZombieGrabberBody";
                 default:
                     return "PawnOverlays/ZombieBiterBody";
             }

@@ -108,4 +108,24 @@
     <canArriveManhunter>false</canArriveManhunter>
     <canBeSapper>false</canBeSapper>
   </PawnKindDef>
+
+
+  <PawnKindDef>
+    <defName>CZH_Zombie_Grabber</defName>
+    <label>zombie grabber</label>
+    <race>Human</race>
+    <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
+    <combatPower>58</combatPower>
+    <apparelMoney>
+      <min>0</min>
+      <max>150</max>
+    </apparelMoney>
+    <weaponMoney>
+      <min>0</min>
+      <max>0</max>
+    </weaponMoney>
+    <canArriveManhunter>false</canArriveManhunter>
+    <canBeSapper>false</canBeSapper>
+  </PawnKindDef>
+
 </Defs>

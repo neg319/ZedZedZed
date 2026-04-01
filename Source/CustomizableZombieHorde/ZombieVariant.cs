@@ -7,6 +7,7 @@ namespace CustomizableZombieHorde
         Boomer,
         Sick,
         Drowned,
-        Tank
+        Tank,
+        Grabber
     }
 }
