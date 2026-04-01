@@ -56,6 +56,7 @@ namespace CustomizableZombieHorde
             {
                 SanitizeLivingZombies();
                 HandleSickBloodContact();
+                HandleZombieFeeding();
             }
 
             if (ticksGame % 120 == 0)
@@ -502,6 +503,14 @@ namespace CustomizableZombieHorde
                     ZombieUtility.EnsureZombieAggression(pawn);
                     ZombieSpecialUtility.HandleDrownedBehavior(pawn);
                 }
+            }
+        }
+
+        private void HandleZombieFeeding()
+        {
+            foreach (Map map in Find.Maps)
+            {
+                ZombieSpecialUtility.HandleCorpseFeeding(map);
             }
         }
 

@@ -18,16 +18,16 @@
             <label>bite</label>
             <range>1</range>
             <meleeDamageDef>Bite</meleeDamageDef>
-            <meleeDamageBaseAmount>7</meleeDamageBaseAmount>
-            <defaultCooldownTime>2.1</defaultCooldownTime>
+            <meleeDamageBaseAmount>5</meleeDamageBaseAmount>
+            <defaultCooldownTime>2.3</defaultCooldownTime>
           </li>
           <li>
             <verbClass>Verb_MeleeAttack</verbClass>
             <label>scratch</label>
             <range>1</range>
             <meleeDamageDef>Scratch</meleeDamageDef>
-            <meleeDamageBaseAmount>5</meleeDamageBaseAmount>
-            <defaultCooldownTime>1.6</defaultCooldownTime>
+            <meleeDamageBaseAmount>3</meleeDamageBaseAmount>
+            <defaultCooldownTime>1.9</defaultCooldownTime>
           </li>
         </verbs>
       </li>
@@ -39,15 +39,15 @@
         <capMods>
           <li>
             <capacity>Moving</capacity>
-            <offset>-0.22</offset>
+            <offset>-0.28</offset>
           </li>
           <li>
             <capacity>Manipulation</capacity>
-            <offset>-0.08</offset>
+            <offset>-0.12</offset>
           </li>
         </capMods>
         <statOffsets>
-          <MoveSpeed>-0.40</MoveSpeed>
+          <MoveSpeed>-0.55</MoveSpeed>
         </statOffsets>
       </li>
     </stages>
@@ -107,7 +107,7 @@
           </li>
         </capMods>
         <statOffsets>
-          <MoveSpeed>0.65</MoveSpeed>
+          <MoveSpeed>0.45</MoveSpeed>
         </statOffsets>
       </li>
     </stages>
@@ -145,8 +145,8 @@
       <li>
         <label>hulking</label>
         <statOffsets>
-          <MoveSpeed>-0.18</MoveSpeed>
-          <MeleeDamageFactor>0.50</MeleeDamageFactor>
+          <MoveSpeed>-0.24</MoveSpeed>
+          <MeleeDamageFactor>0.30</MeleeDamageFactor>
         </statOffsets>
       </li>
     </stages>
@@ -219,7 +219,7 @@
           </li>
           <li>
             <capacity>Moving</capacity>
-            <offset>-0.08</offset>
+            <offset>-0.12</offset>
           </li>
         </capMods>
       </li>

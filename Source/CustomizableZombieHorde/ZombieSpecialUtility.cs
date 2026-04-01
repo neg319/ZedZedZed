@@ -8,6 +8,157 @@ namespace CustomizableZombieHorde
 {
     public static class ZombieSpecialUtility
     {
+        public static Pawn FindClosestLivingPrey(Pawn pawn, float radius)
+        {
+            if (pawn?.MapHeld?.mapPawns?.AllPawnsSpawned == null)
+            {
+                return null;
+            }
+
+            float radiusSquared = radius * radius;
+            Pawn best = null;
+            float bestDistance = float.MaxValue;
+            foreach (Pawn other in pawn.MapHeld.mapPawns.AllPawnsSpawned)
+            {
+                if (other == pawn || other.Dead || other.Destroyed || !other.RaceProps.IsFlesh || ZombieUtility.ShouldZombiesIgnore(other))
+                {
+                    continue;
+                }
+
+                float distance = pawn.PositionHeld.DistanceToSquared(other.PositionHeld);
+                if (distance > radiusSquared || distance >= bestDistance)
+                {
+                    continue;
+                }
+
+                best = other;
+                bestDistance = distance;
+            }
+
+            return best;
+        }
+
+        public static Corpse FindNearbyFreshCorpse(Pawn pawn, float radius)
+        {
+            if (pawn?.MapHeld == null)
+            {
+                return null;
+            }
+
+            float radiusSquared = radius * radius;
+            Corpse best = null;
+            float bestDistance = float.MaxValue;
+            foreach (Corpse corpse in pawn.MapHeld.listerThings.ThingsInGroup(ThingRequestGroup.Corpse).OfType<Corpse>())
+            {
+                if (corpse.Destroyed || ZombieUtility.IsZombie(corpse.InnerPawn))
+                {
+                    continue;
+                }
+
+                float distance = pawn.PositionHeld.DistanceToSquared(corpse.PositionHeld);
+                if (distance > radiusSquared || distance >= bestDistance)
+                {
+                    continue;
+                }
+
+                best = corpse;
+                bestDistance = distance;
+            }
+
+            return best;
+        }
+
+        public static IntVec3 FindHordeShambleCell(Pawn pawn)
+        {
+            if (pawn?.MapHeld == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            Map map = pawn.MapHeld;
+            IEnumerable<Pawn> nearbyZombies = map.mapPawns.AllPawnsSpawned.Where(other => other != pawn && ZombieUtility.IsZombie(other) && other.PositionHeld.DistanceToSquared(pawn.PositionHeld) <= 225f);
+            int count = 0;
+            int sumX = 0;
+            int sumZ = 0;
+            foreach (Pawn zombie in nearbyZombies)
+            {
+                count++;
+                sumX += zombie.PositionHeld.x;
+                sumZ += zombie.PositionHeld.z;
+            }
+
+            IntVec3 packCenter = count > 0 ? new IntVec3(sumX / count, 0, sumZ / count) : pawn.PositionHeld;
+            IntVec3 colonyCenter = FindColonyCenter(map);
+            IntVec3 blended = new IntVec3((packCenter.x + colonyCenter.x) / 2, 0, (packCenter.z + colonyCenter.z) / 2);
+
+            for (int i = 0; i < 16; i++)
+            {
+                IntVec3 candidate = CellFinder.RandomClosewalkCellNear(blended, map, 4);
+                if (candidate.IsValid && candidate.Standable(map))
+                {
+                    return candidate;
+                }
+            }
+
+            return colonyCenter.IsValid ? colonyCenter : packCenter;
+        }
+
+        private static IntVec3 FindColonyCenter(Map map)
+        {
+            if (map?.areaManager?.Home?.ActiveCells != null && map.areaManager.Home.ActiveCells.Any())
+            {
+                int count = 0;
+                int sumX = 0;
+                int sumZ = 0;
+                foreach (IntVec3 cell in map.areaManager.Home.ActiveCells)
+                {
+                    count++;
+                    sumX += cell.x;
+                    sumZ += cell.z;
+                }
+
+                if (count > 0)
+                {
+                    return new IntVec3(sumX / count, 0, sumZ / count);
+                }
+            }
+
+            return map?.Center ?? IntVec3.Invalid;
+        }
+
+        public static void HandleCorpseFeeding(Map map)
+        {
+            if (map == null)
+            {
+                return;
+            }
+
+            List<Corpse> corpses = map.listerThings.ThingsInGroup(ThingRequestGroup.Corpse).OfType<Corpse>().ToList();
+            foreach (Corpse corpse in corpses)
+            {
+                if (corpse.Destroyed || ZombieUtility.IsZombie(corpse.InnerPawn))
+                {
+                    continue;
+                }
+
+                int nearbyZombies = map.mapPawns.AllPawnsSpawned.Count(pawn => ZombieUtility.IsZombie(pawn) && !pawn.Dead && !pawn.Destroyed && pawn.PositionHeld.DistanceToSquared(corpse.PositionHeld) <= 2.9f * 2.9f);
+                if (nearbyZombies <= 0)
+                {
+                    continue;
+                }
+
+                for (int i = 0; i < nearbyZombies; i++)
+                {
+                    FilthMaker.TryMakeFilth(corpse.PositionHeld, map, ZombieDefOf.CZH_Filth_ZombieBlood ?? ThingDefOf.Filth_Blood);
+                }
+
+                if (Rand.Chance(0.10f * nearbyZombies))
+                {
+                    corpse.Destroy(DestroyMode.Vanish);
+                }
+            }
+        }
+
         public static bool MapHasWater(Map map)
         {
             if (map == null)
@@ -80,7 +231,7 @@ namespace CustomizableZombieHorde
                 List<Thing> things = cell.GetThingList(map);
                 for (int i = 0; i < things.Count; i++)
                 {
-                    if (things[i] is Pawn target && target != pawn)
+                    if (things[i] is Pawn target && target != pawn && !ZombieUtility.IsZombie(target))
                     {
                         float damage = Rand.Range(7f, 12f);
                         target.TakeDamage(new DamageInfo(ZombieDefOf.CZH_ZombieAcidBurn ?? DamageDefOf.Burn, damage, 0f, -1f, pawn));
@@ -136,7 +287,7 @@ namespace CustomizableZombieHorde
             List<Thing> things = cell.GetThingList(map);
             for (int i = 0; i < things.Count; i++)
             {
-                if (things[i] is Pawn target && target != source && ZombieTraitUtility.CanCatchZombieSickness(target) && Rand.Chance(chance))
+                if (things[i] is Pawn target && target != source && !ZombieUtility.IsZombie(target) && ZombieTraitUtility.CanCatchZombieSickness(target) && Rand.Chance(chance))
                 {
                     target.health.AddHediff(ZombieDefOf.CZH_ZombieSickness);
                 }

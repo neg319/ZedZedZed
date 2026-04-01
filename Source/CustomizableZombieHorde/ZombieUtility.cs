@@ -5,6 +5,7 @@ using HarmonyLib;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 
 namespace CustomizableZombieHorde
 {
@@ -77,7 +78,7 @@ namespace CustomizableZombieHorde
 
         public static bool ShouldZombiesIgnore(Pawn pawn)
         {
-            return pawn != null && ZombieTraitUtility.IsIgnoredByZombies(pawn);
+            return pawn != null && (IsZombie(pawn) || ZombieTraitUtility.IsIgnoredByZombies(pawn));
         }
 
         public static bool HasHeadDamageOrDestruction(Pawn pawn)
@@ -166,6 +167,37 @@ namespace CustomizableZombieHorde
                 {
                     pawn.health.AddHediff(ZombieDefOf.CZH_ZombieOpenWound, part);
                 }
+
+                TryAddStartingDecayDamage(pawn, part);
+            }
+        }
+
+        private static void TryAddStartingDecayDamage(Pawn pawn, BodyPartRecord part)
+        {
+            if (pawn?.health == null || part == null)
+            {
+                return;
+            }
+
+            try
+            {
+                Hediff injury = HediffMaker.MakeHediff(HediffDefOf.Cut, pawn, part);
+                if (injury == null)
+                {
+                    return;
+                }
+
+                float severity = Rand.Range(2.0f, 4.0f);
+                if (IsVariant(pawn, ZombieVariant.Tank))
+                {
+                    severity *= 0.65f;
+                }
+
+                injury.Severity = severity;
+                pawn.health.AddHediff(injury, part);
+            }
+            catch
+            {
             }
         }
 
@@ -354,35 +386,107 @@ namespace CustomizableZombieHorde
 
         public static void EnsureZombieAggression(Pawn pawn)
         {
-            if (!IsZombie(pawn) || pawn.Dead || pawn.Destroyed || !pawn.Spawned)
+            if (!IsZombie(pawn) || pawn.Dead || pawn.Destroyed || !pawn.Spawned || pawn.jobs == null)
             {
                 return;
             }
 
-            // RimWorld 1.6 reference assemblies used by the GitHub build do not expose Pawn.CurLord here.
-            // We skip the lord check and only avoid re-triggering aggression if the pawn is already in a mental state.
-            if (pawn.mindState?.mentalStateHandler == null)
+            TryEndZombieMentalState(pawn);
+
+            Pawn currentTarget = pawn.CurJob?.targetA.Thing as Pawn;
+            if (currentTarget != null && IsZombie(currentTarget))
+            {
+                pawn.jobs.StopAll();
+                currentTarget = null;
+            }
+
+            if (currentTarget != null && !currentTarget.Dead && !currentTarget.Destroyed && !ShouldZombiesIgnore(currentTarget))
             {
                 return;
             }
 
-            if (pawn.InMentalState)
+            if (pawn.CurJob != null && pawn.CurJob.def == JobDefOf.Goto && pawn.pather?.Moving == true)
             {
                 return;
             }
 
-            MentalStateDef berserk = DefDatabase<MentalStateDef>.GetNamedSilentFail("Berserk")
-                ?? DefDatabase<MentalStateDef>.GetNamedSilentFail("BerserkPermanent")
-                ?? DefDatabase<MentalStateDef>.GetNamedSilentFail("ManhunterPermanent");
+            AssignHordeJob(pawn);
+        }
 
-            if (berserk == null)
+        private static void TryEndZombieMentalState(Pawn pawn)
+        {
+            object handler = pawn?.mindState?.mentalStateHandler;
+            if (handler == null)
             {
                 return;
             }
 
             try
             {
-                pawn.mindState.mentalStateHandler.TryStartMentalState(berserk);
+                if ((bool)(AccessTools.Property(handler.GetType(), "InMentalState")?.GetValue(handler, null) ?? false))
+                {
+                    AccessTools.Method(handler.GetType(), "Reset")?.Invoke(handler, null);
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private static void AssignHordeJob(Pawn pawn)
+        {
+            if (pawn?.MapHeld == null || pawn.jobs == null)
+            {
+                return;
+            }
+
+            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(pawn, 28f);
+            if (prey != null)
+            {
+                try
+                {
+                    Job attackJob = JobMaker.MakeJob(JobDefOf.AttackMelee, prey);
+                    attackJob.expiryInterval = 900;
+                    attackJob.checkOverrideOnExpire = true;
+                    attackJob.locomotionUrgency = LocomotionUrgency.Walk;
+                    pawn.jobs.TryTakeOrderedJob(attackJob, JobTag.Misc);
+                    return;
+                }
+                catch
+                {
+                }
+            }
+
+            Corpse corpse = ZombieSpecialUtility.FindNearbyFreshCorpse(pawn, 7f);
+            if (corpse != null)
+            {
+                try
+                {
+                    Job feedJob = JobMaker.MakeJob(JobDefOf.Goto, corpse.Position);
+                    feedJob.expiryInterval = 500;
+                    feedJob.checkOverrideOnExpire = true;
+                    feedJob.locomotionUrgency = LocomotionUrgency.Walk;
+                    pawn.jobs.TryTakeOrderedJob(feedJob, JobTag.Misc);
+                    return;
+                }
+                catch
+                {
+                }
+            }
+
+            IntVec3 shambleCell = ZombieSpecialUtility.FindHordeShambleCell(pawn);
+            if (!shambleCell.IsValid || shambleCell == pawn.PositionHeld)
+            {
+                return;
+            }
+
+            try
+            {
+                Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, shambleCell);
+                moveJob.expiryInterval = 700;
+                moveJob.checkOverrideOnExpire = true;
+                moveJob.locomotionUrgency = LocomotionUrgency.Walk;
+                pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);
             }
             catch
             {

@@ -251,9 +251,19 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private static bool ShouldSuppressZombieHostility(Pawn possibleZombie, Pawn possibleIgnoredPawn)
+        private static bool ShouldSuppressZombieHostility(Pawn possibleZombie, Pawn otherPawn)
         {
-            return ZombieUtility.IsZombie(possibleZombie) && ZombieUtility.ShouldZombiesIgnore(possibleIgnoredPawn);
+            if (!ZombieUtility.IsZombie(possibleZombie))
+            {
+                return false;
+            }
+
+            if (ZombieUtility.IsZombie(otherPawn))
+            {
+                return true;
+            }
+
+            return ZombieUtility.ShouldZombiesIgnore(otherPawn);
         }
     }
 
