@@ -19,7 +19,7 @@ namespace CustomizableZombieHorde
                 case ZombieVariant.Drowned:
                     return GetNamedIfAllowed("CZH_Zombie_Drowned", CustomizableZombieHordeMod.Settings.allowDrowned);
                 case ZombieVariant.Tank:
-                    return GetNamedIfAllowed("CZH_Zombie_Tank", CustomizableZombieHordeMod.Settings.allowTanks);
+                    return GetNamedIfAllowed("CZH_Zombie_Tank", CustomizableZombieHordeMod.Settings.allowHeavies);
                 case ZombieVariant.Grabber:
                     return GetNamedIfAllowed("CZH_Zombie_Grabber", CustomizableZombieHordeMod.Settings.allowGrabbers);
                 default:
@@ -43,7 +43,7 @@ namespace CustomizableZombieHorde
             AddIfAllowed(kinds, weights, "CZH_Zombie_Boomer", CustomizableZombieHordeMod.Settings.allowBoomers, 6f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Sick", CustomizableZombieHordeMod.Settings.allowSick, 5f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Drowned", CustomizableZombieHordeMod.Settings.allowDrowned && ZombieSpecialUtility.MapHasWater(map), 4f);
-            AddIfAllowed(kinds, weights, "CZH_Zombie_Tank", CustomizableZombieHordeMod.Settings.allowTanks, 2f);
+            AddIfAllowed(kinds, weights, "CZH_Zombie_Tank", CustomizableZombieHordeMod.Settings.allowHeavies, 2f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Grabber", CustomizableZombieHordeMod.Settings.allowGrabbers, 3f);
 
             if (kinds.Count == 0)
