@@ -13,7 +13,7 @@ namespace CustomizableZombieHorde
             { "CZH_Zombie_Boomer", "Boomer" },
             { "CZH_Zombie_Sick", "Sick" },
             { "CZH_Zombie_Drowned", "Drowned" },
-            { "CZH_Zombie_Tank", "Tank" },
+            { "CZH_Zombie_Tank", "Heavy" },
             { "CZH_Zombie_Grabber", "Grabber" }
         };
 
@@ -67,7 +67,7 @@ namespace CustomizableZombieHorde
                 case ZombieVariant.Drowned:
                     return "Drowned";
                 case ZombieVariant.Tank:
-                    return "Tank";
+                    return "Heavy";
                 case ZombieVariant.Grabber:
                     return "Grabber";
                 default:
@@ -89,7 +89,7 @@ namespace CustomizableZombieHorde
         public static string ExampleNames(string prefix)
         {
             string clean = CleanPrefix(prefix);
-            return $"{clean} Biter, {clean} Crawler, {clean} Boomer, {clean} Sick, {clean} Drowned, {clean} Tank";
+            return $"{clean} Biter, {clean} Crawler, {clean} Boomer, {clean} Sick, {clean} Drowned, {clean} Heavy";
         }
 
         public static string CleanPrefix(string prefix)

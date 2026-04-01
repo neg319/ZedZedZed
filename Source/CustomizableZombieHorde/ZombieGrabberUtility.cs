@@ -200,7 +200,20 @@ namespace CustomizableZombieHorde
             Map map = prey.MapHeld;
             IntVec3 best = prey.PositionHeld;
             float bestDistance = prey.PositionHeld.DistanceToSquared(grabber.PositionHeld);
-            foreach (IntVec3 cell in GenAdj.CellsAdjacent8WayAndInside)
+            IntVec3[] offsets =
+            {
+                IntVec3.Zero,
+                new IntVec3(1, 0, 0),
+                new IntVec3(-1, 0, 0),
+                new IntVec3(0, 0, 1),
+                new IntVec3(0, 0, -1),
+                new IntVec3(1, 0, 1),
+                new IntVec3(1, 0, -1),
+                new IntVec3(-1, 0, 1),
+                new IntVec3(-1, 0, -1)
+            };
+
+            foreach (IntVec3 cell in offsets)
             {
                 IntVec3 candidate = prey.PositionHeld + cell;
                 if (!candidate.InBounds(map) || !candidate.Standable(map) || candidate.GetEdifice(map) != null)

@@ -714,7 +714,6 @@ namespace CustomizableZombieHorde
                         continue;
                     }
 
-                    liveZombieIds.Add(pawn.thingIDNumber);
 
                     if (pawn.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_ZombieRot) != true)
                     {
@@ -771,8 +770,6 @@ namespace CustomizableZombieHorde
                     {
                         continue;
                     }
-
-                    liveZombieIds.Add(pawn.thingIDNumber);
 
                     int corpseId = corpse.thingIDNumber;
                     seenCorpseIds.Add(corpseId);

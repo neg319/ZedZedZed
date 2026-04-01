@@ -36,6 +36,27 @@ namespace CustomizableZombieHorde
                 && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieSickness);
         }
 
+
+
+        public static bool TryApplyZombieSickness(Pawn pawn, float chance)
+        {
+            if (!CanCatchZombieSickness(pawn) || Rand.Value > chance)
+            {
+                return false;
+            }
+
+            try
+            {
+                Hediff hediff = HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieSickness, pawn);
+                pawn.health.AddHediff(hediff);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public static Pawn ResolveDamageInstigatorPawn(Thing instigator)
         {
             if (instigator is Pawn pawn)

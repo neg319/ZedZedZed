@@ -136,7 +136,7 @@
   <HediffDef>
     <defName>CZH_ZombieTank</defName>
     <hediffClass>HediffWithComps</hediffClass>
-    <label>tank strain</label>
+    <label>heavy strain</label>
     <description>This massive zombie strain is much stronger and larger than normal undead.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>

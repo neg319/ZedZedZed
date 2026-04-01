@@ -12,7 +12,7 @@ namespace CustomizableZombieHorde
     public static class Patch_PawnRenderer_RenderPawnAt
     {
         private static readonly Material DirtMat = MaterialPool.MatFrom("PawnOverlays/ZombieDirtBody", ShaderDatabase.CutoutSkin, Color.white);
-        private static readonly Material GrabberTongueMat = MaterialPool.MatFrom("Things/Effect/GrabberTongue", ShaderDatabase.Transparent, Color.white);
+        private static readonly Material GrabberTongueMat = MaterialPool.MatFrom("Things/Effect/GrabberTongue", ShaderDatabase.Transparent, new Color(0.58f, 0.78f, 0.38f, 0.95f));
         private static readonly PropertyInfo HumanlikeBodySetProperty = AccessTools.Property(typeof(MeshPool), "humanlikeBodySet") ?? AccessTools.Property(typeof(MeshPool), "humanlikeSet");
 
         private static Mesh GetHumanlikeBodyMesh(Rot4 rot)

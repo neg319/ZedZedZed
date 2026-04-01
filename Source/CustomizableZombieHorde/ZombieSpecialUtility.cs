@@ -8,6 +8,35 @@ namespace CustomizableZombieHorde
 {
     public static class ZombieSpecialUtility
     {
+
+        public static IEnumerable<Thing> BuildZombieButcherProducts(Pawn pawn)
+        {
+            List<Thing> result = new List<Thing>();
+            if (pawn == null)
+            {
+                return result;
+            }
+
+            int fleshCount = ZombieUtility.IsVariant(pawn, ZombieVariant.Tank) ? 18 : ZombieUtility.IsVariant(pawn, ZombieVariant.Crawler) ? 5 : 9;
+            int leatherCount = ZombieUtility.IsVariant(pawn, ZombieVariant.Tank) ? 14 : ZombieUtility.IsVariant(pawn, ZombieVariant.Crawler) ? 4 : 7;
+
+            if (ZombieDefOf.CZH_RottenFlesh != null && fleshCount > 0)
+            {
+                Thing flesh = ThingMaker.MakeThing(ZombieDefOf.CZH_RottenFlesh);
+                flesh.stackCount = fleshCount;
+                result.Add(flesh);
+            }
+
+            if (ZombieDefOf.CZH_RottenLeather != null && leatherCount > 0)
+            {
+                Thing leather = ThingMaker.MakeThing(ZombieDefOf.CZH_RottenLeather);
+                leather.stackCount = leatherCount;
+                result.Add(leather);
+            }
+
+            return result;
+        }
+
         public static Pawn FindClosestLivingPrey(Pawn pawn, float radius)
         {
             if (pawn?.MapHeld?.mapPawns?.AllPawnsSpawned == null)

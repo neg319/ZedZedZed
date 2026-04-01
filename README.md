@@ -50,6 +50,6 @@ Spawn events now rotate between edge wanderers, huddled packs, colony pushes, an
 
 ## New in this build
 - rare zombie grave events
-- type specific biter, crawler, boomer, sick, drowned, and tank graves
+- type specific biter, crawler, boomer, sick, drowned, and heavy graves
 - destroy the grave to stop that event from spawning more zombies
 - debug buttons to force random or specific grave events

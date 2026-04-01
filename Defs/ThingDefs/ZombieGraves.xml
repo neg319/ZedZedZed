@@ -112,8 +112,8 @@
 
   <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Tank</defName>
-    <label>tank grave</label>
-    <description>A heaving grave that keeps forcing tank zombies up from the dirt.</description>
+    <label>heavy grave</label>
+    <description>A heaving grave that keeps forcing heavy zombies up from the dirt.</description>
     <statBases>
       <MaxHitPoints>210</MaxHitPoints>
       <Flammability>0.10</Flammability>

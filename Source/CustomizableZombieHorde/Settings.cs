@@ -45,7 +45,7 @@ namespace CustomizableZombieHorde
         public bool allowBoomers = true;
         public bool allowSick = true;
         public bool allowDrowned = true;
-        public bool allowTanks = true;
+        public bool allowHeavies = true;
         public bool allowGrabbers = true;
 
         public override void ExposeData()
@@ -86,7 +86,7 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref allowBoomers, "allowBoomers", true);
             Scribe_Values.Look(ref allowSick, "allowSick", true);
             Scribe_Values.Look(ref allowDrowned, "allowDrowned", true);
-            Scribe_Values.Look(ref allowTanks, "allowTanks", true);
+            Scribe_Values.Look(ref allowHeavies, "allowHeavies", true);
             Scribe_Values.Look(ref allowGrabbers, "allowGrabbers", true);
             base.ExposeData();
         }
@@ -169,7 +169,7 @@ namespace CustomizableZombieHorde
             listing.CheckboxLabeled("Boomers", ref allowBoomers);
             listing.CheckboxLabeled("Sick", ref allowSick);
             listing.CheckboxLabeled("Drowned", ref allowDrowned);
-            listing.CheckboxLabeled("Tanks", ref allowTanks);
+            listing.CheckboxLabeled("Heavies", ref allowHeavies);
             listing.CheckboxLabeled("Grabbers", ref allowGrabbers);
             listing.GapLine();
 
@@ -188,7 +188,7 @@ namespace CustomizableZombieHorde
                 maxGroupSize = minGroupSize;
             }
 
-            if (!allowBiters && !allowCrawlers && !allowBoomers && !allowSick && !allowDrowned && !allowTanks && !allowGrabbers)
+            if (!allowBiters && !allowCrawlers && !allowBoomers && !allowSick && !allowDrowned && !allowHeavies && !allowGrabbers)
             {
                 listing.GapLine();
                 listing.Label("Warning: no variants are enabled. Standard Biters will be used as a safe fallback.");
@@ -289,9 +289,9 @@ namespace CustomizableZombieHorde
                 ShowDebugResult(component.DebugForceVariantGraveEvent(ZombieVariant.Drowned), "Forced a drowned grave.", "Could not force a drowned grave.");
             }
 
-            if (listing.ButtonText("Force tank grave now"))
+            if (listing.ButtonText("Force heavy grave now"))
             {
-                ShowDebugResult(component.DebugForceVariantGraveEvent(ZombieVariant.Tank), "Forced a tank grave.", "Could not force a tank grave.");
+                ShowDebugResult(component.DebugForceVariantGraveEvent(ZombieVariant.Tank), "Forced a heavy grave.", "Could not force a heavy grave.");
             }
 
             if (listing.ButtonText("Force grabber grave now"))
@@ -349,7 +349,7 @@ namespace CustomizableZombieHorde
             allowBoomers = true;
             allowSick = true;
             allowDrowned = true;
-            allowTanks = true;
+            allowHeavies = true;
             allowGrabbers = true;
         }
 

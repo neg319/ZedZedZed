@@ -93,7 +93,7 @@
 
   <PawnKindDef>
     <defName>CZH_Zombie_Tank</defName>
-    <label>zombie tank</label>
+    <label>zombie heavy</label>
     <race>Human</race>
     <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
     <combatPower>120</combatPower>
