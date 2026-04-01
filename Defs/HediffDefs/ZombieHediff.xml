@@ -18,16 +18,16 @@
             <label>bite</label>
             <range>1</range>
             <meleeDamageDef>Bite</meleeDamageDef>
-            <meleeDamageBaseAmount>5</meleeDamageBaseAmount>
-            <defaultCooldownTime>2.3</defaultCooldownTime>
+            <meleeDamageBaseAmount>3</meleeDamageBaseAmount>
+            <defaultCooldownTime>3.4</defaultCooldownTime>
           </li>
           <li>
             <verbClass>Verb_MeleeAttack</verbClass>
             <label>scratch</label>
             <range>1</range>
             <meleeDamageDef>Scratch</meleeDamageDef>
-            <meleeDamageBaseAmount>3</meleeDamageBaseAmount>
-            <defaultCooldownTime>1.9</defaultCooldownTime>
+            <meleeDamageBaseAmount>1</meleeDamageBaseAmount>
+            <defaultCooldownTime>2.7</defaultCooldownTime>
           </li>
         </verbs>
       </li>
@@ -39,15 +39,16 @@
         <capMods>
           <li>
             <capacity>Moving</capacity>
-            <offset>-0.28</offset>
+            <offset>-0.45</offset>
           </li>
           <li>
             <capacity>Manipulation</capacity>
-            <offset>-0.12</offset>
+            <offset>-0.25</offset>
           </li>
         </capMods>
         <statOffsets>
-          <MoveSpeed>-0.55</MoveSpeed>
+          <MoveSpeed>-1.35</MoveSpeed>
+          <MeleeDamageFactor>-0.35</MeleeDamageFactor>
         </statOffsets>
       </li>
     </stages>
@@ -103,11 +104,11 @@
         <capMods>
           <li>
             <capacity>Moving</capacity>
-            <offset>0.10</offset>
+            <offset>0.18</offset>
           </li>
         </capMods>
         <statOffsets>
-          <MoveSpeed>0.45</MoveSpeed>
+          <MoveSpeed>0.75</MoveSpeed>
         </statOffsets>
       </li>
     </stages>
@@ -126,7 +127,7 @@
       <li>
         <label>crawling</label>
         <statOffsets>
-          <MoveSpeed>-0.55</MoveSpeed>
+          <MoveSpeed>-1.15</MoveSpeed>
         </statOffsets>
       </li>
     </stages>
@@ -145,8 +146,8 @@
       <li>
         <label>hulking</label>
         <statOffsets>
-          <MoveSpeed>-0.24</MoveSpeed>
-          <MeleeDamageFactor>0.30</MeleeDamageFactor>
+          <MoveSpeed>-0.50</MoveSpeed>
+          <MeleeDamageFactor>0.10</MeleeDamageFactor>
         </statOffsets>
       </li>
     </stages>
@@ -167,12 +168,12 @@
         <capMods>
           <li>
             <capacity>Moving</capacity>
-            <offset>-0.15</offset>
+            <offset>-0.22</offset>
           </li>
         </capMods>
         <statOffsets>
-          <MoveSpeed>-0.55</MoveSpeed>
-          <MeleeDamageFactor>-0.20</MeleeDamageFactor>
+          <MoveSpeed>-0.95</MoveSpeed>
+          <MeleeDamageFactor>-0.35</MeleeDamageFactor>
         </statOffsets>
       </li>
     </stages>
@@ -191,8 +192,8 @@
       <li>
         <label>water-fed</label>
         <statOffsets>
-          <MoveSpeed>0.55</MoveSpeed>
-          <MeleeDamageFactor>0.35</MeleeDamageFactor>
+          <MoveSpeed>0.35</MoveSpeed>
+          <MeleeDamageFactor>0.15</MeleeDamageFactor>
         </statOffsets>
       </li>
     </stages>

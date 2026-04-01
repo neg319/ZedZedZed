@@ -251,13 +251,16 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                int guaranteedCount = Mathf.Max(1, CustomizableZombieHordeMod.Settings?.trickleMinGroupSize ?? 1);
-                if (!ZombieSpawnHelper.SpawnWave(map, forcedCount: guaranteedCount, sendLetter: false))
+                int guaranteedCount = map.skyManager != null && map.skyManager.CurSkyGlow <= 0.25f ? Mathf.Max(1, CustomizableZombieHordeMod.Settings?.trickleMinGroupSize ?? 1) : 0;
+                if (guaranteedCount > 0)
                 {
-                    ZombieSpawnHelper.SpawnEmergencyPack(map, guaranteedCount, sendLetter: false);
-                }
+                    if (!ZombieSpawnHelper.SpawnWave(map, forcedCount: guaranteedCount, sendLetter: false))
+                    {
+                        ZombieSpawnHelper.SpawnEmergencyPack(map, guaranteedCount, sendLetter: false);
+                    }
 
-                nextTrickleTick = ticksGame + HoursToTicks(0.50f);
+                    nextTrickleTick = ticksGame + HoursToTicks(1.50f);
+                }
             }
         }
 
@@ -284,7 +287,7 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                int guaranteedCount = Mathf.Max(2, CustomizableZombieHordeMod.Settings?.trickleMinGroupSize ?? 2);
+                int guaranteedCount = 1;
                 bool spawned = ZombieSpawnHelper.SpawnWave(map, forcedCount: guaranteedCount, sendLetter: false);
                 if (!spawned)
                 {
@@ -314,15 +317,15 @@ namespace CustomizableZombieHorde
             }
 
             bool anyHomeMapHasZombies = Find.Maps.Any(map => map.IsPlayerHome && map.mapPawns?.AllPawnsSpawned?.Any(ZombieUtility.IsZombie) == true);
-            int emergencyLeadTime = HoursToTicks(0.75f);
+            int emergencyLeadTime = HoursToTicks(2.50f);
             if (!anyHomeMapHasZombies && (nextTrickleTick < 0 || nextTrickleTick - ticksGame > emergencyLeadTime))
             {
-                nextTrickleTick = ticksGame + HoursToTicks(0.10f);
+                nextTrickleTick = ticksGame + HoursToTicks(0.50f);
             }
 
             if (nextTrickleTick < 0)
             {
-                nextTrickleTick = ticksGame + HoursToTicks(0.10f);
+                nextTrickleTick = ticksGame + HoursToTicks(0.50f);
                 return;
             }
 
@@ -497,7 +500,8 @@ namespace CustomizableZombieHorde
                         ZombiePawnFactory.FinalizeZombie(pawn, initialSpawn: false);
                     }
 
-                    ZombieUtility.StripWeaponsAndWeaponInventory(pawn);
+                    ZombieUtility.SetZombieDisplayName(pawn);
+                    ZombieUtility.StripAllUsableItems(pawn);
                     ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: false);
                     ZombieUtility.RefreshDrownedState(pawn);
                     ZombieUtility.EnsureZombieAggression(pawn);
@@ -566,21 +570,7 @@ namespace CustomizableZombieHorde
 
                     ZombieUtility.PrepareZombieForReanimation(pawn);
                     ZombiePawnFactory.FinalizeZombie(pawn, initialSpawn: false);
-                    if (pawn.MapHeld != null && pawn.Faction != null)
-                    {
-                        try
-                        {
-                            LordMaker.MakeNewLord(pawn.Faction, new LordJob_AssaultColony(pawn.Faction, false, false, false, false, false), pawn.MapHeld, new List<Pawn> { pawn });
-                        }
-                        catch
-                        {
-                            ZombieUtility.EnsureZombieAggression(pawn);
-                        }
-                    }
-                    else
-                    {
-                        ZombieUtility.EnsureZombieAggression(pawn);
-                    }
+                    ZombieUtility.EnsureZombieAggression(pawn);
                 }
             }
 

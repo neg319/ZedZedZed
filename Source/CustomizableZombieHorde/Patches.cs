@@ -214,23 +214,28 @@ namespace CustomizableZombieHorde
             }
 
             Pawn attacker = ZombieTraitUtility.ResolveDamageInstigatorPawn(dinfo.Instigator);
-            if (!ZombieTraitUtility.HasHeadHunter(attacker))
+            if (ZombieTraitUtility.HasHeadHunter(attacker))
             {
-                return;
+                BodyPartRecord head = ZombieUtility.GetHeadPart(victim);
+                if (head != null)
+                {
+                    try
+                    {
+                        dinfo.SetHitPart(head);
+                    }
+                    catch
+                    {
+                    }
+                }
             }
 
-            BodyPartRecord head = ZombieUtility.GetHeadPart(victim);
-            if (head == null)
+            if (ZombieUtility.IsZombie(victim) && !ZombieUtility.IsZombie(attacker))
             {
-                return;
+                dinfo.SetAmount(dinfo.Amount * 1.60f);
             }
-
-            try
+            else if (!ZombieUtility.IsZombie(victim) && ZombieUtility.IsZombie(attacker))
             {
-                dinfo.SetHitPart(head);
-            }
-            catch
-            {
+                dinfo.SetAmount(dinfo.Amount * 0.55f);
             }
         }
     }

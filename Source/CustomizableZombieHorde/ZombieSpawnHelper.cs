@@ -24,20 +24,70 @@ namespace CustomizableZombieHorde
             float skyGlow = map.skyManager.CurSkyGlow;
             if (skyGlow >= 0.60f)
             {
-                return GenMath.RoundRandom(baseCount * 0.50f);
+                return GenMath.RoundRandom(baseCount * 0.45f);
             }
 
             if (skyGlow <= 0.25f)
             {
-                return GenMath.RoundRandom(baseCount * 1.50f);
+                return GenMath.RoundRandom(baseCount * 1.20f);
             }
 
             if (skyGlow <= 0.40f)
             {
-                return GenMath.RoundRandom(baseCount * 1.15f);
+                return GenMath.RoundRandom(baseCount * 0.85f);
             }
 
             return baseCount;
+        }
+
+        public static int GetDynamicZombieCap(Map map)
+        {
+            if (map == null)
+            {
+                return 0;
+            }
+
+            int colonists = map.mapPawns?.FreeColonistsSpawnedCount ?? 0;
+            colonists = colonists < 1 ? 1 : colonists;
+            int currentDay = (Find.TickManager?.TicksGame ?? 0) / GenDate.TicksPerDay;
+            int seed = (map.uniqueID * 397) ^ currentDay;
+            System.Random random = new System.Random(seed);
+            int multiplier;
+
+            float skyGlow = map.skyManager?.CurSkyGlow ?? 0.5f;
+            if (skyGlow >= 0.60f)
+            {
+                multiplier = random.Next(1, 4);
+            }
+            else if (skyGlow <= 0.25f)
+            {
+                multiplier = random.Next(3, 7);
+            }
+            else
+            {
+                multiplier = random.Next(2, 5);
+            }
+
+            int maxAllowed = colonists * multiplier;
+            int hardCap = colonists * 10;
+            return maxAllowed > hardCap ? hardCap : maxAllowed;
+        }
+
+        private static int ClampSpawnCountToMapCap(Map map, int desiredCount)
+        {
+            if (map == null)
+            {
+                return 0;
+            }
+
+            int currentZombies = map.mapPawns?.AllPawnsSpawned?.Count(ZombieUtility.IsZombie) ?? 0;
+            int remaining = GetDynamicZombieCap(map) - currentZombies;
+            if (remaining <= 0)
+            {
+                return 0;
+            }
+
+            return desiredCount > remaining ? remaining : desiredCount;
         }
 
         public static bool SpawnWave(Map map, Faction faction = null, int? forcedCount = null, bool sendLetter = true, string customLetterLabel = null, string customLetterText = null, bool applyDifficulty = true)
@@ -65,9 +115,10 @@ namespace CustomizableZombieHorde
                 count = ApplyDifficultyMultiplier(count);
             }
             count = ApplyTimeOfDayMultiplier(map, count);
+            count = ClampSpawnCountToMapCap(map, count);
             if (count < 1)
             {
-                count = 1;
+                return false;
             }
 
             List<Pawn> pawns = new List<Pawn>();
@@ -181,9 +232,10 @@ namespace CustomizableZombieHorde
             int count = forcedCount ?? Rand.RangeInclusive(CustomizableZombieHordeMod.Settings.groundBurstMinGroupSize, CustomizableZombieHordeMod.Settings.groundBurstMaxGroupSize);
             count = ApplyDifficultyMultiplier(count);
             count = ApplyTimeOfDayMultiplier(map, count);
+            count = ClampSpawnCountToMapCap(map, count);
             if (count < 1)
             {
-                count = 1;
+                return false;
             }
 
             List<Pawn> pawns = new List<Pawn>();
@@ -257,6 +309,12 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
+            forcedCount = ClampSpawnCountToMapCap(map, forcedCount);
+            if (forcedCount < 1)
+            {
+                return false;
+            }
+
             Faction faction = ZombieFactionUtility.GetOrCreateZombieFaction();
             List<Pawn> pawns = new List<Pawn>();
             IntVec3 anchor = FindAnyStandableCellNearEdge(map, insideOnly: true);
@@ -326,26 +384,9 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            bool assignedLord = false;
-            if (faction != null)
+            foreach (Pawn pawn in pawns)
             {
-                try
-                {
-                    LordJob lordJob = new LordJob_AssaultColony(faction, false, false, false, false, false);
-                    LordMaker.MakeNewLord(faction, lordJob, map, pawns);
-                    assignedLord = true;
-                }
-                catch
-                {
-                }
-            }
-
-            if (!assignedLord)
-            {
-                foreach (Pawn pawn in pawns)
-                {
-                    ZombieUtility.EnsureZombieAggression(pawn);
-                }
+                ZombieUtility.EnsureZombieAggression(pawn);
             }
         }
 

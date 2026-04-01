@@ -37,6 +37,22 @@ namespace CustomizableZombieHorde
             }
         }
 
+        public static string GetDisplayLabelForKind(PawnKindDef kindDef)
+        {
+            if (kindDef == null)
+            {
+                return "Zombie";
+            }
+
+            string prefix = CleanPrefix(CustomizableZombieHordeMod.Settings?.zombiePrefix ?? "Zombie");
+            if (Suffixes.TryGetValue(kindDef.defName ?? string.Empty, out string suffix))
+            {
+                return (prefix + " " + suffix).Trim();
+            }
+
+            return kindDef.label.NullOrEmpty() ? prefix : kindDef.label.CapitalizeFirst();
+        }
+
         public static string ExampleNames(string prefix)
         {
             string clean = CleanPrefix(prefix);

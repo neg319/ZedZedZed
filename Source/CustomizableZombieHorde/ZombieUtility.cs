@@ -159,7 +159,7 @@ namespace CustomizableZombieHorde
                 .InRandomOrder()
                 .ToList();
 
-            int woundCount = Math.Min(parts.Count, Rand.RangeInclusive(1, 4));
+            int woundCount = Math.Min(parts.Count, Rand.RangeInclusive(2, 5));
             for (int i = 0; i < woundCount; i++)
             {
                 BodyPartRecord part = parts[i];
@@ -168,11 +168,17 @@ namespace CustomizableZombieHorde
                     pawn.health.AddHediff(ZombieDefOf.CZH_ZombieOpenWound, part);
                 }
 
-                TryAddStartingDecayDamage(pawn, part);
+                TryAddStartingDecayDamage(pawn, part, torsoSeverity: false);
+            }
+
+            BodyPartRecord torso = pawn.RaceProps?.body?.corePart;
+            if (torso != null && !pawn.health.hediffSet.PartIsMissing(torso))
+            {
+                TryAddStartingDecayDamage(pawn, torso, torsoSeverity: true);
             }
         }
 
-        private static void TryAddStartingDecayDamage(Pawn pawn, BodyPartRecord part)
+        private static void TryAddStartingDecayDamage(Pawn pawn, BodyPartRecord part, bool torsoSeverity)
         {
             if (pawn?.health == null || part == null)
             {
@@ -187,10 +193,14 @@ namespace CustomizableZombieHorde
                     return;
                 }
 
-                float severity = Rand.Range(2.0f, 4.0f);
+                float severity = torsoSeverity ? Rand.Range(4.5f, 7.5f) : Rand.Range(3.5f, 6.5f);
                 if (IsVariant(pawn, ZombieVariant.Tank))
                 {
-                    severity *= 0.65f;
+                    severity *= 0.60f;
+                }
+                else if (IsVariant(pawn, ZombieVariant.Crawler))
+                {
+                    severity *= 1.15f;
                 }
 
                 injury.Severity = severity;
@@ -219,24 +229,77 @@ namespace CustomizableZombieHorde
             }
         }
 
-        public static void StripWeaponsAndWeaponInventory(Pawn pawn)
+        public static void SetZombieDisplayName(Pawn pawn)
         {
-            if (pawn?.equipment != null && pawn.equipment.Primary != null)
-            {
-                pawn.equipment.DestroyAllEquipment();
-            }
-
-            if (pawn?.inventory?.innerContainer == null)
+            if (pawn == null)
             {
                 return;
             }
 
-            for (int i = pawn.inventory.innerContainer.Count - 1; i >= 0; i--)
+            NameSingle name = new NameSingle(ZombieDefUtility.GetDisplayLabelForKind(pawn.kindDef));
+            try
             {
-                Thing thing = pawn.inventory.innerContainer[i];
-                if (thing?.def?.IsWeapon == true)
+                Traverse.Create(pawn).Property("Name").SetValue(name);
+                return;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                Traverse.Create(pawn).Field("nameInt").SetValue(name);
+            }
+            catch
+            {
+            }
+        }
+
+        public static void StripAllUsableItems(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            if (pawn.equipment != null)
+            {
+                try
                 {
-                    thing.Destroy(DestroyMode.Vanish);
+                    pawn.equipment.DestroyAllEquipment();
+                }
+                catch
+                {
+                }
+            }
+
+            if (pawn.inventory?.innerContainer != null)
+            {
+                for (int i = pawn.inventory.innerContainer.Count - 1; i >= 0; i--)
+                {
+                    Thing thing = pawn.inventory.innerContainer[i];
+                    try
+                    {
+                        thing?.Destroy(DestroyMode.Vanish);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            if (pawn.carryTracker?.innerContainer != null)
+            {
+                for (int i = pawn.carryTracker.innerContainer.Count - 1; i >= 0; i--)
+                {
+                    Thing thing = pawn.carryTracker.innerContainer[i];
+                    try
+                    {
+                        thing?.Destroy(DestroyMode.Vanish);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
         }
@@ -315,7 +378,7 @@ namespace CustomizableZombieHorde
                 pawn.SetFactionDirect(ZombieFactionUtility.GetOrCreateZombieFaction());
             }
 
-            StripWeaponsAndWeaponInventory(pawn);
+            StripAllUsableItems(pawn);
             MarkZombieApparelTainted(pawn, degradeApparel: false);
             if (!pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieRot))
             {
@@ -392,6 +455,8 @@ namespace CustomizableZombieHorde
             }
 
             TryEndZombieMentalState(pawn);
+            StripAllUsableItems(pawn);
+            SetZombieDisplayName(pawn);
 
             Pawn currentTarget = pawn.CurJob?.targetA.Thing as Pawn;
             if (currentTarget != null && IsZombie(currentTarget))
@@ -440,13 +505,13 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(pawn, 28f);
+            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(pawn, 10f);
             if (prey != null)
             {
                 try
                 {
                     Job attackJob = JobMaker.MakeJob(JobDefOf.AttackMelee, prey);
-                    attackJob.expiryInterval = 900;
+                    attackJob.expiryInterval = 700;
                     attackJob.checkOverrideOnExpire = true;
                     attackJob.locomotionUrgency = LocomotionUrgency.Walk;
                     pawn.jobs.TryTakeOrderedJob(attackJob, JobTag.Misc);
@@ -457,13 +522,13 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            Corpse corpse = ZombieSpecialUtility.FindNearbyFreshCorpse(pawn, 7f);
+            Corpse corpse = ZombieSpecialUtility.FindNearbyFreshCorpse(pawn, 5f);
             if (corpse != null)
             {
                 try
                 {
                     Job feedJob = JobMaker.MakeJob(JobDefOf.Goto, corpse.Position);
-                    feedJob.expiryInterval = 500;
+                    feedJob.expiryInterval = 450;
                     feedJob.checkOverrideOnExpire = true;
                     feedJob.locomotionUrgency = LocomotionUrgency.Walk;
                     pawn.jobs.TryTakeOrderedJob(feedJob, JobTag.Misc);
@@ -483,7 +548,7 @@ namespace CustomizableZombieHorde
             try
             {
                 Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, shambleCell);
-                moveJob.expiryInterval = 700;
+                moveJob.expiryInterval = 900;
                 moveJob.checkOverrideOnExpire = true;
                 moveJob.locomotionUrgency = LocomotionUrgency.Walk;
                 pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);

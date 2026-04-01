@@ -31,6 +31,11 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
+                if (!GenSight.LineOfSight(pawn.PositionHeld, other.PositionHeld, pawn.MapHeld))
+                {
+                    continue;
+                }
+
                 best = other;
                 bestDistance = distance;
             }
@@ -76,54 +81,72 @@ namespace CustomizableZombieHorde
             }
 
             Map map = pawn.MapHeld;
-            IEnumerable<Pawn> nearbyZombies = map.mapPawns.AllPawnsSpawned.Where(other => other != pawn && ZombieUtility.IsZombie(other) && other.PositionHeld.DistanceToSquared(pawn.PositionHeld) <= 225f);
-            int count = 0;
-            int sumX = 0;
-            int sumZ = 0;
-            foreach (Pawn zombie in nearbyZombies)
+            List<Pawn> nearbyZombies = map.mapPawns.AllPawnsSpawned
+                .Where(other => other != pawn && ZombieUtility.IsZombie(other) && !other.Dead && !other.Destroyed && other.PositionHeld.DistanceToSquared(pawn.PositionHeld) <= 225f)
+                .ToList();
+
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            bool huddle = ((pawn.thingIDNumber / 7) + (ticksGame / 1800)) % 2 == 0;
+            if (nearbyZombies.Count >= 2 && huddle)
             {
-                count++;
-                sumX += zombie.PositionHeld.x;
-                sumZ += zombie.PositionHeld.z;
-            }
-
-            IntVec3 packCenter = count > 0 ? new IntVec3(sumX / count, 0, sumZ / count) : pawn.PositionHeld;
-            IntVec3 colonyCenter = FindColonyCenter(map);
-            IntVec3 blended = new IntVec3((packCenter.x + colonyCenter.x) / 2, 0, (packCenter.z + colonyCenter.z) / 2);
-
-            for (int i = 0; i < 16; i++)
-            {
-                IntVec3 candidate = CellFinder.RandomClosewalkCellNear(blended, map, 4);
-                if (candidate.IsValid && candidate.Standable(map))
-                {
-                    return candidate;
-                }
-            }
-
-            return colonyCenter.IsValid ? colonyCenter : packCenter;
-        }
-
-        private static IntVec3 FindColonyCenter(Map map)
-        {
-            if (map?.areaManager?.Home?.ActiveCells != null && map.areaManager.Home.ActiveCells.Any())
-            {
-                int count = 0;
-                int sumX = 0;
-                int sumZ = 0;
-                foreach (IntVec3 cell in map.areaManager.Home.ActiveCells)
+                int sumX = pawn.PositionHeld.x;
+                int sumZ = pawn.PositionHeld.z;
+                int count = 1;
+                foreach (Pawn zombie in nearbyZombies)
                 {
                     count++;
-                    sumX += cell.x;
-                    sumZ += cell.z;
+                    sumX += zombie.PositionHeld.x;
+                    sumZ += zombie.PositionHeld.z;
                 }
 
-                if (count > 0)
+                IntVec3 packCenter = new IntVec3(sumX / count, 0, sumZ / count);
+                for (int i = 0; i < 12; i++)
                 {
-                    return new IntVec3(sumX / count, 0, sumZ / count);
+                    IntVec3 candidate = CellFinder.RandomClosewalkCellNear(packCenter, map, 3);
+                    if (candidate.IsValid && candidate.Standable(map))
+                    {
+                        return candidate;
+                    }
+                }
+            }
+
+            return FindEdgeShuffleCell(pawn);
+        }
+
+        private static IntVec3 FindEdgeShuffleCell(Pawn pawn)
+        {
+            Map map = pawn.MapHeld;
+            List<IntVec3> options = GenRadial.RadialCellsAround(pawn.PositionHeld, 10f, true)
+                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToEdge(cell, map) >= 2 && DistanceToEdge(cell, map) <= 8)
+                .ToList();
+
+            if (options.Count > 0)
+            {
+                int step = ((pawn.thingIDNumber / 11) + ((Find.TickManager?.TicksGame ?? 0) / 2500)) % options.Count;
+                return options[step];
+            }
+
+            return FindAnyNearEdgeCell(map);
+        }
+
+        private static IntVec3 FindAnyNearEdgeCell(Map map)
+        {
+            foreach (IntVec3 cell in map.AllCells.InRandomOrder())
+            {
+                if (cell.Standable(map) && DistanceToEdge(cell, map) >= 2 && DistanceToEdge(cell, map) <= 8)
+                {
+                    return cell;
                 }
             }
 
             return map?.Center ?? IntVec3.Invalid;
+        }
+
+        private static int DistanceToEdge(IntVec3 cell, Map map)
+        {
+            int xDistance = cell.x < map.Size.x - 1 - cell.x ? cell.x : map.Size.x - 1 - cell.x;
+            int zDistance = cell.z < map.Size.z - 1 - cell.z ? cell.z : map.Size.z - 1 - cell.z;
+            return xDistance < zDistance ? xDistance : zDistance;
         }
 
         public static void HandleCorpseFeeding(Map map)
@@ -365,7 +388,7 @@ namespace CustomizableZombieHorde
             }
 
             ZombieUtility.RefreshDrownedState(pawn);
-            if (NearbyLivingPawnDetected(pawn, 12f))
+            if (NearbyLivingPawnDetected(pawn, 8f))
             {
                 return;
             }

@@ -19,7 +19,8 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            ZombieUtility.StripWeaponsAndWeaponInventory(Pawn);
+            ZombieUtility.SetZombieDisplayName(Pawn);
+            ZombieUtility.StripAllUsableItems(Pawn);
             ZombieUtility.MarkZombieApparelTainted(Pawn, degradeApparel: false);
         }
     }

@@ -10,28 +10,28 @@ namespace CustomizableZombieHorde
         private float settingsViewHeight = 1600f;
 
         public string zombiePrefix = "Zombie";
-        public int minGroupSize = 6;
-        public int maxGroupSize = 14;
-        public float fastZombieChance = 0.05f;
+        public int minGroupSize = 3;
+        public int maxGroupSize = 7;
+        public float fastZombieChance = 0.02f;
         public float resurrectionDelayHours = 5f;
 
         public bool enableEdgeTrickle = true;
-        public float trickleIntervalHours = 1.5f;
-        public int trickleMinGroupSize = 2;
-        public int trickleMaxGroupSize = 4;
+        public float trickleIntervalHours = 2.75f;
+        public int trickleMinGroupSize = 1;
+        public int trickleMaxGroupSize = 2;
 
-        public int difficultyLevel = 3;
+        public int difficultyLevel = 1;
 
         public bool enableGroundBursts = true;
         public float groundBurstMinDays = 5f;
         public float groundBurstMaxDays = 10f;
-        public int groundBurstMinGroupSize = 3;
-        public int groundBurstMaxGroupSize = 6;
+        public int groundBurstMinGroupSize = 2;
+        public int groundBurstMaxGroupSize = 4;
 
         public bool enableMoonEvents = true;
-        public float bloodMoonChance = 0.12f;
-        public int fullMoonBaseCount = 22;
-        public int bloodMoonBaseCount = 48;
+        public float bloodMoonChance = 0.10f;
+        public int fullMoonBaseCount = 12;
+        public int bloodMoonBaseCount = 24;
 
         public bool showZombieCounter = true;
         public bool enableDebugControls = false;
@@ -46,28 +46,28 @@ namespace CustomizableZombieHorde
         public override void ExposeData()
         {
             Scribe_Values.Look(ref zombiePrefix, "zombiePrefix", "Zombie");
-            Scribe_Values.Look(ref minGroupSize, "minGroupSize", 6);
-            Scribe_Values.Look(ref maxGroupSize, "maxGroupSize", 14);
-            Scribe_Values.Look(ref fastZombieChance, "fastZombieChance", 0.05f);
+            Scribe_Values.Look(ref minGroupSize, "minGroupSize", 3);
+            Scribe_Values.Look(ref maxGroupSize, "maxGroupSize", 7);
+            Scribe_Values.Look(ref fastZombieChance, "fastZombieChance", 0.02f);
             Scribe_Values.Look(ref resurrectionDelayHours, "resurrectionDelayHours", 5f);
 
             Scribe_Values.Look(ref enableEdgeTrickle, "enableEdgeTrickle", true);
-            Scribe_Values.Look(ref trickleIntervalHours, "trickleIntervalHours", 1.5f);
-            Scribe_Values.Look(ref trickleMinGroupSize, "trickleMinGroupSize", 2);
-            Scribe_Values.Look(ref trickleMaxGroupSize, "trickleMaxGroupSize", 4);
+            Scribe_Values.Look(ref trickleIntervalHours, "trickleIntervalHours", 2.75f);
+            Scribe_Values.Look(ref trickleMinGroupSize, "trickleMinGroupSize", 1);
+            Scribe_Values.Look(ref trickleMaxGroupSize, "trickleMaxGroupSize", 2);
 
-            Scribe_Values.Look(ref difficultyLevel, "difficultyLevel", 3);
+            Scribe_Values.Look(ref difficultyLevel, "difficultyLevel", 1);
 
             Scribe_Values.Look(ref enableGroundBursts, "enableGroundBursts", true);
             Scribe_Values.Look(ref groundBurstMinDays, "groundBurstMinDays", 5f);
             Scribe_Values.Look(ref groundBurstMaxDays, "groundBurstMaxDays", 10f);
-            Scribe_Values.Look(ref groundBurstMinGroupSize, "groundBurstMinGroupSize", 3);
-            Scribe_Values.Look(ref groundBurstMaxGroupSize, "groundBurstMaxGroupSize", 6);
+            Scribe_Values.Look(ref groundBurstMinGroupSize, "groundBurstMinGroupSize", 2);
+            Scribe_Values.Look(ref groundBurstMaxGroupSize, "groundBurstMaxGroupSize", 4);
 
             Scribe_Values.Look(ref enableMoonEvents, "enableMoonEvents", true);
-            Scribe_Values.Look(ref bloodMoonChance, "bloodMoonChance", 0.12f);
-            Scribe_Values.Look(ref fullMoonBaseCount, "fullMoonBaseCount", 22);
-            Scribe_Values.Look(ref bloodMoonBaseCount, "bloodMoonBaseCount", 48);
+            Scribe_Values.Look(ref bloodMoonChance, "bloodMoonChance", 0.10f);
+            Scribe_Values.Look(ref fullMoonBaseCount, "fullMoonBaseCount", 12);
+            Scribe_Values.Look(ref bloodMoonBaseCount, "bloodMoonBaseCount", 24);
 
             Scribe_Values.Look(ref showZombieCounter, "showZombieCounter", true);
             Scribe_Values.Look(ref enableDebugControls, "enableDebugControls", false);
@@ -98,6 +98,7 @@ namespace CustomizableZombieHorde
             listing.Label($"Difficulty level: {difficultyLevel} ({DifficultyMultiplier:0.00}x zombies)");
             difficultyLevel = Mathf.RoundToInt(listing.Slider(difficultyLevel, 0, 8));
             listing.CheckboxLabeled("Show zombie counter on map", ref showZombieCounter, "Shows the number of zombies currently on the viewed player home map.");
+            listing.Label("Active zombies are capped by colonist count. Daytime stays lighter, nighttime gets denser, and the cap never rises above 10x your colonists.");
             listing.GapLine();
 
             listing.CheckboxLabeled("Constant edge trickle", ref enableEdgeTrickle, "Zombies will keep shambling in from the map edges in small groups.");
@@ -236,28 +237,28 @@ namespace CustomizableZombieHorde
         public void ResetToRecommendedDefaults()
         {
             zombiePrefix = "Zombie";
-            minGroupSize = 6;
-            maxGroupSize = 14;
-            fastZombieChance = 0.05f;
+            minGroupSize = 3;
+            maxGroupSize = 7;
+            fastZombieChance = 0.02f;
             resurrectionDelayHours = 5f;
 
             enableEdgeTrickle = true;
-            trickleIntervalHours = 1.5f;
-            trickleMinGroupSize = 2;
-            trickleMaxGroupSize = 4;
+            trickleIntervalHours = 2.75f;
+            trickleMinGroupSize = 1;
+            trickleMaxGroupSize = 2;
 
-            difficultyLevel = 3;
+            difficultyLevel = 1;
 
             enableGroundBursts = true;
             groundBurstMinDays = 5f;
             groundBurstMaxDays = 10f;
-            groundBurstMinGroupSize = 3;
-            groundBurstMaxGroupSize = 6;
+            groundBurstMinGroupSize = 2;
+            groundBurstMaxGroupSize = 4;
 
             enableMoonEvents = true;
-            bloodMoonChance = 0.12f;
-            fullMoonBaseCount = 22;
-            bloodMoonBaseCount = 48;
+            bloodMoonChance = 0.10f;
+            fullMoonBaseCount = 12;
+            bloodMoonBaseCount = 24;
 
             showZombieCounter = true;
             enableDebugControls = false;
