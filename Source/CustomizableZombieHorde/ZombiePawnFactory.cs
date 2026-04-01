@@ -9,7 +9,24 @@ namespace CustomizableZombieHorde
     {
         public static Pawn GenerateZombie(PawnKindDef kind, Faction faction)
         {
-            Pawn pawn = PawnGenerator.GeneratePawn(kind, faction);
+            Pawn pawn = null;
+
+            try
+            {
+                pawn = faction != null ? PawnGenerator.GeneratePawn(kind, faction) : PawnGenerator.GeneratePawn(kind);
+            }
+            catch
+            {
+                try
+                {
+                    pawn = PawnGenerator.GeneratePawn(kind);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
             FinalizeZombie(pawn, initialSpawn: true);
             return pawn;
         }

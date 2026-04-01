@@ -352,6 +352,46 @@ namespace CustomizableZombieHorde
             }
         }
 
+        public static void EnsureZombieAggression(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn.Dead || pawn.Destroyed || !pawn.Spawned)
+            {
+                return;
+            }
+
+            if (pawn.CurLord != null)
+            {
+                return;
+            }
+
+            if (pawn.mindState?.mentalStateHandler == null)
+            {
+                return;
+            }
+
+            if (pawn.InMentalState)
+            {
+                return;
+            }
+
+            MentalStateDef berserk = DefDatabase<MentalStateDef>.GetNamedSilentFail("Berserk")
+                ?? DefDatabase<MentalStateDef>.GetNamedSilentFail("BerserkPermanent")
+                ?? DefDatabase<MentalStateDef>.GetNamedSilentFail("ManhunterPermanent");
+
+            if (berserk == null)
+            {
+                return;
+            }
+
+            try
+            {
+                pawn.mindState.mentalStateHandler.TryStartMentalState(berserk);
+            }
+            catch
+            {
+            }
+        }
+
         public static void MarkPawnGraphicsDirty(Pawn pawn)
         {
             object renderer = pawn?.Drawer?.renderer;
@@ -412,6 +452,5 @@ namespace CustomizableZombieHorde
 
             return false;
         }
-
     }
 }

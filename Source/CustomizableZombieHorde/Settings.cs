@@ -1,38 +1,40 @@
 using UnityEngine;
 using Verse;
+using RimWorld;
 
 namespace CustomizableZombieHorde
 {
     public sealed class CustomizableZombieHordeSettings : ModSettings
     {
         private Vector2 scrollPosition;
-        private float settingsViewHeight = 1280f;
+        private float settingsViewHeight = 1600f;
 
         public string zombiePrefix = "Zombie";
-        public int minGroupSize = 5;
-        public int maxGroupSize = 12;
-        public float fastZombieChance = 0.04f;
+        public int minGroupSize = 6;
+        public int maxGroupSize = 14;
+        public float fastZombieChance = 0.05f;
         public float resurrectionDelayHours = 5f;
 
         public bool enableEdgeTrickle = true;
-        public float trickleIntervalHours = 2.5f;
-        public int trickleMinGroupSize = 1;
-        public int trickleMaxGroupSize = 2;
+        public float trickleIntervalHours = 1.5f;
+        public int trickleMinGroupSize = 2;
+        public int trickleMaxGroupSize = 4;
 
-        public int difficultyLevel = 0;
+        public int difficultyLevel = 3;
 
         public bool enableGroundBursts = true;
-        public float groundBurstMinDays = 6f;
-        public float groundBurstMaxDays = 12f;
-        public int groundBurstMinGroupSize = 2;
-        public int groundBurstMaxGroupSize = 5;
+        public float groundBurstMinDays = 5f;
+        public float groundBurstMaxDays = 10f;
+        public int groundBurstMinGroupSize = 3;
+        public int groundBurstMaxGroupSize = 6;
 
         public bool enableMoonEvents = true;
         public float bloodMoonChance = 0.12f;
-        public int fullMoonBaseCount = 18;
-        public int bloodMoonBaseCount = 40;
+        public int fullMoonBaseCount = 22;
+        public int bloodMoonBaseCount = 48;
 
         public bool showZombieCounter = true;
+        public bool enableDebugControls = false;
 
         public bool allowBiters = true;
         public bool allowCrawlers = true;
@@ -44,30 +46,31 @@ namespace CustomizableZombieHorde
         public override void ExposeData()
         {
             Scribe_Values.Look(ref zombiePrefix, "zombiePrefix", "Zombie");
-            Scribe_Values.Look(ref minGroupSize, "minGroupSize", 5);
-            Scribe_Values.Look(ref maxGroupSize, "maxGroupSize", 12);
-            Scribe_Values.Look(ref fastZombieChance, "fastZombieChance", 0.04f);
+            Scribe_Values.Look(ref minGroupSize, "minGroupSize", 6);
+            Scribe_Values.Look(ref maxGroupSize, "maxGroupSize", 14);
+            Scribe_Values.Look(ref fastZombieChance, "fastZombieChance", 0.05f);
             Scribe_Values.Look(ref resurrectionDelayHours, "resurrectionDelayHours", 5f);
 
             Scribe_Values.Look(ref enableEdgeTrickle, "enableEdgeTrickle", true);
-            Scribe_Values.Look(ref trickleIntervalHours, "trickleIntervalHours", 2.5f);
-            Scribe_Values.Look(ref trickleMinGroupSize, "trickleMinGroupSize", 1);
-            Scribe_Values.Look(ref trickleMaxGroupSize, "trickleMaxGroupSize", 2);
+            Scribe_Values.Look(ref trickleIntervalHours, "trickleIntervalHours", 1.5f);
+            Scribe_Values.Look(ref trickleMinGroupSize, "trickleMinGroupSize", 2);
+            Scribe_Values.Look(ref trickleMaxGroupSize, "trickleMaxGroupSize", 4);
 
-            Scribe_Values.Look(ref difficultyLevel, "difficultyLevel", 0);
+            Scribe_Values.Look(ref difficultyLevel, "difficultyLevel", 3);
 
             Scribe_Values.Look(ref enableGroundBursts, "enableGroundBursts", true);
-            Scribe_Values.Look(ref groundBurstMinDays, "groundBurstMinDays", 6f);
-            Scribe_Values.Look(ref groundBurstMaxDays, "groundBurstMaxDays", 12f);
-            Scribe_Values.Look(ref groundBurstMinGroupSize, "groundBurstMinGroupSize", 2);
-            Scribe_Values.Look(ref groundBurstMaxGroupSize, "groundBurstMaxGroupSize", 5);
+            Scribe_Values.Look(ref groundBurstMinDays, "groundBurstMinDays", 5f);
+            Scribe_Values.Look(ref groundBurstMaxDays, "groundBurstMaxDays", 10f);
+            Scribe_Values.Look(ref groundBurstMinGroupSize, "groundBurstMinGroupSize", 3);
+            Scribe_Values.Look(ref groundBurstMaxGroupSize, "groundBurstMaxGroupSize", 6);
 
             Scribe_Values.Look(ref enableMoonEvents, "enableMoonEvents", true);
             Scribe_Values.Look(ref bloodMoonChance, "bloodMoonChance", 0.12f);
-            Scribe_Values.Look(ref fullMoonBaseCount, "fullMoonBaseCount", 18);
-            Scribe_Values.Look(ref bloodMoonBaseCount, "bloodMoonBaseCount", 40);
+            Scribe_Values.Look(ref fullMoonBaseCount, "fullMoonBaseCount", 22);
+            Scribe_Values.Look(ref bloodMoonBaseCount, "bloodMoonBaseCount", 48);
 
             Scribe_Values.Look(ref showZombieCounter, "showZombieCounter", true);
+            Scribe_Values.Look(ref enableDebugControls, "enableDebugControls", false);
 
             Scribe_Values.Look(ref allowBiters, "allowBiters", true);
             Scribe_Values.Look(ref allowCrawlers, "allowCrawlers", true);
@@ -170,10 +173,106 @@ namespace CustomizableZombieHorde
 
             listing.GapLine();
             listing.Label("Example names: " + ZombieDefUtility.ExampleNames(zombiePrefix));
+            listing.GapLine();
+
+            if (listing.ButtonText("Reset settings to recommended defaults"))
+            {
+                ResetToRecommendedDefaults();
+            }
+            listing.GapLine();
+
+            listing.CheckboxLabeled("Enable debug controls", ref enableDebugControls, "Shows manual buttons to force zombie waves, moon events, and ground bursts while a colony is loaded.");
+            if (enableDebugControls)
+            {
+                DrawDebugControls(listing);
+            }
+
             listing.End();
 
-            settingsViewHeight = Mathf.Max(1280f, listing.CurHeight + 24f);
+            settingsViewHeight = Mathf.Max(1600f, listing.CurHeight + 24f);
             Widgets.EndScrollView();
+        }
+
+        private void DrawDebugControls(Listing_Standard listing)
+        {
+            listing.GapLine();
+            listing.Label("Debug controls");
+
+            ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
+            bool canUseDebug = component != null && component.HasUsableDebugMap();
+            if (!canUseDebug)
+            {
+                listing.Label("Load into a colony map to use the debug spawn buttons.");
+                return;
+            }
+
+            if (listing.ButtonText("Force edge wave now"))
+            {
+                ShowDebugResult(component.DebugForceEdgeWave(), "Forced an edge wave.", "Could not force an edge wave.");
+            }
+
+            if (listing.ButtonText("Force nightly edge wave now"))
+            {
+                ShowDebugResult(component.DebugForceNightlyWave(), "Forced the nightly edge wave.", "Could not force the nightly edge wave.");
+            }
+
+            if (listing.ButtonText("Force ground burst now"))
+            {
+                ShowDebugResult(component.DebugForceGroundBurst(), "Forced a ground burst.", "Could not force a ground burst.");
+            }
+
+            if (listing.ButtonText("Force full moon horde now"))
+            {
+                ShowDebugResult(component.DebugForceMoonEvent(false), "Forced a full moon horde.", "Could not force a full moon horde.");
+            }
+
+            if (listing.ButtonText("Force blood moon horde now"))
+            {
+                ShowDebugResult(component.DebugForceMoonEvent(true), "Forced a blood moon horde.", "Could not force a blood moon horde.");
+            }
+        }
+
+
+        public void ResetToRecommendedDefaults()
+        {
+            zombiePrefix = "Zombie";
+            minGroupSize = 6;
+            maxGroupSize = 14;
+            fastZombieChance = 0.05f;
+            resurrectionDelayHours = 5f;
+
+            enableEdgeTrickle = true;
+            trickleIntervalHours = 1.5f;
+            trickleMinGroupSize = 2;
+            trickleMaxGroupSize = 4;
+
+            difficultyLevel = 3;
+
+            enableGroundBursts = true;
+            groundBurstMinDays = 5f;
+            groundBurstMaxDays = 10f;
+            groundBurstMinGroupSize = 3;
+            groundBurstMaxGroupSize = 6;
+
+            enableMoonEvents = true;
+            bloodMoonChance = 0.12f;
+            fullMoonBaseCount = 22;
+            bloodMoonBaseCount = 48;
+
+            showZombieCounter = true;
+            enableDebugControls = false;
+
+            allowBiters = true;
+            allowCrawlers = true;
+            allowBoomers = true;
+            allowSick = true;
+            allowDrowned = true;
+            allowTanks = true;
+        }
+
+        private static void ShowDebugResult(bool success, string successText, string failText)
+        {
+            Messages.Message(success ? successText : failText, success ? MessageTypeDefOf.NeutralEvent : MessageTypeDefOf.RejectInput, false);
         }
     }
 }

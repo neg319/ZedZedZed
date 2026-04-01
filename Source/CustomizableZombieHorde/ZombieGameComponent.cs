@@ -19,6 +19,8 @@ namespace CustomizableZombieHorde
         private int lastTriggeredMoonDay = -1;
         private int cachedCurrentMapZombieCount = 0;
         private int cachedZombieCountTick = -1;
+        private int lastGuaranteeAttemptTick = -1;
+        private Dictionary<int, int> lastNightlySpawnDayByMap = new Dictionary<int, int>();
 
         public ZombieGameComponent(Game game)
         {
@@ -36,6 +38,8 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref lastTriggeredMoonDay, "lastTriggeredMoonDay", -1);
             Scribe_Values.Look(ref cachedCurrentMapZombieCount, "cachedCurrentMapZombieCount", 0);
             Scribe_Values.Look(ref cachedZombieCountTick, "cachedZombieCountTick", -1);
+            Scribe_Values.Look(ref lastGuaranteeAttemptTick, "lastGuaranteeAttemptTick", -1);
+            Scribe_Collections.Look(ref lastNightlySpawnDayByMap, "lastNightlySpawnDayByMap", LookMode.Value, LookMode.Value);
             base.ExposeData();
         }
 
@@ -64,6 +68,16 @@ namespace CustomizableZombieHorde
                 RefreshCurrentMapCount();
             }
 
+            if (ticksGame % 900 == 0)
+            {
+                EnsureZombiePresence(ticksGame);
+            }
+
+            if (ticksGame % 300 == 0)
+            {
+                HandleGuaranteedNightlySpawns(ticksGame);
+            }
+
             HandleTrickleSpawns(ticksGame);
             HandleGroundBursts(ticksGame);
             HandleMoonCycle();
@@ -85,6 +99,122 @@ namespace CustomizableZombieHorde
             return cachedCurrentMapZombieCount;
         }
 
+        public bool HasUsableDebugMap()
+        {
+            return GetDebugTargetMap() != null;
+        }
+
+        public bool DebugForceEdgeWave()
+        {
+            Map map = GetDebugTargetMap();
+            if (map == null)
+            {
+                return false;
+            }
+
+            int count = Mathf.Max(1, Rand.RangeInclusive(CustomizableZombieHordeMod.Settings.trickleMinGroupSize, CustomizableZombieHordeMod.Settings.trickleMaxGroupSize));
+            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Edge Wave", customLetterText: "A debug zombie wave has been forced from the map edge.");
+            if (!result)
+            {
+                result = ZombieSpawnHelper.SpawnEmergencyPack(map, count, sendLetter: true, customLetterLabel: "Debug Edge Wave", customLetterText: "A debug zombie wave has been forced near the map edge.");
+            }
+
+            if (result && Find.TickManager != null)
+            {
+                nextTrickleTick = Find.TickManager.TicksGame + HoursToTicks(0.5f);
+                RefreshCurrentMapCount();
+            }
+
+            return result;
+        }
+
+        public bool DebugForceNightlyWave()
+        {
+            Map map = GetDebugTargetMap();
+            if (map == null)
+            {
+                return false;
+            }
+
+            int count = Mathf.Max(2, CustomizableZombieHordeMod.Settings.trickleMinGroupSize + 1);
+            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Night Wave", customLetterText: "A debug nightly zombie wave has been forced onto the map.");
+            if (!result)
+            {
+                result = ZombieSpawnHelper.SpawnEmergencyPack(map, count, sendLetter: true, customLetterLabel: "Debug Night Wave", customLetterText: "A debug nightly zombie wave has been forced near the map edge.");
+            }
+
+            if (result)
+            {
+                lastNightlySpawnDayByMap ??= new Dictionary<int, int>();
+                int currentDay = (Find.TickManager?.TicksGame ?? 0) / GenDate.TicksPerDay;
+                lastNightlySpawnDayByMap[map.uniqueID] = currentDay;
+                RefreshCurrentMapCount();
+            }
+
+            return result;
+        }
+
+        public bool DebugForceGroundBurst()
+        {
+            Map map = GetDebugTargetMap();
+            if (map == null)
+            {
+                return false;
+            }
+
+            bool result = ZombieSpawnHelper.SpawnGroundBurst(map, forcedCount: Mathf.Max(2, CustomizableZombieHordeMod.Settings.groundBurstMinGroupSize), sendLetter: true);
+            if (result)
+            {
+                RefreshCurrentMapCount();
+            }
+
+            return result;
+        }
+
+        public bool DebugForceMoonEvent(bool bloodMoon)
+        {
+            Map map = GetDebugTargetMap();
+            if (map == null)
+            {
+                return false;
+            }
+
+            string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
+            bool result = bloodMoon
+                ? ZombieSpawnHelper.SpawnHorde(
+                    map,
+                    CustomizableZombieHordeMod.Settings.bloodMoonBaseCount,
+                    groups: 3,
+                    letterLabel: "Debug Blood Moon",
+                    letterText: "A debug blood moon has been forced. A massive wave of " + prefix.ToLowerInvariant() + "s is descending on your colony.")
+                : ZombieSpawnHelper.SpawnHorde(
+                    map,
+                    CustomizableZombieHordeMod.Settings.fullMoonBaseCount,
+                    groups: 2,
+                    letterLabel: "Debug Full Moon",
+                    letterText: "A debug full moon horde has been forced. The dead are closing in on your colony.");
+
+            if (result)
+            {
+                int currentDay = (Find.TickManager?.TicksGame ?? 0) / GenDate.TicksPerDay;
+                lastTriggeredMoonDay = currentDay;
+                ScheduleNextMoon(currentDay);
+                RefreshCurrentMapCount();
+            }
+
+            return result;
+        }
+
+        private Map GetDebugTargetMap()
+        {
+            if (Find.CurrentMap != null && Find.CurrentMap.IsPlayerHome)
+            {
+                return Find.CurrentMap;
+            }
+
+            return Find.Maps.FirstOrDefault(map => map.IsPlayerHome);
+        }
+
         private void RefreshCurrentMapCount()
         {
             cachedZombieCountTick = Find.TickManager?.TicksGame ?? 0;
@@ -98,6 +228,83 @@ namespace CustomizableZombieHorde
             cachedCurrentMapZombieCount = map.mapPawns.AllPawnsSpawned.Count(ZombieUtility.IsZombie);
         }
 
+        private void EnsureZombiePresence(int ticksGame)
+        {
+            if (lastGuaranteeAttemptTick >= 0 && ticksGame - lastGuaranteeAttemptTick < 600)
+            {
+                return;
+            }
+
+            lastGuaranteeAttemptTick = ticksGame;
+
+            foreach (Map map in Find.Maps)
+            {
+                if (!map.IsPlayerHome)
+                {
+                    continue;
+                }
+
+                int livingZombies = map.mapPawns?.AllPawnsSpawned?.Count(ZombieUtility.IsZombie) ?? 0;
+                if (livingZombies > 0)
+                {
+                    continue;
+                }
+
+                int guaranteedCount = Mathf.Max(1, CustomizableZombieHordeMod.Settings?.trickleMinGroupSize ?? 1);
+                if (!ZombieSpawnHelper.SpawnWave(map, forcedCount: guaranteedCount, sendLetter: false))
+                {
+                    ZombieSpawnHelper.SpawnEmergencyPack(map, guaranteedCount, sendLetter: false);
+                }
+
+                nextTrickleTick = ticksGame + HoursToTicks(0.50f);
+            }
+        }
+
+        private void HandleGuaranteedNightlySpawns(int ticksGame)
+        {
+            lastNightlySpawnDayByMap ??= new Dictionary<int, int>();
+            int currentDay = ticksGame / GenDate.TicksPerDay;
+
+            foreach (Map map in Find.Maps)
+            {
+                if (!map.IsPlayerHome || map.skyManager == null)
+                {
+                    continue;
+                }
+
+                if (map.skyManager.CurSkyGlow > 0.40f)
+                {
+                    continue;
+                }
+
+                int mapId = map.uniqueID;
+                if (lastNightlySpawnDayByMap.TryGetValue(mapId, out int lastSpawnDay) && lastSpawnDay == currentDay)
+                {
+                    continue;
+                }
+
+                int guaranteedCount = Mathf.Max(2, CustomizableZombieHordeMod.Settings?.trickleMinGroupSize ?? 2);
+                bool spawned = ZombieSpawnHelper.SpawnWave(map, forcedCount: guaranteedCount, sendLetter: false);
+                if (!spawned)
+                {
+                    spawned = ZombieSpawnHelper.SpawnEmergencyPack(map, guaranteedCount, sendLetter: false);
+                }
+
+                if (spawned)
+                {
+                    lastNightlySpawnDayByMap[mapId] = currentDay;
+                    RefreshCurrentMapCount();
+                }
+            }
+
+            List<int> activeMapIds = Find.Maps.Select(map => map.uniqueID).ToList();
+            List<int> staleMapIds = lastNightlySpawnDayByMap.Keys.Where(id => !activeMapIds.Contains(id)).ToList();
+            foreach (int staleMapId in staleMapIds)
+            {
+                lastNightlySpawnDayByMap.Remove(staleMapId);
+            }
+        }
+
         private void HandleTrickleSpawns(int ticksGame)
         {
             if (!CustomizableZombieHordeMod.Settings.enableEdgeTrickle)
@@ -109,12 +316,12 @@ namespace CustomizableZombieHorde
             int emergencyLeadTime = HoursToTicks(0.75f);
             if (!anyHomeMapHasZombies && (nextTrickleTick < 0 || nextTrickleTick - ticksGame > emergencyLeadTime))
             {
-                nextTrickleTick = ticksGame + HoursToTicks(0.35f);
+                nextTrickleTick = ticksGame + HoursToTicks(0.10f);
             }
 
             if (nextTrickleTick < 0)
             {
-                nextTrickleTick = ticksGame + HoursToTicks(0.35f);
+                nextTrickleTick = ticksGame + HoursToTicks(0.10f);
                 return;
             }
 
@@ -131,7 +338,10 @@ namespace CustomizableZombieHorde
                 }
 
                 int count = Rand.RangeInclusive(CustomizableZombieHordeMod.Settings.trickleMinGroupSize, CustomizableZombieHordeMod.Settings.trickleMaxGroupSize);
-                ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: false);
+                if (!ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: false))
+                {
+                    ZombieSpawnHelper.SpawnEmergencyPack(map, count, sendLetter: false);
+                }
             }
 
             ScheduleNextTrickle(ticksGame);
@@ -139,7 +349,7 @@ namespace CustomizableZombieHorde
 
         private void ScheduleNextTrickle(int ticksGame)
         {
-            float hours = Mathf.Max(1f, CustomizableZombieHordeMod.Settings.trickleIntervalHours * Rand.Range(0.85f, 1.15f));
+            float hours = Mathf.Max(0.25f, CustomizableZombieHordeMod.Settings.trickleIntervalHours * Rand.Range(0.85f, 1.15f));
             nextTrickleTick = ticksGame + HoursToTicks(hours);
         }
 
@@ -289,6 +499,7 @@ namespace CustomizableZombieHorde
                     ZombieUtility.StripWeaponsAndWeaponInventory(pawn);
                     ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: false);
                     ZombieUtility.RefreshDrownedState(pawn);
+                    ZombieUtility.EnsureZombieAggression(pawn);
                     ZombieSpecialUtility.HandleDrownedBehavior(pawn);
                 }
             }
@@ -348,7 +559,18 @@ namespace CustomizableZombieHorde
                     ZombiePawnFactory.FinalizeZombie(pawn, initialSpawn: false);
                     if (pawn.MapHeld != null && pawn.Faction != null)
                     {
-                        LordMaker.MakeNewLord(pawn.Faction, new LordJob_AssaultColony(pawn.Faction, false, false, false, false, false), pawn.MapHeld, new List<Pawn> { pawn });
+                        try
+                        {
+                            LordMaker.MakeNewLord(pawn.Faction, new LordJob_AssaultColony(pawn.Faction, false, false, false, false, false), pawn.MapHeld, new List<Pawn> { pawn });
+                        }
+                        catch
+                        {
+                            ZombieUtility.EnsureZombieAggression(pawn);
+                        }
+                    }
+                    else
+                    {
+                        ZombieUtility.EnsureZombieAggression(pawn);
                     }
                 }
             }
