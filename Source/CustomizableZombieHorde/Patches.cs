@@ -96,7 +96,7 @@ namespace CustomizableZombieHorde
 
             if (ZombieUtility.IsVariant(pawn, ZombieVariant.Tank))
             {
-                Matrix4x4 matrix = Matrix4x4.TRS(loc, Quaternion.identity, new Vector3(2f, 1f, 2f));
+                Matrix4x4 matrix = Matrix4x4.TRS(loc, Quaternion.identity, new Vector3(2f, 2f, 2f));
                 Graphics.DrawMesh(mesh, matrix, DirtMat, 0);
                 Graphics.DrawMesh(mesh, matrix, variantMat, 0);
             }

@@ -57,6 +57,7 @@ namespace CustomizableZombieHorde
 
             ZombieUtility.SetZombieDisplayName(pawn);
             ZombieUtility.StripAllUsableItems(pawn);
+            ZombieUtility.TrimZombieApparel(pawn);
             ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: initialSpawn);
             ZombieUtility.ApplyLimbDecay(pawn);
             ZombieUtility.ApplyVariantHediffs(pawn);

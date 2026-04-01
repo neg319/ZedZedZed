@@ -306,6 +306,148 @@ namespace CustomizableZombieHorde
             }
         }
 
+        public static void TrimZombieApparel(Pawn pawn)
+        {
+            if (pawn?.apparel?.WornApparel == null)
+            {
+                return;
+            }
+
+            bool isHeavy = IsVariant(pawn, ZombieVariant.Tank);
+            List<Apparel> worn = pawn.apparel.WornApparel.ToList();
+            List<Apparel> keep = new List<Apparel>();
+
+            int basicTarget = isHeavy ? Rand.RangeInclusive(0, 1) : Rand.RangeInclusive(0, 2);
+            bool allowRareArmor = !isHeavy && Rand.Chance(0.025f);
+            bool allowRareHeadwear = Rand.Chance(isHeavy ? 0.008f : 0.018f);
+            int basicKept = 0;
+
+            foreach (Apparel apparel in worn.InRandomOrder())
+            {
+                if (apparel == null)
+                {
+                    continue;
+                }
+
+                if (IsZombieArmor(apparel))
+                {
+                    if (allowRareArmor && keep.All(existing => !IsZombieArmor(existing)))
+                    {
+                        keep.Add(apparel);
+                    }
+                    continue;
+                }
+
+                if (IsZombieHeadwear(apparel))
+                {
+                    if (allowRareHeadwear && keep.All(existing => !IsZombieHeadwear(existing)))
+                    {
+                        keep.Add(apparel);
+                    }
+                    continue;
+                }
+
+                if (basicKept < basicTarget && IsBasicZombieClothing(apparel))
+                {
+                    keep.Add(apparel);
+                    basicKept++;
+                }
+            }
+
+            foreach (Apparel apparel in worn)
+            {
+                if (apparel == null || keep.Contains(apparel))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    pawn.apparel.Remove(apparel);
+                }
+                catch
+                {
+                }
+
+                try
+                {
+                    apparel.Destroy(DestroyMode.Vanish);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static bool IsBasicZombieClothing(Apparel apparel)
+        {
+            if (apparel?.def?.apparel == null)
+            {
+                return false;
+            }
+
+            if (IsZombieArmor(apparel) || IsZombieHeadwear(apparel))
+            {
+                return false;
+            }
+
+            foreach (BodyPartGroupDef group in apparel.def.apparel.bodyPartGroups ?? Enumerable.Empty<BodyPartGroupDef>())
+            {
+                string name = ((group?.defName ?? string.Empty) + ' ' + (group?.label ?? string.Empty)).ToLowerInvariant();
+                if (name.Contains("torso") || name.Contains("legs") || name.Contains("shoulder") || name.Contains("waist"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsZombieHeadwear(Apparel apparel)
+        {
+            if (apparel?.def?.apparel == null)
+            {
+                return false;
+            }
+
+            foreach (BodyPartGroupDef group in apparel.def.apparel.bodyPartGroups ?? Enumerable.Empty<BodyPartGroupDef>())
+            {
+                string name = ((group?.defName ?? string.Empty) + ' ' + (group?.label ?? string.Empty)).ToLowerInvariant();
+                if (name.Contains("head") || name.Contains("eye") || name.Contains("face") || name.Contains("jaw") || name.Contains("nose"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsZombieArmor(Apparel apparel)
+        {
+            if (apparel?.def == null)
+            {
+                return false;
+            }
+
+            float armorValue = 0f;
+            foreach (StatModifier modifier in apparel.def.statBases ?? Enumerable.Empty<StatModifier>())
+            {
+                string statName = modifier?.stat?.defName ?? string.Empty;
+                if (statName == "ArmorRating_Sharp" || statName == "ArmorRating_Blunt" || statName == "ArmorRating_Heat")
+                {
+                    armorValue += modifier.value;
+                }
+            }
+
+            if (armorValue >= 0.55f)
+            {
+                return true;
+            }
+
+            string labelText = ((apparel.def.defName ?? string.Empty) + ' ' + (apparel.def.label ?? string.Empty)).ToLowerInvariant();
+            return labelText.Contains("armor") || labelText.Contains("helmet") || labelText.Contains("flak") || labelText.Contains("shield belt");
+        }
+
         public static void MarkZombieApparelTainted(Pawn pawn, bool degradeApparel)
         {
             if (pawn?.apparel?.WornApparel == null)
@@ -381,6 +523,7 @@ namespace CustomizableZombieHorde
             }
 
             StripAllUsableItems(pawn);
+            TrimZombieApparel(pawn);
             MarkZombieApparelTainted(pawn, degradeApparel: false);
             if (!pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieRot))
             {
@@ -511,6 +654,8 @@ namespace CustomizableZombieHorde
 
             TryEndZombieMentalState(pawn);
             StripAllUsableItems(pawn);
+            TrimZombieApparel(pawn);
+            MarkZombieApparelTainted(pawn, degradeApparel: false);
             SetZombieDisplayName(pawn);
             TryRecoverFromSpawnIncap(pawn);
         }

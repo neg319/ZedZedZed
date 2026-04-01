@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ModMetaData>
   <name>Zed Zed Zed</name>
-  <author>OpenAI for Johnny Berry</author>
+  <author>Johnny Berry / Vyberware</author>
   <packageId>vyberware.zedzedzed</packageId>
   <supportedVersions>
     <li>1.6</li>
@@ -15,8 +15,8 @@
     </li>
   </modDependencies>
   <description>
-Zed Zed Zed is a configurable zombie horde mod with changeable zombie naming, tainted apparel, bite and scratch melee attacks, edge trickle spawning, top-corner zombie count UI, ground-burst infestations, full moon horde events, rare blood moons, dirty humanlike visuals, handcrafted variant-specific RimWorld-style overlays, weakened limbs, rare fast zombies, and reanimation unless the head is damaged.
+Zed Zed Zed is a configurable zombie horde mod for RimWorld built around restless, shambling pressure instead of constant straight line raids. The undead trickle in from the edges, drift in packs, huddle until disturbed, burst from graves and the ground, and swell into larger threats under full moons and blood moons.
 
-Includes source files and a GitHub Actions workflow for building an installable package.
+The mod includes multiple zombie variants, custom visuals, grave events, debug tools, and a GitHub build workflow for easy packaging. This repository is set up as a clean, vibe coded source package for ongoing development.
   </description>
 </ModMetaData>
