@@ -24,7 +24,7 @@ namespace CustomizableZombieHorde
                 angle,
                 casterPawn,
                 null,
-                equipmentSource != null ? equipmentSource.def : null,
+                null,
                 DamageInfo.SourceCategory.ThingOrUnknown,
                 target.Thing);
 

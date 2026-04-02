@@ -12,11 +12,11 @@
     <passability>Impassable</passability>
     <pathCost>36</pathCost>
     <rotatable>false</rotatable>
-    <size>(1,1)</size>
+    <size>(1,2)</size>
     <graphicData>
       <texPath>Things/Building/ZombieGrave</texPath>
       <graphicClass>Graphic_Single</graphicClass>
-      <drawSize>(1.0,1.0)</drawSize>
+      <drawSize>(1.0,2.0)</drawSize>
     </graphicData>
     <statBases>
       <MaxHitPoints>160</MaxHitPoints>

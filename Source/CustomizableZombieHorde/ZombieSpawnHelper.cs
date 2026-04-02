@@ -345,7 +345,7 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            IntVec3 graveCell = FindGraveEventCell(map);
+            IntVec3 graveCell = FindGraveEventCell(map, graveDef);
             if (!graveCell.IsValid)
             {
                 return false;
@@ -483,15 +483,15 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private static IntVec3 FindGraveEventCell(Map map)
+        private static IntVec3 FindGraveEventCell(Map map, ThingDef graveDef)
         {
-            List<IntVec3> homeCells = map.areaManager?.Home?.ActiveCells?.Where(cell => cell.InBounds(map) && cell.Walkable(map) && cell.GetEdifice(map) == null).ToList();
+            List<IntVec3> homeCells = map.areaManager?.Home?.ActiveCells?.Where(cell => CanPlaceGraveAt(cell, map, graveDef)).ToList();
             if (homeCells != null && homeCells.Count > 0)
             {
                 for (int i = 0; i < 40; i++)
                 {
                     IntVec3 candidate = homeCells.RandomElement();
-                    if (candidate.Standable(map) && DistanceToBaseCenter(candidate, map) <= 16f)
+                    if (DistanceToBaseCenter(candidate, map) <= 16f)
                     {
                         return candidate;
                     }
@@ -501,14 +501,48 @@ namespace CustomizableZombieHorde
             }
 
             List<IntVec3> centerCells = GenRadial.RadialCellsAround(map.Center, 14f, true)
-                .Where(cell => cell.InBounds(map) && cell.Walkable(map) && cell.GetEdifice(map) == null)
+                .Where(cell => CanPlaceGraveAt(cell, map, graveDef))
                 .ToList();
             if (centerCells.Count > 0)
             {
                 return centerCells.RandomElement();
             }
 
+            if (graveDef != null)
+            {
+                for (int x = 0; x < map.Size.x; x++)
+                {
+                    for (int z = 0; z < map.Size.z; z++)
+                    {
+                        IntVec3 cell = new IntVec3(x, 0, z);
+                        if (CanPlaceGraveAt(cell, map, graveDef))
+                        {
+                            return cell;
+                        }
+                    }
+                }
+            }
+
             return FindAnyStandableCell(map);
+        }
+
+        private static bool CanPlaceGraveAt(IntVec3 cell, Map map, ThingDef graveDef)
+        {
+            if (map == null || graveDef == null || !cell.InBounds(map))
+            {
+                return false;
+            }
+
+            CellRect occupiedRect = GenAdj.OccupiedRect(cell, Rot4.North, graveDef.Size);
+            foreach (IntVec3 occupiedCell in occupiedRect)
+            {
+                if (!occupiedCell.InBounds(map) || !occupiedCell.Walkable(map) || occupiedCell.GetEdifice(map) != null)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static float DistanceToBaseCenter(IntVec3 cell, Map map)
