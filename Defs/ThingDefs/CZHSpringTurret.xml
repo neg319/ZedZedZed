@@ -16,8 +16,7 @@
     <leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
     <tickerType>Normal</tickerType>
     <designationCategory>Security</designationCategory>
-    <constructEffect>ConstructMetal</constructEffect>
-    <clearBuildingArea>false</clearBuildingArea>
+        <clearBuildingArea>false</clearBuildingArea>
     <uiIconPath>Things/Building/Security/CZHSpringTurretBase</uiIconPath>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretBase</texPath>
@@ -28,14 +27,13 @@
         <offset>(0,0,-0.04)</offset>
       </shadowData>
     </graphicData>
-    <MadeFromStuff>true</MadeFromStuff>
+    <madeFromStuff>true</madeFromStuff>
     <stuffCategories>
       <li>Woody</li>
       <li>Stony</li>
       <li>Metallic</li>
     </stuffCategories>
     <costStuffCount>100</costStuffCount>
-    <stuffAdjective>framed</stuffAdjective>
     <statBases>
       <MaxHitPoints>90</MaxHitPoints>
       <WorkToBuild>12000</WorkToBuild>
@@ -59,21 +57,15 @@
     </building>
   </ThingDef>
 
-  <ThingDef>
+  <ThingDef ParentName="BaseHumanGun">
     <defName>CZH_Gun_SpringTurret</defName>
     <label>spring turret gun</label>
-    <thingClass>Gun</thingClass>
-    <category>Item</category>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretTop</texPath>
       <graphicClass>Graphic_Single</graphicClass>
       <drawSize>(1,1)</drawSize>
       <shaderType>Cutout</shaderType>
     </graphicData>
-    <techLevel>Industrial</techLevel>
-    <weaponTags>
-      <li>CZH_SpringTurret</li>
-    </weaponTags>
     <statBases>
       <AccuracyTouch>1.00</AccuracyTouch>
       <AccuracyShort>0.98</AccuracyShort>
