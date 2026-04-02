@@ -8,6 +8,7 @@ using Verse;
 
 namespace CustomizableZombieHorde
 {
+    [StaticConstructorOnStartup]
     [HarmonyPatch(typeof(PawnRenderer), "RenderPawnAt")]
     public static class Patch_PawnRenderer_RenderPawnAt
     {

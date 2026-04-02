@@ -5,7 +5,7 @@
     <label>zombie horde</label>
     <description>Shambling undead that converge on living settlements.</description>
     <isPlayer>false</isPlayer>
-    <humanlikeFaction>true</humanlikeFaction>
+    <humanlikeFaction>false</humanlikeFaction>
     <hidden>false</hidden>
     <canMakeRandomly>false</canMakeRandomly>
     <settlementGenerationWeight>0</settlementGenerationWeight>
@@ -17,5 +17,20 @@
     <factionIconPath>UI/Faction/Zombies</factionIconPath>
     <basicMemberKind>CZH_Zombie_Biter</basicMemberKind>
     <techLevel>Neolithic</techLevel>
+    <backstoryCategoryFilters>
+      <li>
+        <categories>
+          <li>CZH_Zombie</li>
+        </categories>
+        <commonality>1.0</commonality>
+      </li>
+    </backstoryCategoryFilters>
+    <raidLootValueFromPointsCurve>
+      <points>
+        <li>(0,0)</li>
+        <li>(100,0)</li>
+        <li>(1000,0)</li>
+      </points>
+    </raidLootValueFromPointsCurve>
   </FactionDef>
 </Defs>

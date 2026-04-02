@@ -66,18 +66,24 @@ namespace CustomizableZombieHorde
 
         private static void TryStartNewPull(Pawn grabber, int ticksGame)
         {
-            if (Rand.Value > 0.18f)
-            {
-                return;
-            }
-
-            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(grabber, 12f);
+            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(grabber, 16f);
             if (prey == null || prey.Downed || IsTargetAlreadyGrabbed(prey))
             {
                 return;
             }
 
-            if (prey.PositionHeld.DistanceToSquared(grabber.PositionHeld) < 9f)
+            float distanceSquared = prey.PositionHeld.DistanceToSquared(grabber.PositionHeld);
+            if (distanceSquared < 16f || distanceSquared > 16f * 16f)
+            {
+                return;
+            }
+
+            if (!GenSight.LineOfSight(grabber.PositionHeld, prey.PositionHeld, grabber.MapHeld))
+            {
+                return;
+            }
+
+            if (Rand.Value > 0.55f)
             {
                 return;
             }
@@ -112,12 +118,12 @@ namespace CustomizableZombieHorde
             }
 
             IntVec3 pullCell = FindPullCellTowardGrabber(grabber, prey);
-            if (pullCell.IsValid && pullCell != prey.PositionHeld && ticksGame % 20 == 0)
+            if (pullCell.IsValid && pullCell != prey.PositionHeld && ticksGame % 12 == 0)
             {
                 TryPullTarget(prey, pullCell);
             }
 
-            if (ticksGame % 45 == 0)
+            if (ticksGame % 24 == 0)
             {
                 TryQueueApproach(grabber, prey);
             }
@@ -234,7 +240,32 @@ namespace CustomizableZombieHorde
 
         private static void TryPullTarget(Pawn prey, IntVec3 pullCell)
         {
-            if (prey.jobs == null || prey.Downed)
+            if (prey == null || prey.Downed || !pullCell.IsValid || prey.PositionHeld == pullCell)
+            {
+                return;
+            }
+
+            try
+            {
+                prey.pather?.StopDead();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (prey.PositionHeld.AdjacentTo8WayOrInside(pullCell))
+                {
+                    prey.Position = pullCell;
+                    return;
+                }
+            }
+            catch
+            {
+            }
+
+            if (prey.jobs == null)
             {
                 return;
             }
@@ -242,7 +273,7 @@ namespace CustomizableZombieHorde
             try
             {
                 Job pullJob = JobMaker.MakeJob(JobDefOf.Goto, pullCell);
-                pullJob.expiryInterval = 40;
+                pullJob.expiryInterval = 35;
                 pullJob.checkOverrideOnExpire = true;
                 pullJob.locomotionUrgency = LocomotionUrgency.Walk;
                 prey.jobs.TryTakeOrderedJob(pullJob, JobTag.Misc);
@@ -262,9 +293,9 @@ namespace CustomizableZombieHorde
             try
             {
                 Job approachJob = JobMaker.MakeJob(JobDefOf.Goto, prey.PositionHeld);
-                approachJob.expiryInterval = 75;
+                approachJob.expiryInterval = 60;
                 approachJob.checkOverrideOnExpire = true;
-                approachJob.locomotionUrgency = ZombieUtility.GetZombieUrgency(grabber);
+                approachJob.locomotionUrgency = LocomotionUrgency.Walk;
                 grabber.jobs.TryTakeOrderedJob(approachJob, JobTag.Misc);
             }
             catch

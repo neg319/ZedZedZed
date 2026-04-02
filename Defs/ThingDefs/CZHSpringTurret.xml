@@ -33,8 +33,7 @@
       <MarketValue>420</MarketValue>
       <Flammability>0.65</Flammability>
       <Beauty>-6</Beauty>
-      <CoverEffectiveness>0.45</CoverEffectiveness>
-    </statBases>
+          </statBases>
     <costList>
       <Steel>100</Steel>
       <ComponentIndustrial>2</ComponentIndustrial>
@@ -62,9 +61,11 @@
     </building>
   </ThingDef>
 
-  <ThingDef ParentName="GunBase">
+  <ThingDef>
     <defName>CZH_Gun_SpringTurret</defName>
     <label>spring turret gun</label>
+    <thingClass>ThingWithComps</thingClass>
+    <category>Item</category>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretTop</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -93,7 +94,6 @@
         <burstShotCount>1</burstShotCount>
         <soundCast>Shot_Autopistol</soundCast>
         <muzzleFlashScale>5</muzzleFlashScale>
-        <forcedMissRadius>0.15</forcedMissRadius>
       </li>
     </verbs>
   </ThingDef>

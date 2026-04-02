@@ -7,6 +7,9 @@
     <title>biter husk</title>
     <titleShort>biter husk</titleShort>
     <baseDesc>This corpse rotted into a snapping biter that only remembers hunger.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_Biter</defName>
@@ -15,6 +18,9 @@
     <title>grave hunger</title>
     <titleShort>grave hunger</titleShort>
     <baseDesc>Death stripped away the rest of its life and left only a slow, biting hunger.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
 
   <BackstoryDef>
@@ -24,6 +30,9 @@
     <title>crawler husk</title>
     <titleShort>crawler husk</titleShort>
     <baseDesc>This broken corpse drags itself over the ground on ruined limbs.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_Crawler</defName>
@@ -32,6 +41,9 @@
     <title>dragged below</title>
     <titleShort>dragged below</titleShort>
     <baseDesc>Its last memory is of being pulled down and coming back wrong.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
 
   <BackstoryDef>
@@ -41,6 +53,9 @@
     <title>boomer husk</title>
     <titleShort>boomer husk</titleShort>
     <baseDesc>This swollen corpse bubbles with pressure and corrosive bile.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_Boomer</defName>
@@ -49,6 +64,9 @@
     <title>bloated rot</title>
     <titleShort>bloated rot</titleShort>
     <baseDesc>The body kept filling after death until it became a walking sac of decay.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
 
   <BackstoryDef>
@@ -58,6 +76,9 @@
     <title>sick husk</title>
     <titleShort>sick husk</titleShort>
     <baseDesc>This corpse is soaked in dark infection and foul blood.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_Sick</defName>
@@ -66,6 +87,9 @@
     <title>plague rot</title>
     <titleShort>plague rot</titleShort>
     <baseDesc>What rose from the grave carries a sickness that spreads with every wound.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
 
   <BackstoryDef>
@@ -75,6 +99,9 @@
     <title>drowned husk</title>
     <titleShort>drowned husk</titleShort>
     <baseDesc>This waterlogged corpse sloshes, drips, and lurches back toward the shore.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_Drowned</defName>
@@ -83,6 +110,9 @@
     <title>sunken rot</title>
     <titleShort>sunken rot</titleShort>
     <baseDesc>It died below the surface and rose again with the lake still clinging to it.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
 
   <BackstoryDef>
@@ -92,6 +122,9 @@
     <title>heavy husk</title>
     <titleShort>heavy husk</titleShort>
     <baseDesc>This hulking corpse is all dead weight, thick muscle, and blunt force.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_Heavy</defName>
@@ -100,6 +133,9 @@
     <title>grave brute</title>
     <titleShort>grave brute</titleShort>
     <baseDesc>Death did not dull its strength. It came back as a hulking heavy that simply keeps coming.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
 
   <BackstoryDef>
@@ -109,6 +145,9 @@
     <title>grabber husk</title>
     <titleShort>grabber husk</titleShort>
     <baseDesc>This corpse grew a rotten tongue that lashes out and drags prey close.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_Grabber</defName>
@@ -117,5 +156,8 @@
     <title>tongue rot</title>
     <titleShort>tongue rot</titleShort>
     <baseDesc>It shambles behind the horde until it can hook something living and reel it in.</baseDesc>
+    <spawnCategories>
+      <li>CZH_Zombie</li>
+    </spawnCategories>
   </BackstoryDef>
 </Defs>

@@ -17,6 +17,14 @@
     <canArriveManhunter>false</canArriveManhunter>
     <canBeSapper>false</canBeSapper>
     <backstoryCryptosleepCommonality>0</backstoryCryptosleepCommonality>
+    <initialResistanceRange>
+      <min>0</min>
+      <max>0</max>
+    </initialResistanceRange>
+    <initialWillRange>
+      <min>0</min>
+      <max>0</max>
+    </initialWillRange>
   </PawnKindDef>
 
   <PawnKindDef>
@@ -35,6 +43,14 @@
     </weaponMoney>
     <canArriveManhunter>false</canArriveManhunter>
     <canBeSapper>false</canBeSapper>
+    <initialResistanceRange>
+      <min>0</min>
+      <max>0</max>
+    </initialResistanceRange>
+    <initialWillRange>
+      <min>0</min>
+      <max>0</max>
+    </initialWillRange>
   </PawnKindDef>
 
   <PawnKindDef>
@@ -53,6 +69,14 @@
     </weaponMoney>
     <canArriveManhunter>false</canArriveManhunter>
     <canBeSapper>false</canBeSapper>
+    <initialResistanceRange>
+      <min>0</min>
+      <max>0</max>
+    </initialResistanceRange>
+    <initialWillRange>
+      <min>0</min>
+      <max>0</max>
+    </initialWillRange>
   </PawnKindDef>
 
   <PawnKindDef>
@@ -71,6 +95,14 @@
     </weaponMoney>
     <canArriveManhunter>false</canArriveManhunter>
     <canBeSapper>false</canBeSapper>
+    <initialResistanceRange>
+      <min>0</min>
+      <max>0</max>
+    </initialResistanceRange>
+    <initialWillRange>
+      <min>0</min>
+      <max>0</max>
+    </initialWillRange>
   </PawnKindDef>
 
   <PawnKindDef>
@@ -89,6 +121,14 @@
     </weaponMoney>
     <canArriveManhunter>false</canArriveManhunter>
     <canBeSapper>false</canBeSapper>
+    <initialResistanceRange>
+      <min>0</min>
+      <max>0</max>
+    </initialResistanceRange>
+    <initialWillRange>
+      <min>0</min>
+      <max>0</max>
+    </initialWillRange>
   </PawnKindDef>
 
   <PawnKindDef>
@@ -107,6 +147,14 @@
     </weaponMoney>
     <canArriveManhunter>false</canArriveManhunter>
     <canBeSapper>false</canBeSapper>
+    <initialResistanceRange>
+      <min>0</min>
+      <max>0</max>
+    </initialResistanceRange>
+    <initialWillRange>
+      <min>0</min>
+      <max>0</max>
+    </initialWillRange>
   </PawnKindDef>
 
 
@@ -126,6 +174,14 @@
     </weaponMoney>
     <canArriveManhunter>false</canArriveManhunter>
     <canBeSapper>false</canBeSapper>
+    <initialResistanceRange>
+      <min>0</min>
+      <max>0</max>
+    </initialResistanceRange>
+    <initialWillRange>
+      <min>0</min>
+      <max>0</max>
+    </initialWillRange>
   </PawnKindDef>
 
 </Defs>
