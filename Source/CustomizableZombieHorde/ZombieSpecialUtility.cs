@@ -8,6 +8,9 @@ namespace CustomizableZombieHorde
 {
     public static class ZombieSpecialUtility
     {
+        private static readonly HashSet<int> TriggeredBoomerBursts = new HashSet<int>();
+        private static bool suppressBoomerKillBurst;
+
 
         public static IEnumerable<Thing> BuildZombieButcherProducts(Pawn pawn)
         {
@@ -391,12 +394,76 @@ namespace CustomizableZombieHorde
             switch (ZombieUtility.GetVariant(pawn))
             {
                 case ZombieVariant.Boomer:
-                    DoAcidBurst(pawn);
+                    TriggerBoomerBurst(pawn, consumePawn: false, force: !suppressBoomerKillBurst);
                     break;
                 case ZombieVariant.Sick:
                     DoSicknessBurst(pawn);
                     break;
             }
+        }
+
+        public static bool TriggerBoomerBurst(Pawn pawn, bool consumePawn, bool force = false)
+        {
+            if (pawn == null || pawn.DestroyedOrNull() || !ZombieUtility.IsVariant(pawn, ZombieVariant.Boomer))
+            {
+                return false;
+            }
+
+            int id = pawn.thingIDNumber;
+            if (!force && TriggeredBoomerBursts.Contains(id))
+            {
+                return false;
+            }
+
+            TriggeredBoomerBursts.Add(id);
+            Map map = pawn.MapHeld;
+            IntVec3 pos = pawn.PositionHeld;
+            DoAcidBurst(pawn);
+
+            if (consumePawn && !pawn.Dead && !pawn.Destroyed)
+            {
+                try
+                {
+                    suppressBoomerKillBurst = true;
+                    pawn.Kill(new DamageInfo(DamageDefOf.Bomb, 999f, 0f, -1f, null));
+                }
+                finally
+                {
+                    suppressBoomerKillBurst = false;
+                }
+            }
+
+            ReplaceBoomerCorpseWithRottenFlesh(pawn, map, pos);
+            return true;
+        }
+
+        private static void ReplaceBoomerCorpseWithRottenFlesh(Pawn pawn, Map map, IntVec3 pos)
+        {
+            if (map == null || !pos.IsValid || !pos.InBounds(map))
+            {
+                return;
+            }
+
+            if (pawn != null && !pawn.Destroyed)
+            {
+                pawn.Destroy(DestroyMode.Vanish);
+            }
+
+            Corpse corpse = map.thingGrid.ThingsAt(pos).OfType<Corpse>().FirstOrDefault(c => c.InnerPawn == pawn);
+            if (corpse != null && !corpse.Destroyed)
+            {
+                corpse.Destroy(DestroyMode.Vanish);
+            }
+
+            ThingDef rottenFlesh = ZombieDefOf.CZH_RottenFlesh;
+            if (rottenFlesh == null)
+            {
+                return;
+            }
+
+            Thing flesh = ThingMaker.MakeThing(rottenFlesh);
+            flesh.stackCount = Rand.RangeInclusive(1, 10);
+            GenPlace.TryPlaceThing(flesh, pos, map, ThingPlaceMode.Near);
         }
 
         public static void DoAcidBurst(Pawn pawn)

@@ -14,7 +14,7 @@
       <li Class="HediffCompProperties_VerbGiver">
         <verbs>
           <li>
-            <verbClass>Verb_MeleeAttack</verbClass>
+            <verbClass>CustomizableZombieHorde.ZombieVerb_MeleeAttack</verbClass>
             <label>bite</label>
             <range>1</range>
             <meleeDamageDef>Bite</meleeDamageDef>
@@ -22,7 +22,7 @@
             <defaultCooldownTime>3.4</defaultCooldownTime>
           </li>
           <li>
-            <verbClass>Verb_MeleeAttack</verbClass>
+            <verbClass>CustomizableZombieHorde.ZombieVerb_MeleeAttack</verbClass>
             <label>scratch</label>
             <range>1</range>
             <meleeDamageDef>Scratch</meleeDamageDef>

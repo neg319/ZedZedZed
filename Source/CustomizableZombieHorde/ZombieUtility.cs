@@ -786,13 +786,22 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(pawn, ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) ? 12f : 10f);
+            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(pawn, ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) ? 26f : 10f);
             if (prey != null)
             {
-                if (IsVariant(pawn, ZombieVariant.Grabber) && Current.Game != null)
+                if (IsVariant(pawn, ZombieVariant.Grabber))
                 {
-                    var component = Current.Game.GetComponent<ZombieGameComponent>();
-                    if (component != null && component.HasActiveGrabberTongue(pawn))
+                    if (Current.Game != null)
+                    {
+                        var component = Current.Game.GetComponent<ZombieGameComponent>();
+                        if (component != null && component.HasActiveGrabberTongue(pawn))
+                        {
+                            return;
+                        }
+                    }
+
+                    float distanceSquared = pawn.PositionHeld.DistanceToSquared(prey.PositionHeld);
+                    if (distanceSquared > 2.2f * 2.2f && ZombieGrabberUtility.TryForceTongueStart(pawn, prey))
                     {
                         return;
                     }

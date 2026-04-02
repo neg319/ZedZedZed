@@ -9,13 +9,15 @@
     <size>(1,1)</size>
     <altitudeLayer>Building</altitudeLayer>
     <drawerType>RealtimeOnly</drawerType>
-    <fillPercent>0.22</fillPercent>
-    <passability>PassThroughOnly</passability>
+    <fillPercent>0.25</fillPercent>
+    <passability>Standable</passability>
     <selectable>true</selectable>
     <castEdgeShadows>false</castEdgeShadows>
     <leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
     <tickerType>Normal</tickerType>
     <designationCategory>Security</designationCategory>
+    <constructEffect>ConstructMetal</constructEffect>
+    <clearBuildingArea>false</clearBuildingArea>
     <uiIconPath>Things/Building/Security/CZHSpringTurretBase</uiIconPath>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretBase</texPath>
@@ -26,28 +28,23 @@
         <offset>(0,0,-0.04)</offset>
       </shadowData>
     </graphicData>
+    <MadeFromStuff>true</MadeFromStuff>
+    <stuffCategories>
+      <li>Woody</li>
+      <li>Stony</li>
+      <li>Metallic</li>
+    </stuffCategories>
+    <costStuffCount>100</costStuffCount>
+    <stuffAdjective>framed</stuffAdjective>
     <statBases>
-      <MaxHitPoints>180</MaxHitPoints>
+      <MaxHitPoints>90</MaxHitPoints>
       <WorkToBuild>12000</WorkToBuild>
-      <Mass>35</Mass>
-      <MarketValue>420</MarketValue>
+      <Mass>28</Mass>
+      <MarketValue>280</MarketValue>
       <Flammability>0.65</Flammability>
       <Beauty>-6</Beauty>
-          </statBases>
-    <costList>
-      <Steel>100</Steel>
-      <ComponentIndustrial>2</ComponentIndustrial>
-    </costList>
-    <researchPrerequisites>
-      <li>GunTurrets</li>
-    </researchPrerequisites>
+    </statBases>
     <comps>
-      <li>
-        <compClass>CompForbiddable</compClass>
-      </li>
-      <li>
-        <compClass>CompBreakdownable</compClass>
-      </li>
       <li>
         <compClass>CompFlickable</compClass>
       </li>
@@ -55,6 +52,7 @@
     <building>
       <turretGunDef>CZH_Gun_SpringTurret</turretGunDef>
       <isInert>false</isInert>
+      <ai_combatDangerous>true</ai_combatDangerous>
       <buildingTags>
         <li>Security</li>
       </buildingTags>
@@ -64,7 +62,7 @@
   <ThingDef>
     <defName>CZH_Gun_SpringTurret</defName>
     <label>spring turret gun</label>
-    <thingClass>ThingWithComps</thingClass>
+    <thingClass>Gun</thingClass>
     <category>Item</category>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretTop</texPath>

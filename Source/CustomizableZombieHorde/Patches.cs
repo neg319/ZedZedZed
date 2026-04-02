@@ -56,9 +56,9 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Vector3 start = drawLoc;
+            Vector3 start = GetTongueMouthPoint(pawn, drawLoc);
             start.y = AltitudeLayer.MetaOverlays.AltitudeFor();
-            Vector3 end = target.DrawPos;
+            Vector3 end = target.DrawPos + (target.DrawPos - drawLoc).normalized * -0.10f;
             end.y = start.y;
             Vector3 delta = end - start;
             float length = delta.magnitude;
@@ -69,9 +69,31 @@ namespace CustomizableZombieHorde
 
             Vector3 center = (start + end) * 0.5f;
             float angle = Mathf.Atan2(delta.x, delta.z) * Mathf.Rad2Deg;
-            float pulse = 0.12f + Mathf.Abs(Mathf.Sin((Find.TickManager?.TicksGame ?? 0) * 0.12f)) * 0.05f;
+            float pulse = 0.10f + Mathf.Abs(Mathf.Sin((Find.TickManager?.TicksGame ?? 0) * 0.18f)) * 0.06f;
             Matrix4x4 matrix = Matrix4x4.TRS(center, Quaternion.AngleAxis(angle, Vector3.up), new Vector3(pulse, 1f, length));
             Graphics.DrawMesh(MeshPool.plane10, matrix, GrabberTongueMat, 0);
+        }
+
+        private static Vector3 GetTongueMouthPoint(Pawn pawn, Vector3 drawLoc)
+        {
+            Vector3 forward;
+            switch (pawn.Rotation.AsInt)
+            {
+                case 1:
+                    forward = new Vector3(0.18f, 0f, 0f);
+                    break;
+                case 2:
+                    forward = new Vector3(0f, 0f, -0.20f);
+                    break;
+                case 3:
+                    forward = new Vector3(-0.18f, 0f, 0f);
+                    break;
+                default:
+                    forward = new Vector3(0f, 0f, 0.20f);
+                    break;
+            }
+
+            return drawLoc + forward + new Vector3(0f, 0f, 0.04f);
         }
 
         public static void Postfix(PawnRenderer __instance, Vector3 drawLoc, Rot4? rotOverride = null, bool neverAimWeapon = false)
@@ -91,7 +113,8 @@ namespace CustomizableZombieHorde
             Vector3 loc = drawLoc;
             loc.y += 0.003f;
 
-            Material variantMat = MaterialPool.MatFrom(ZombieVisualUtility.GetVariantOverlayPath(ZombieUtility.GetVariant(pawn)), ShaderDatabase.CutoutSkin, Color.white);
+            Color overlayColor = ZombieVisualUtility.GetOverlayColor(pawn);
+            Material variantMat = MaterialPool.MatFrom(ZombieVisualUtility.GetVariantOverlayPath(pawn, ZombieUtility.GetVariant(pawn)), ShaderDatabase.CutoutSkin, overlayColor);
 
             DrawGrabberTongue(pawn, drawLoc);
 
@@ -103,9 +126,33 @@ namespace CustomizableZombieHorde
             }
             else if (ZombieUtility.IsVariant(pawn, ZombieVariant.Crawler))
             {
-                Vector3 crawlLoc = loc + new Vector3(0f, 0f, 0.10f);
-                Quaternion crawlRotation = Quaternion.Euler(16f, 0f, 0f);
-                Matrix4x4 matrix = Matrix4x4.TRS(crawlLoc, crawlRotation, new Vector3(1.05f, 0.72f, 1.05f));
+                int ticks = Find.TickManager?.TicksGame ?? 0;
+                float phase = (ticks * 0.18f) + (pawn.thingIDNumber % 17) * 0.37f;
+                float bob = Mathf.Sin(phase) * 0.018f;
+                float surge = Mathf.Cos(phase * 0.5f) * 0.012f;
+                float roll = Mathf.Sin(phase) * 4.5f;
+                float pitch = 82f + Mathf.Cos(phase) * 2.5f;
+
+                Vector3 forward;
+                switch (rot.AsInt)
+                {
+                    case 1:
+                        forward = new Vector3(0.08f, 0f, 0f);
+                        break;
+                    case 2:
+                        forward = new Vector3(0f, 0f, -0.08f);
+                        break;
+                    case 3:
+                        forward = new Vector3(-0.08f, 0f, 0f);
+                        break;
+                    default:
+                        forward = new Vector3(0f, 0f, 0.08f);
+                        break;
+                }
+
+                Vector3 crawlLoc = loc + forward + new Vector3(0f, -0.055f + bob, surge);
+                Quaternion crawlRotation = Quaternion.Euler(pitch, rot.AsAngle, roll);
+                Matrix4x4 matrix = Matrix4x4.TRS(crawlLoc, crawlRotation, new Vector3(0.56f, 0.20f, 0.88f));
                 Graphics.DrawMesh(mesh, matrix, DirtMat, 0);
                 Graphics.DrawMesh(mesh, matrix, variantMat, 0);
             }
@@ -280,6 +327,43 @@ namespace CustomizableZombieHorde
             else if (!ZombieUtility.IsZombie(victim) && ZombieUtility.IsZombie(attacker))
             {
                 dinfo.SetAmount(dinfo.Amount * 0.55f);
+            }
+        }
+    }
+
+
+    [HarmonyPatch(typeof(Pawn_HealthTracker), "PostApplyDamage")]
+    public static class Patch_Pawn_HealthTracker_PostApplyDamage
+    {
+        public static void Postfix(Pawn_HealthTracker __instance, DamageInfo dinfo, float totalDamageDealt)
+        {
+            if (totalDamageDealt <= 0.01f)
+            {
+                return;
+            }
+
+            Pawn victim = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            if (victim == null)
+            {
+                return;
+            }
+
+            Pawn attacker = ZombieTraitUtility.ResolveDamageInstigatorPawn(dinfo.Instigator);
+
+            if (ZombieUtility.IsVariant(attacker, ZombieVariant.Boomer) && victim.IsColonist && !victim.Dead)
+            {
+                ZombieSpecialUtility.TriggerBoomerBurst(attacker, consumePawn: true);
+                return;
+            }
+
+            bool isColonistShot = attacker != null
+                && attacker.IsColonist
+                && ZombieUtility.IsVariant(victim, ZombieVariant.Boomer)
+                && (dinfo.Instigator is Projectile || attacker.equipment?.Primary?.def?.IsRangedWeapon == true);
+
+            if (isColonistShot)
+            {
+                ZombieSpecialUtility.TriggerBoomerBurst(victim, consumePawn: true);
             }
         }
     }

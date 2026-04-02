@@ -62,8 +62,57 @@ namespace CustomizableZombieHorde
             new Color(0.42f, 0.47f, 0.43f)
         };
 
-        public static Color GetSkinColor(ZombieVariant variant)
+        private static readonly Color[] DesiccatedBiterSkinPalette =
         {
+            new Color(0.63f, 0.58f, 0.43f),
+            new Color(0.56f, 0.50f, 0.37f),
+            new Color(0.49f, 0.44f, 0.33f),
+            new Color(0.42f, 0.38f, 0.28f)
+        };
+
+        private static readonly Color[] SkeletalBiterSkinPalette =
+        {
+            new Color(0.86f, 0.82f, 0.72f),
+            new Color(0.80f, 0.76f, 0.67f),
+            new Color(0.75f, 0.71f, 0.63f),
+            new Color(0.69f, 0.66f, 0.59f)
+        };
+
+        public static bool ShouldLookSkeletal(Pawn pawn)
+        {
+            if (pawn == null || ZombieUtility.GetVariant(pawn) != ZombieVariant.Biter)
+            {
+                return false;
+            }
+
+            return Mathf.Abs(pawn.thingIDNumber) % 9 == 0;
+        }
+
+        public static bool ShouldLookDesiccated(Pawn pawn)
+        {
+            if (pawn == null || ZombieUtility.GetVariant(pawn) != ZombieVariant.Biter || ShouldLookSkeletal(pawn))
+            {
+                return false;
+            }
+
+            return Mathf.Abs(pawn.thingIDNumber) % 5 == 0;
+        }
+
+        public static Color GetSkinColor(Pawn pawn, ZombieVariant variant)
+        {
+            if (variant == ZombieVariant.Biter)
+            {
+                if (ShouldLookSkeletal(pawn))
+                {
+                    return SkeletalBiterSkinPalette.RandomElement();
+                }
+
+                if (ShouldLookDesiccated(pawn))
+                {
+                    return DesiccatedBiterSkinPalette.RandomElement();
+                }
+            }
+
             switch (variant)
             {
                 case ZombieVariant.Crawler:
@@ -130,15 +179,33 @@ namespace CustomizableZombieHorde
             }
         }
 
-
-
         private static BodyTypeDef GetNormalBodyType(Pawn pawn)
         {
             return pawn != null && pawn.gender == Gender.Female ? BodyTypeDefOf.Female : BodyTypeDefOf.Male;
         }
 
-        public static string GetVariantOverlayPath(ZombieVariant variant)
+        public static Color GetOverlayColor(Pawn pawn)
         {
+            if (ShouldLookSkeletal(pawn))
+            {
+                return new Color(0.93f, 0.90f, 0.83f, 1f);
+            }
+
+            if (ShouldLookDesiccated(pawn))
+            {
+                return new Color(0.74f, 0.67f, 0.52f, 1f);
+            }
+
+            return Color.white;
+        }
+
+        public static string GetVariantOverlayPath(Pawn pawn, ZombieVariant variant)
+        {
+            if (variant == ZombieVariant.Biter && ShouldLookSkeletal(pawn))
+            {
+                return "PawnOverlays/ZombieSkeletonBody";
+            }
+
             switch (variant)
             {
                 case ZombieVariant.Crawler:

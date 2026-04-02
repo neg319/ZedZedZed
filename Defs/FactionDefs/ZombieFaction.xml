@@ -17,14 +17,6 @@
     <factionIconPath>UI/Faction/Zombies</factionIconPath>
     <basicMemberKind>CZH_Zombie_Biter</basicMemberKind>
     <techLevel>Neolithic</techLevel>
-    <backstoryCategoryFilters>
-      <li>
-        <categories>
-          <li>CZH_Zombie</li>
-        </categories>
-        <commonality>1.0</commonality>
-      </li>
-    </backstoryCategoryFilters>
     <raidLootValueFromPointsCurve>
       <points>
         <li>(0,0)</li>

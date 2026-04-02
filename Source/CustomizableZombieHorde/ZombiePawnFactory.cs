@@ -13,7 +13,7 @@ namespace CustomizableZombieHorde
 
             try
             {
-                pawn = faction != null ? PawnGenerator.GeneratePawn(kind, faction) : PawnGenerator.GeneratePawn(kind);
+                pawn = PawnGenerator.GeneratePawn(kind);
             }
             catch
             {
@@ -27,11 +27,11 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            FinalizeZombie(pawn, initialSpawn: true);
+            FinalizeZombie(pawn, initialSpawn: true, desiredFaction: faction);
             return pawn;
         }
 
-        public static void FinalizeZombie(Pawn pawn, bool initialSpawn)
+        public static void FinalizeZombie(Pawn pawn, bool initialSpawn, Faction desiredFaction = null)
         {
             if (pawn == null)
             {
@@ -46,15 +46,16 @@ namespace CustomizableZombieHorde
             if (pawn.story != null)
             {
                 ZombieVariant variant = ZombieUtility.GetVariant(pawn);
-                pawn.story.skinColorOverride = ZombieVisualUtility.GetSkinColor(variant);
+                pawn.story.skinColorOverride = ZombieVisualUtility.GetSkinColor(pawn, variant);
                 TrySetHairColor(pawn, ZombieVisualUtility.GetHairColor(Color.gray, variant));
                 pawn.story.bodyType = ZombieVisualUtility.GetBodyType(variant, pawn, pawn.story.bodyType);
-                ApplyZombieBackstories(pawn, variant);
                 if (pawn.style != null)
                 {
                     pawn.style.beardDef = BeardDefOf.NoBeard;
                 }
             }
+
+            TryAssignFaction(pawn, desiredFaction);
 
             ZombieUtility.SetZombieDisplayName(pawn);
             ZombieUtility.StripAllUsableItems(pawn);
@@ -78,6 +79,39 @@ namespace CustomizableZombieHorde
             ZombieUtility.MarkPawnGraphicsDirty(pawn);
         }
 
+
+        private static void TryAssignFaction(Pawn pawn, Faction faction)
+        {
+            if (pawn == null || faction == null || pawn.Faction == faction)
+            {
+                return;
+            }
+
+            try
+            {
+                var setFactionDirect = AccessTools.Method(typeof(Pawn), "SetFactionDirect", new[] { typeof(Faction) });
+                if (setFactionDirect != null)
+                {
+                    setFactionDirect.Invoke(pawn, new object[] { faction });
+                    return;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                var setFaction = AccessTools.Method(typeof(Pawn), "SetFaction", new[] { typeof(Faction), typeof(Pawn) });
+                if (setFaction != null)
+                {
+                    setFaction.Invoke(pawn, new object[] { faction, null });
+                }
+            }
+            catch
+            {
+            }
+        }
 
         private static void ApplyZombieBackstories(Pawn pawn, ZombieVariant variant)
         {

@@ -63,7 +63,7 @@ namespace CustomizableZombieHorde
                 HandleZombieFeeding();
             }
 
-            if (ticksGame % 30 == 0)
+            if (ticksGame % 12 == 0)
             {
                 ZombieGrabberUtility.TickGrabbers();
             }
