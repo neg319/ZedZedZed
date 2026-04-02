@@ -27,8 +27,7 @@
         <offset>(0,0,-0.04)</offset>
       </shadowData>
     </graphicData>
-    <madeFromStuff>true</madeFromStuff>
-    <stuffCategories>
+        <stuffCategories>
       <li>Woody</li>
       <li>Stony</li>
       <li>Metallic</li>
@@ -57,7 +56,7 @@
     </building>
   </ThingDef>
 
-  <ThingDef ParentName="BaseHumanGun">
+  <ThingDef ParentName="BaseHumanMakeableGun">
     <defName>CZH_Gun_SpringTurret</defName>
     <label>spring turret gun</label>
     <graphicData>
