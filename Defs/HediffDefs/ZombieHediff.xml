@@ -146,8 +146,10 @@
       <li>
         <label>hulking</label>
         <statOffsets>
-          <MoveSpeed>-0.50</MoveSpeed>
-          <MeleeDamageFactor>0.10</MeleeDamageFactor>
+          <MoveSpeed>-0.05</MoveSpeed>
+          <MeleeDamageFactor>0.70</MeleeDamageFactor>
+          <ArmorRating_Blunt>0.12</ArmorRating_Blunt>
+          <ArmorRating_Sharp>0.12</ArmorRating_Sharp>
         </statOffsets>
       </li>
     </stages>

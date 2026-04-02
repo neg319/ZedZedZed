@@ -111,21 +111,30 @@ namespace CustomizableZombieHorde
             return Color.Lerp(existingColor, tint, 0.82f);
         }
 
-        public static BodyTypeDef GetBodyType(ZombieVariant variant, BodyTypeDef fallback)
+        public static BodyTypeDef GetBodyType(ZombieVariant variant, Pawn pawn, BodyTypeDef fallback)
         {
             switch (variant)
             {
+                case ZombieVariant.Biter:
                 case ZombieVariant.Crawler:
                     return BodyTypeDefOf.Thin;
                 case ZombieVariant.Boomer:
                     return BodyTypeDefOf.Fat;
+                case ZombieVariant.Drowned:
+                case ZombieVariant.Grabber:
+                    return GetNormalBodyType(pawn);
                 case ZombieVariant.Tank:
                     return BodyTypeDefOf.Hulk;
-                case ZombieVariant.Grabber:
-                    return BodyTypeDefOf.Thin;
                 default:
-                    return fallback ?? BodyTypeDefOf.Thin;
+                    return fallback ?? GetNormalBodyType(pawn);
             }
+        }
+
+
+
+        private static BodyTypeDef GetNormalBodyType(Pawn pawn)
+        {
+            return pawn != null && pawn.gender == Gender.Female ? BodyTypeDefOf.Female : BodyTypeDefOf.Male;
         }
 
         public static string GetVariantOverlayPath(ZombieVariant variant)

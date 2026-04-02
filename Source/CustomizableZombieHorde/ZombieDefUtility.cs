@@ -75,6 +75,18 @@ namespace CustomizableZombieHorde
             }
         }
 
+
+
+        public static string GetChildhoodBackstoryDefName(ZombieVariant variant)
+        {
+            return "CZH_BackstoryChild_" + GetVariantLabel(variant).Replace(" ", string.Empty);
+        }
+
+        public static string GetAdulthoodBackstoryDefName(ZombieVariant variant)
+        {
+            return "CZH_BackstoryAdult_" + GetVariantLabel(variant).Replace(" ", string.Empty);
+        }
+
         public static string GetGraveLetterLabel(ZombieVariant variant)
         {
             return GetVariantLabel(variant) + " Grave Awakened";

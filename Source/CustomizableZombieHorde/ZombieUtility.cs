@@ -198,7 +198,7 @@ namespace CustomizableZombieHorde
                 float severity = torsoSeverity ? Rand.Range(1.6f, 3.0f) : Rand.Range(0.8f, 2.0f);
                 if (IsVariant(pawn, ZombieVariant.Tank))
                 {
-                    severity *= 0.60f;
+                    severity *= 0.30f;
                 }
                 else if (IsVariant(pawn, ZombieVariant.Crawler))
                 {

@@ -12,6 +12,7 @@ This repository is the full source package for the mod, along with a GitHub Acti
 - debug controls for forcing major zombie event types during testing
 - custom overlays and faction visuals tuned for a RimWorld style look
 - GitHub build workflow that outputs an installable mod zip
+- a new spring turret in the security tab that fires once per second without power or ammo
 
 ## Building the mod on GitHub
 

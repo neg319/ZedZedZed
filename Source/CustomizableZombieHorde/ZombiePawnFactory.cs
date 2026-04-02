@@ -48,7 +48,8 @@ namespace CustomizableZombieHorde
                 ZombieVariant variant = ZombieUtility.GetVariant(pawn);
                 pawn.story.skinColorOverride = ZombieVisualUtility.GetSkinColor(variant);
                 TrySetHairColor(pawn, ZombieVisualUtility.GetHairColor(Color.gray, variant));
-                pawn.story.bodyType = ZombieVisualUtility.GetBodyType(variant, pawn.story.bodyType);
+                pawn.story.bodyType = ZombieVisualUtility.GetBodyType(variant, pawn, pawn.story.bodyType);
+                ApplyZombieBackstories(pawn, variant);
                 if (pawn.style != null)
                 {
                     pawn.style.beardDef = BeardDefOf.NoBeard;
@@ -75,6 +76,51 @@ namespace CustomizableZombieHorde
             }
 
             ZombieUtility.MarkPawnGraphicsDirty(pawn);
+        }
+
+
+        private static void ApplyZombieBackstories(Pawn pawn, ZombieVariant variant)
+        {
+            if (pawn?.story == null)
+            {
+                return;
+            }
+
+            BackstoryDef childhood = DefDatabase<BackstoryDef>.GetNamedSilentFail(ZombieDefUtility.GetChildhoodBackstoryDefName(variant));
+            BackstoryDef adulthood = DefDatabase<BackstoryDef>.GetNamedSilentFail(ZombieDefUtility.GetAdulthoodBackstoryDefName(variant));
+
+            TrySetBackstory(pawn.story, "Childhood", childhood);
+            TrySetBackstory(pawn.story, "Adulthood", adulthood);
+        }
+
+        private static void TrySetBackstory(Pawn_StoryTracker story, string propertyName, BackstoryDef backstory)
+        {
+            if (story == null || backstory == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var property = AccessTools.Property(story.GetType(), propertyName);
+                if (property != null && property.CanWrite)
+                {
+                    property.SetValue(story, backstory, null);
+                    return;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                var field = AccessTools.Field(story.GetType(), propertyName.ToLowerInvariant());
+                field?.SetValue(story, backstory);
+            }
+            catch
+            {
+            }
         }
 
         private static void TrySetHairColor(Pawn pawn, Color hairColor)

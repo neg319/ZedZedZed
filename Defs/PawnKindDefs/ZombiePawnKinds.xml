@@ -96,7 +96,7 @@
     <label>zombie heavy</label>
     <race>Human</race>
     <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
-    <combatPower>120</combatPower>
+    <combatPower>130</combatPower>
     <apparelMoney>
       <min>0</min>
       <max>45</max>

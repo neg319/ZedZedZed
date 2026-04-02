@@ -17,6 +17,6 @@
   <description>
 Zed Zed Zed is a configurable zombie horde mod for RimWorld built around restless, shambling pressure instead of constant straight line raids. The undead trickle in from the edges, drift in packs, huddle until disturbed, burst from graves and the ground, and swell into larger threats under full moons and blood moons.
 
-The mod includes multiple zombie variants, custom visuals, grave events, debug tools, and a GitHub build workflow for easy packaging. This repository is set up as a clean, vibe coded source package for ongoing development.
+The mod includes multiple zombie variants, custom visuals, grave events, debug tools, a buildable spring turret for low tech colony defense, and a GitHub build workflow for easy packaging. This repository is set up as a clean, vibe coded source package for ongoing development.
   </description>
 </ModMetaData>

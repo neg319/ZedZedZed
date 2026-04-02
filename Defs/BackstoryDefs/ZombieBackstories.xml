@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Biter</defName>
+    <identifier>CZH_BackstoryChild_Biter</identifier>
+    <slot>Childhood</slot>
+    <title>biter husk</title>
+    <titleShort>biter husk</titleShort>
+    <baseDesc>This corpse rotted into a snapping biter that only remembers hunger.</baseDesc>
+  </BackstoryDef>
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Biter</defName>
+    <identifier>CZH_BackstoryAdult_Biter</identifier>
+    <slot>Adulthood</slot>
+    <title>grave hunger</title>
+    <titleShort>grave hunger</titleShort>
+    <baseDesc>Death stripped away the rest of its life and left only a slow, biting hunger.</baseDesc>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Crawler</defName>
+    <identifier>CZH_BackstoryChild_Crawler</identifier>
+    <slot>Childhood</slot>
+    <title>crawler husk</title>
+    <titleShort>crawler husk</titleShort>
+    <baseDesc>This broken corpse drags itself over the ground on ruined limbs.</baseDesc>
+  </BackstoryDef>
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Crawler</defName>
+    <identifier>CZH_BackstoryAdult_Crawler</identifier>
+    <slot>Adulthood</slot>
+    <title>dragged below</title>
+    <titleShort>dragged below</titleShort>
+    <baseDesc>Its last memory is of being pulled down and coming back wrong.</baseDesc>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Boomer</defName>
+    <identifier>CZH_BackstoryChild_Boomer</identifier>
+    <slot>Childhood</slot>
+    <title>boomer husk</title>
+    <titleShort>boomer husk</titleShort>
+    <baseDesc>This swollen corpse bubbles with pressure and corrosive bile.</baseDesc>
+  </BackstoryDef>
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Boomer</defName>
+    <identifier>CZH_BackstoryAdult_Boomer</identifier>
+    <slot>Adulthood</slot>
+    <title>bloated rot</title>
+    <titleShort>bloated rot</titleShort>
+    <baseDesc>The body kept filling after death until it became a walking sac of decay.</baseDesc>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Sick</defName>
+    <identifier>CZH_BackstoryChild_Sick</identifier>
+    <slot>Childhood</slot>
+    <title>sick husk</title>
+    <titleShort>sick husk</titleShort>
+    <baseDesc>This corpse is soaked in dark infection and foul blood.</baseDesc>
+  </BackstoryDef>
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Sick</defName>
+    <identifier>CZH_BackstoryAdult_Sick</identifier>
+    <slot>Adulthood</slot>
+    <title>plague rot</title>
+    <titleShort>plague rot</titleShort>
+    <baseDesc>What rose from the grave carries a sickness that spreads with every wound.</baseDesc>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Drowned</defName>
+    <identifier>CZH_BackstoryChild_Drowned</identifier>
+    <slot>Childhood</slot>
+    <title>drowned husk</title>
+    <titleShort>drowned husk</titleShort>
+    <baseDesc>This waterlogged corpse sloshes, drips, and lurches back toward the shore.</baseDesc>
+  </BackstoryDef>
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Drowned</defName>
+    <identifier>CZH_BackstoryAdult_Drowned</identifier>
+    <slot>Adulthood</slot>
+    <title>sunken rot</title>
+    <titleShort>sunken rot</titleShort>
+    <baseDesc>It died below the surface and rose again with the lake still clinging to it.</baseDesc>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Heavy</defName>
+    <identifier>CZH_BackstoryChild_Heavy</identifier>
+    <slot>Childhood</slot>
+    <title>heavy husk</title>
+    <titleShort>heavy husk</titleShort>
+    <baseDesc>This hulking corpse is all dead weight, thick muscle, and blunt force.</baseDesc>
+  </BackstoryDef>
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Heavy</defName>
+    <identifier>CZH_BackstoryAdult_Heavy</identifier>
+    <slot>Adulthood</slot>
+    <title>grave brute</title>
+    <titleShort>grave brute</titleShort>
+    <baseDesc>Death did not dull its strength. It came back as a hulking heavy that simply keeps coming.</baseDesc>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Grabber</defName>
+    <identifier>CZH_BackstoryChild_Grabber</identifier>
+    <slot>Childhood</slot>
+    <title>grabber husk</title>
+    <titleShort>grabber husk</titleShort>
+    <baseDesc>This corpse grew a rotten tongue that lashes out and drags prey close.</baseDesc>
+  </BackstoryDef>
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Grabber</defName>
+    <identifier>CZH_BackstoryAdult_Grabber</identifier>
+    <slot>Adulthood</slot>
+    <title>tongue rot</title>
+    <titleShort>tongue rot</titleShort>
+    <baseDesc>It shambles behind the horde until it can hook something living and reel it in.</baseDesc>
+  </BackstoryDef>
+</Defs>

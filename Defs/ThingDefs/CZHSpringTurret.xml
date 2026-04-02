@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <ThingDef ParentName="BuildingBase">
+    <defName>CZH_Turret_Spring</defName>
+    <label>spring turret</label>
+    <description>A compact automatic turret built around a simple spring drive and a stripped down targeter. It does not need power or ammo, fires a steady shot every second, and sits in the security tab right beside the rest of your colony defenses.</description>
+    <thingClass>Building_TurretGun</thingClass>
+    <category>Building</category>
+    <size>(1,1)</size>
+    <altitudeLayer>Building</altitudeLayer>
+    <drawerType>RealtimeOnly</drawerType>
+    <fillPercent>0.22</fillPercent>
+    <passability>PassThroughOnly</passability>
+    <selectable>true</selectable>
+    <castEdgeShadows>false</castEdgeShadows>
+    <leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
+    <tickerType>Normal</tickerType>
+    <designationCategory>Security</designationCategory>
+    <uiIconPath>Things/Building/Security/CZHSpringTurretBase</uiIconPath>
+    <graphicData>
+      <texPath>Things/Building/Security/CZHSpringTurretBase</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>(1,1)</drawSize>
+      <shadowData>
+        <volume>(0.35, 0.2, 0.35)</volume>
+        <offset>(0,0,-0.04)</offset>
+      </shadowData>
+    </graphicData>
+    <statBases>
+      <MaxHitPoints>180</MaxHitPoints>
+      <WorkToBuild>12000</WorkToBuild>
+      <Mass>35</Mass>
+      <MarketValue>420</MarketValue>
+      <Flammability>0.65</Flammability>
+      <Beauty>-6</Beauty>
+      <CoverEffectiveness>0.45</CoverEffectiveness>
+    </statBases>
+    <costList>
+      <Steel>100</Steel>
+      <ComponentIndustrial>2</ComponentIndustrial>
+    </costList>
+    <researchPrerequisites>
+      <li>GunTurrets</li>
+    </researchPrerequisites>
+    <comps>
+      <li>
+        <compClass>CompForbiddable</compClass>
+      </li>
+      <li>
+        <compClass>CompBreakdownable</compClass>
+      </li>
+      <li>
+        <compClass>CompFlickable</compClass>
+      </li>
+    </comps>
+    <building>
+      <turretGunDef>CZH_Gun_SpringTurret</turretGunDef>
+      <isInert>false</isInert>
+      <buildingTags>
+        <li>Security</li>
+      </buildingTags>
+    </building>
+  </ThingDef>
+
+  <ThingDef ParentName="GunBase">
+    <defName>CZH_Gun_SpringTurret</defName>
+    <label>spring turret gun</label>
+    <graphicData>
+      <texPath>Things/Building/Security/CZHSpringTurretTop</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>(1,1)</drawSize>
+      <shaderType>Cutout</shaderType>
+    </graphicData>
+    <techLevel>Industrial</techLevel>
+    <weaponTags>
+      <li>CZH_SpringTurret</li>
+    </weaponTags>
+    <statBases>
+      <AccuracyTouch>1.00</AccuracyTouch>
+      <AccuracyShort>0.98</AccuracyShort>
+      <AccuracyMedium>0.94</AccuracyMedium>
+      <AccuracyLong>0.90</AccuracyLong>
+      <RangedWeapon_Cooldown>1.00</RangedWeapon_Cooldown>
+    </statBases>
+    <verbs>
+      <li>
+        <verbClass>Verb_Shoot</verbClass>
+        <hasStandardCommand>false</hasStandardCommand>
+        <warmupTime>0.18</warmupTime>
+        <defaultProjectile>CZH_Bullet_SpringTurret</defaultProjectile>
+        <range>28.9</range>
+        <ticksBetweenBurstShots>60</ticksBetweenBurstShots>
+        <burstShotCount>1</burstShotCount>
+        <soundCast>Shot_Autopistol</soundCast>
+        <muzzleFlashScale>5</muzzleFlashScale>
+        <forcedMissRadius>0.15</forcedMissRadius>
+      </li>
+    </verbs>
+  </ThingDef>
+
+  <ThingDef ParentName="BaseBullet">
+    <defName>CZH_Bullet_SpringTurret</defName>
+    <label>spring turret round</label>
+    <graphicData>
+      <texPath>Things/Projectile/Bullet_Small</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+    </graphicData>
+    <projectile>
+      <damageDef>Bullet</damageDef>
+      <damageAmountBase>9</damageAmountBase>
+      <speed>55</speed>
+    </projectile>
+  </ThingDef>
+</Defs>
