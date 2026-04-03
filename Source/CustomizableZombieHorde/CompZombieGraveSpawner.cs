@@ -99,8 +99,7 @@ namespace CustomizableZombieHorde
                 return "The grave is stirring. Destroy it before more " + variantLabel + " corpses break free.";
             }
 
-            return "Destroy this grave to stop new " + variantLabel + " corpses from spawning.
-Next corpse burst in about " + ticksLeft.ToStringTicksToPeriod().Colorize(ColoredText.SubtleGrayColor);
+            return "Destroy this grave to stop new " + variantLabel + " corpses from spawning.\nNext corpse burst in about " + ticksLeft.ToStringTicksToPeriod().Colorize(ColoredText.SubtleGrayColor);
         }
 
         private void TrySpawnBurst()
