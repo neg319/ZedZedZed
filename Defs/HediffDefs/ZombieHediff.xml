@@ -14,6 +14,27 @@
       <li Class="HediffCompProperties_VerbGiver">
         <verbs>
           <li>
+            <verbClass>CustomizableZombieHorde.ZombieVerb_GrabberTongue</verbClass>
+            <label>tongue lash</label>
+            <range>12</range>
+            <warmupTime>0.15</warmupTime>
+            <defaultCooldownTime>4.8</defaultCooldownTime>
+            <minRange>2.2</minRange>
+            <hasStandardCommand>false</hasStandardCommand>
+            <defaultProjectile>CZH_GrabberTongueProjectile</defaultProjectile>
+            <forcedMissRadius>0</forcedMissRadius>
+            <accuracyTouch>999</accuracyTouch>
+            <accuracyShort>999</accuracyShort>
+            <accuracyMedium>999</accuracyMedium>
+            <accuracyLong>999</accuracyLong>
+            <targetParams>
+              <canTargetPawns>true</canTargetPawns>
+              <canTargetLocations>false</canTargetLocations>
+              <canTargetBuildings>false</canTargetBuildings>
+              <canTargetSelf>false</canTargetSelf>
+            </targetParams>
+          </li>
+          <li>
             <verbClass>CustomizableZombieHorde.ZombieVerb_MeleeAttack</verbClass>
             <label>bite</label>
             <range>1</range>
@@ -205,7 +226,7 @@
     <defName>CZH_ZombieSickness</defName>
     <hediffClass>HediffWithComps</hediffClass>
     <label>zombie sickness</label>
-    <description>Contact with sick zombie blood has left this pawn feverish and weak.</description>
+    <description>Contact with sick zombie blood has left this pawn feverish and weak. Zombie sickness reduces movement and consciousness until treated with a bile med kit.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>true</tendable>

@@ -16,7 +16,7 @@
     <leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
     <tickerType>Normal</tickerType>
     <designationCategory>Security</designationCategory>
-        <clearBuildingArea>false</clearBuildingArea>
+    <clearBuildingArea>false</clearBuildingArea>
     <uiIconPath>Things/Building/Security/CZHSpringTurretBase</uiIconPath>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretBase</texPath>
@@ -27,7 +27,7 @@
         <offset>(0,0,-0.04)</offset>
       </shadowData>
     </graphicData>
-        <stuffCategories>
+    <stuffCategories>
       <li>Woody</li>
       <li>Stony</li>
       <li>Metallic</li>
@@ -41,11 +41,6 @@
       <Flammability>0.65</Flammability>
       <Beauty>-6</Beauty>
     </statBases>
-    <comps>
-      <li>
-        <compClass>CompFlickable</compClass>
-      </li>
-    </comps>
     <building>
       <turretGunDef>CZH_Gun_SpringTurret</turretGunDef>
       <isInert>false</isInert>
@@ -56,9 +51,19 @@
     </building>
   </ThingDef>
 
-  <ThingDef ParentName="BaseHumanMakeableGun">
+  <ThingDef>
     <defName>CZH_Gun_SpringTurret</defName>
     <label>spring turret gun</label>
+    <thingClass>RimWorld.Gun</thingClass>
+    <category>Item</category>
+    <selectable>false</selectable>
+    <drawerType>RealtimeOnly</drawerType>
+    <altitudeLayer>Item</altitudeLayer>
+    <tickerType>Never</tickerType>
+    <tradeability>None</tradeability>
+    <smeltable>false</smeltable>
+    <useHitPoints>false</useHitPoints>
+    <rotatable>false</rotatable>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretTop</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -66,6 +71,7 @@
       <shaderType>Cutout</shaderType>
     </graphicData>
     <statBases>
+      <Mass>1</Mass>
       <AccuracyTouch>1.00</AccuracyTouch>
       <AccuracyShort>0.98</AccuracyShort>
       <AccuracyMedium>0.94</AccuracyMedium>

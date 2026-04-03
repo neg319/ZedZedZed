@@ -46,8 +46,10 @@ namespace CustomizableZombieHorde
             if (pawn.story != null)
             {
                 ZombieVariant variant = ZombieUtility.GetVariant(pawn);
+                ZombieVariant visualVariant = ZombieLurkerUtility.GetEffectiveVisualVariant(pawn, variant);
+                ApplyZombieBackstories(pawn, variant);
                 pawn.story.skinColorOverride = ZombieVisualUtility.GetSkinColor(pawn, variant);
-                TrySetHairColor(pawn, ZombieVisualUtility.GetHairColor(Color.gray, variant));
+                TrySetHairColor(pawn, ZombieVisualUtility.GetHairColor(Color.gray, visualVariant));
                 pawn.story.bodyType = ZombieVisualUtility.GetBodyType(variant, pawn, pawn.story.bodyType);
                 if (pawn.style != null)
                 {
@@ -55,7 +57,14 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            TryAssignFaction(pawn, desiredFaction);
+            if (desiredFaction != null)
+            {
+                TryAssignFaction(pawn, desiredFaction);
+            }
+            else if (ZombieLurkerUtility.IsLurker(pawn))
+            {
+                ZombieLurkerUtility.ClearFaction(pawn);
+            }
 
             ZombieUtility.SetZombieDisplayName(pawn);
             ZombieUtility.StripAllUsableItems(pawn);

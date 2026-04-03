@@ -100,6 +100,8 @@ namespace CustomizableZombieHorde
 
         public static Color GetSkinColor(Pawn pawn, ZombieVariant variant)
         {
+            variant = ZombieLurkerUtility.GetEffectiveVisualVariant(pawn, variant);
+
             if (variant == ZombieVariant.Biter)
             {
                 if (ShouldLookSkeletal(pawn))
@@ -152,6 +154,9 @@ namespace CustomizableZombieHorde
                 case ZombieVariant.Grabber:
                     tint = new Color(0.40f, 0.33f, 0.35f);
                     break;
+                case ZombieVariant.Lurker:
+                    tint = new Color(0.36f, 0.35f, 0.31f);
+                    break;
                 default:
                     tint = Color.gray;
                     break;
@@ -162,6 +167,7 @@ namespace CustomizableZombieHorde
 
         public static BodyTypeDef GetBodyType(ZombieVariant variant, Pawn pawn, BodyTypeDef fallback)
         {
+            variant = ZombieLurkerUtility.GetEffectiveVisualVariant(pawn, variant);
             switch (variant)
             {
                 case ZombieVariant.Biter:
@@ -201,6 +207,8 @@ namespace CustomizableZombieHorde
 
         public static string GetVariantOverlayPath(Pawn pawn, ZombieVariant variant)
         {
+            variant = ZombieLurkerUtility.GetEffectiveVisualVariant(pawn, variant);
+
             if (variant == ZombieVariant.Biter && ShouldLookSkeletal(pawn))
             {
                 return "PawnOverlays/ZombieSkeletonBody";

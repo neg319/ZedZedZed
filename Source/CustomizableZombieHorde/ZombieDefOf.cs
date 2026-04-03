@@ -18,6 +18,8 @@ namespace CustomizableZombieHorde
 
         public static ThingDef CZH_RottenFlesh;
         public static ThingDef CZH_RottenLeather;
+        public static ThingDef CZH_ZombieBile;
+        public static ThingDef CZH_BileTreatmentKit;
         public static ThingDef CZH_Filth_ZombieBlood;
         public static ThingDef CZH_Filth_SickZombieBlood;
         public static ThingDef CZH_Filth_ZombieAcid;
@@ -35,6 +37,14 @@ namespace CustomizableZombieHorde
         public static TraitDef CZH_Trait_ZombieSickImmune;
         public static TraitDef CZH_Trait_HeadHunter;
         public static TraitDef CZH_Trait_DeadScent;
+        public static TraitDef CZH_Trait_ZombiePassive;
+        public static TraitDef CZH_Trait_HardToKill;
+        public static TraitDef CZH_Trait_SteadyHands;
+        public static TraitDef CZH_Trait_QuickEscape;
+
+        public static IncidentDef CZH_LurkerArrives;
+        public static JobDef CZH_TameLurker;
+        public static JobDef CZH_AdministerBileTreatment;
 
         static ZombieDefOf()
         {

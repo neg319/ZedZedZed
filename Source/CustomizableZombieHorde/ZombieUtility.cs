@@ -20,39 +20,12 @@ namespace CustomizableZombieHorde
 
         public static bool IsZombie(Pawn pawn)
         {
-            if (pawn == null)
-            {
-                return false;
-            }
-
-            if (pawn.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_ZombieRot) == true)
-            {
-                return true;
-            }
-
-            return pawn.kindDef?.defName?.StartsWith("CZH_Zombie_") == true;
+            return ZombieRulesUtility.IsZombie(pawn);
         }
 
         public static ZombieVariant GetVariant(Pawn pawn)
         {
-            string defName = pawn?.kindDef?.defName ?? string.Empty;
-            switch (defName)
-            {
-                case "CZH_Zombie_Crawler":
-                    return ZombieVariant.Crawler;
-                case "CZH_Zombie_Boomer":
-                    return ZombieVariant.Boomer;
-                case "CZH_Zombie_Sick":
-                    return ZombieVariant.Sick;
-                case "CZH_Zombie_Drowned":
-                    return ZombieVariant.Drowned;
-                case "CZH_Zombie_Tank":
-                    return ZombieVariant.Tank;
-                case "CZH_Zombie_Grabber":
-                    return ZombieVariant.Grabber;
-                default:
-                    return ZombieVariant.Biter;
-            }
+            return ZombieVariantUtility.GetVariant(pawn);
         }
 
         public static bool IsVariant(Pawn pawn, ZombieVariant variant)
@@ -80,41 +53,17 @@ namespace CustomizableZombieHorde
 
         public static bool ShouldZombiesIgnore(Pawn pawn)
         {
-            return pawn != null && (IsZombie(pawn) || ZombieTraitUtility.IsIgnoredByZombies(pawn));
+            return ZombieRulesUtility.IsIgnoredByZombies(pawn);
         }
 
         public static bool HasHeadDamageOrDestruction(Pawn pawn)
         {
-            if (pawn?.health?.hediffSet == null)
-            {
-                return true;
-            }
-
-            if (!pawn.health.hediffSet.HasHead)
-            {
-                return true;
-            }
-
-            BodyPartRecord head = pawn.RaceProps?.body?.AllParts?.FirstOrDefault(part => part.def == BodyPartDefOf.Head);
-            if (head == null)
-            {
-                return true;
-            }
-
-            return pawn.health.hediffSet.hediffs.Any(hediff => IsHeadPartOrChild(hediff.Part, head) && (hediff is Hediff_Injury || hediff is Hediff_MissingPart));
+            return ZombieRulesUtility.HasHeadDamageOrDestruction(pawn);
         }
 
-        private static bool IsHeadPartOrChild(BodyPartRecord part, BodyPartRecord head)
+        public static bool CanReanimate(Pawn pawn)
         {
-            for (BodyPartRecord current = part; current != null; current = current.parent)
-            {
-                if (current == head)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return ZombieRulesUtility.CanReanimate(pawn);
         }
 
         public static IEnumerable<BodyPartRecord> GetZombieLimbParts(Pawn pawn)
@@ -595,6 +544,17 @@ namespace CustomizableZombieHorde
         public static void EnsureZombieAggression(Pawn pawn)
         {
             if (!IsZombie(pawn) || pawn.Dead || pawn.Destroyed || !pawn.Spawned || pawn.jobs == null)
+            {
+                return;
+            }
+
+            if (ZombieLurkerUtility.IsPassiveLurker(pawn))
+            {
+                ZombieLurkerUtility.EnsurePassiveLurkerBehavior(pawn);
+                return;
+            }
+
+            if (ZombieLurkerUtility.IsColonyLurker(pawn))
             {
                 return;
             }

@@ -1,3 +1,227 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Biter</defName>
+    <title>feral hunger</title>
+    <titleShort>feral hunger</titleShort>
+    <baseDesc>Raised where scraps were scarce and fights were constant, this pawn learned early that teeth, fists, and speed settled most problems before words ever could.</baseDesc>
+    <slot>Childhood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Melee>3</Melee>
+      <Social>-2</Social>
+      <Cooking>-1</Cooking>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Biter</defName>
+    <title>pit-fight mauler</title>
+    <titleShort>pit fighter</titleShort>
+    <baseDesc>By adulthood, this pawn had earned a living in rough circles where brute force and relentless charges mattered more than grace. Once they latched on, they rarely let go.</baseDesc>
+    <slot>Adulthood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Melee>4</Melee>
+      <Shooting>-2</Shooting>
+      <Social>-1</Social>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Crawler</defName>
+    <title>collapse survivor</title>
+    <titleShort>collapse survivor</titleShort>
+    <baseDesc>Buried young beneath twisted beams and rubble, this pawn spent their earliest years dragging through cramped gaps and learning to keep moving no matter what was broken.</baseDesc>
+    <slot>Childhood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Mining>2</Mining>
+      <Melee>1</Melee>
+      <Shooting>-1</Shooting>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Crawler</defName>
+    <title>tunnel scrabbler</title>
+    <titleShort>tunnel scrabbler</titleShort>
+    <baseDesc>This pawn made a grim trade in storm drains, vents, and collapsed service shafts, slipping through places others would never dare enter and clawing through the dark for work.</baseDesc>
+    <slot>Adulthood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Mining>2</Mining>
+      <Construction>1</Construction>
+      <Melee>2</Melee>
+      <Shooting>-1</Shooting>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Boomer</defName>
+    <title>chemical ward child</title>
+    <titleShort>chemical ward</titleShort>
+    <baseDesc>Raised near leaking drums, harsh cleaners, and ruptured tanks, this pawn grew up amid fumes and pressure valves, always one bad day away from a catastrophic mess.</baseDesc>
+    <slot>Childhood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Intellectual>1</Intellectual>
+      <Crafting>1</Crafting>
+      <Cooking>-1</Cooking>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Boomer</defName>
+    <title>pressurized tank cleaner</title>
+    <titleShort>tank cleaner</titleShort>
+    <baseDesc>This pawn spent long shifts scraping residue from sealed vats and cracked pipes. Everyone who worked that line smelled wrong, walked wrong, and seemed one spark away from disaster.</baseDesc>
+    <slot>Adulthood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Crafting>2</Crafting>
+      <Construction>1</Construction>
+      <Melee>-1</Melee>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Sick</defName>
+    <title>ward patient</title>
+    <titleShort>ward patient</titleShort>
+    <baseDesc>Illness shaped this pawn from the beginning. Quarantine cots, sour medicine, and long fevers taught them to live with weakness, filth, and the constant threat of contagion.</baseDesc>
+    <slot>Childhood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Medicine>2</Medicine>
+      <Social>-1</Social>
+      <Plants>-1</Plants>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Sick</defName>
+    <title>pesthouse orderly</title>
+    <titleShort>orderly</titleShort>
+    <baseDesc>This pawn worked in the places others avoided, hauling linens, scrubbing filth, and handling the contagious dead long after the healers had given up on recovery.</baseDesc>
+    <slot>Adulthood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Medicine>3</Medicine>
+      <Intellectual>1</Intellectual>
+      <Social>-1</Social>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Drowned</defName>
+    <title>flood camp orphan</title>
+    <titleShort>flood orphan</titleShort>
+    <baseDesc>Floodwater took the home, then the road, then nearly everyone else. This pawn learned to read currents, cling to wreckage, and breathe panic down before it drowned them too.</baseDesc>
+    <slot>Childhood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Animals>1</Animals>
+      <Plants>1</Plants>
+      <Melee>1</Melee>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Drowned</defName>
+    <title>net diver</title>
+    <titleShort>net diver</titleShort>
+    <baseDesc>This pawn worked the shallows and drowned harbors, cutting loose snagged nets, hauling traps from black water, and returning to shore with more scars than coin.</baseDesc>
+    <slot>Adulthood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Animals>2</Animals>
+      <Melee>1</Melee>
+      <Plants>2</Plants>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Heavy</defName>
+    <title>foundry brat</title>
+    <titleShort>foundry brat</titleShort>
+    <baseDesc>Raised beside furnaces and cargo lifts, this pawn grew up hauling more than most adults could manage. Hard labor broadened the shoulders and narrowed the patience.</baseDesc>
+    <slot>Childhood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Construction>2</Construction>
+      <Mining>1</Mining>
+      <Social>-1</Social>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Heavy</defName>
+    <title>dockside enforcer</title>
+    <titleShort>enforcer</titleShort>
+    <baseDesc>This pawn enforced rules where cranes groaned, cargo vanished, and arguments ended in broken teeth. When size was not enough, they learned to use it with intent.</baseDesc>
+    <slot>Adulthood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Melee>4</Melee>
+      <Construction>2</Construction>
+      <Social>-2</Social>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Grabber</defName>
+    <title>butcher's runner</title>
+    <titleShort>runner</titleShort>
+    <baseDesc>Quick hands and a talent for reaching what others could not made this pawn useful in cramped slaughter sheds, where hooks, chains, and hanging weight were part of daily life.</baseDesc>
+    <slot>Childhood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Cooking>1</Cooking>
+      <Crafting>1</Crafting>
+      <Melee>1</Melee>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Grabber</defName>
+    <title>meat hook rigger</title>
+    <titleShort>hook rigger</titleShort>
+    <baseDesc>This pawn rigged pulleys and drag lines in processing halls, snaring loads from a distance and hauling them close with ugly efficiency. Coworkers learned to keep clear of the swing.</baseDesc>
+    <slot>Adulthood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Construction>2</Construction>
+      <Crafting>2</Crafting>
+      <Melee>2</Melee>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryChild_Lurker</defName>
+    <title>quiet drifter</title>
+    <titleShort>drifter</titleShort>
+    <baseDesc>Too quiet for crowds and too strange for comfort, this pawn learned to survive on the edges of camps and alleys, watching others closely and moving only when it mattered.</baseDesc>
+    <slot>Childhood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Animals>2</Animals>
+      <Social>-1</Social>
+      <Melee>1</Melee>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>CZH_BackstoryAdult_Lurker</defName>
+    <title>alley shadow</title>
+    <titleShort>shadow</titleShort>
+    <baseDesc>This pawn survived by appearing harmless, keeping to the outskirts, and waiting until trust or pity opened a door. They learned that patience could be deadlier than rage.</baseDesc>
+    <slot>Adulthood</slot>
+    <shuffleable>false</shuffleable>
+    <skillGains>
+      <Animals>2</Animals>
+      <Social>1</Social>
+      <Crafting>1</Crafting>
+    </skillGains>
+  </BackstoryDef>
 </Defs>

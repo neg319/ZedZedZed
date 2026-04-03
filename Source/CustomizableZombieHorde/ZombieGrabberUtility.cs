@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
@@ -10,6 +9,10 @@ namespace CustomizableZombieHorde
 {
     public static class ZombieGrabberUtility
     {
+        public const float TongueMinRange = 2.2f;
+        public const float TongueMaxRange = 12f;
+        private const float PullPersistRange = 26f;
+
         private sealed class PullState
         {
             public int targetId;
@@ -46,7 +49,7 @@ namespace CustomizableZombieHorde
                     }
                     else
                     {
-                        TryStartNewPull(pawn, ticksGame);
+                        TryStartNewPull(pawn);
                     }
                 }
             }
@@ -59,23 +62,32 @@ namespace CustomizableZombieHorde
 
         public static bool TryForceTongueStart(Pawn grabber, Pawn prey)
         {
-            if (grabber == null || prey == null || grabber.Dead || prey.Dead || grabber.MapHeld == null || prey.MapHeld != grabber.MapHeld)
+            if (!CanTongueTarget(grabber, prey, TongueMaxRange, requireOpenPullSlot: true))
             {
                 return false;
             }
 
-            if (!ZombieUtility.IsVariant(grabber, ZombieVariant.Grabber) || ZombieUtility.ShouldZombiesIgnore(prey) || prey.Downed)
+            Verb tongueVerb = FindTongueVerb(grabber);
+            if (tongueVerb == null || !tongueVerb.Available())
             {
                 return false;
             }
 
-            float distanceSquared = prey.PositionHeld.DistanceToSquared(grabber.PositionHeld);
-            if (distanceSquared < 2.2f * 2.2f || distanceSquared > 26f * 26f)
+            ForceFaceTarget(grabber, prey);
+
+            try
+            {
+                return tongueVerb.TryStartCastOn(new LocalTargetInfo(prey));
+            }
+            catch
             {
                 return false;
             }
+        }
 
-            if (!GenSight.LineOfSight(grabber.PositionHeld, prey.PositionHeld, grabber.MapHeld) || IsTargetAlreadyGrabbed(prey))
+        public static bool TryBeginPull(Pawn grabber, Pawn prey)
+        {
+            if (!CanTongueTarget(grabber, prey, PullPersistRange, requireOpenPullSlot: true))
             {
                 return false;
             }
@@ -85,10 +97,14 @@ namespace CustomizableZombieHorde
             {
                 targetId = prey.thingIDNumber,
                 expireTick = ticksGame + Rand.RangeInclusive(520, 900),
-                nextPullTick = ticksGame,
+                nextPullTick = ticksGame + 2,
                 nextRepathTick = ticksGame
             };
+
+            InterruptPrey(prey);
             ForceFaceTarget(grabber, prey);
+            TryQueueApproach(grabber, prey);
+            ZombieFeedbackUtility.TrySendGrabberPullWarning(prey, grabber);
             return true;
         }
 
@@ -102,9 +118,9 @@ namespace CustomizableZombieHorde
             return ResolveTarget(pawn, state);
         }
 
-        private static void TryStartNewPull(Pawn grabber, int ticksGame)
+        private static void TryStartNewPull(Pawn grabber)
         {
-            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(grabber, 26f);
+            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(grabber, TongueMaxRange);
             if (prey == null)
             {
                 return;
@@ -136,6 +152,7 @@ namespace CustomizableZombieHorde
             }
 
             ForceFaceTarget(grabber, prey);
+            InterruptPrey(prey);
 
             if (state.nextPullTick <= ticksGame)
             {
@@ -144,8 +161,8 @@ namespace CustomizableZombieHorde
                 {
                     if (TryPullTarget(prey, pullCell))
                     {
-                        state.expireTick = ticksGame + 150;
-                        state.nextPullTick = ticksGame + 4;
+                        state.expireTick = ticksGame + 180;
+                        state.nextPullTick = ticksGame + 3;
                     }
                     else
                     {
@@ -161,7 +178,7 @@ namespace CustomizableZombieHorde
             if (state.nextRepathTick <= ticksGame)
             {
                 TryQueueApproach(grabber, prey);
-                state.nextRepathTick = ticksGame + 15;
+                state.nextRepathTick = ticksGame + 12;
             }
         }
 
@@ -210,12 +227,48 @@ namespace CustomizableZombieHorde
                 return null;
             }
 
-            if (grabber.PositionHeld.DistanceToSquared(prey.PositionHeld) > 26f * 26f)
+            if (grabber.PositionHeld.DistanceToSquared(prey.PositionHeld) > PullPersistRange * PullPersistRange)
             {
                 return null;
             }
 
             return prey;
+        }
+
+        private static bool CanTongueTarget(Pawn grabber, Pawn prey, float maxRange, bool requireOpenPullSlot)
+        {
+            if (grabber == null || prey == null || grabber.Dead || prey.Dead || grabber.MapHeld == null || prey.MapHeld != grabber.MapHeld)
+            {
+                return false;
+            }
+
+            if (!ZombieUtility.IsVariant(grabber, ZombieVariant.Grabber) || ZombieUtility.ShouldZombiesIgnore(prey) || prey.Downed)
+            {
+                return false;
+            }
+
+            float distanceSquared = prey.PositionHeld.DistanceToSquared(grabber.PositionHeld);
+            if (distanceSquared < TongueMinRange * TongueMinRange || distanceSquared > maxRange * maxRange)
+            {
+                return false;
+            }
+
+            if (!GenSight.LineOfSight(grabber.PositionHeld, prey.PositionHeld, grabber.MapHeld))
+            {
+                return false;
+            }
+
+            if (requireOpenPullSlot && (HasActiveTongue(grabber) || IsTargetAlreadyGrabbed(prey)))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static Verb FindTongueVerb(Pawn grabber)
+        {
+            return grabber?.VerbTracker?.AllVerbs?.FirstOrDefault(verb => verb is ZombieVerb_GrabberTongue);
         }
 
         private static Thing FindThing(int thingId)
@@ -274,11 +327,11 @@ namespace CustomizableZombieHorde
             return best;
         }
 
-        private static bool TryPullTarget(Pawn prey, IntVec3 pullCell)
+        private static void InterruptPrey(Pawn prey)
         {
-            if (prey == null || prey.Dead || !pullCell.IsValid || prey.PositionHeld == pullCell)
+            if (prey == null || prey.Dead)
             {
-                return false;
+                return;
             }
 
             try
@@ -297,15 +350,23 @@ namespace CustomizableZombieHorde
             {
             }
 
+        }
+
+        private static bool TryPullTarget(Pawn prey, IntVec3 pullCell)
+        {
+            if (prey == null || prey.Dead || !pullCell.IsValid || prey.PositionHeld == pullCell)
+            {
+                return false;
+            }
+
+            InterruptPrey(prey);
+
             try
             {
                 if (pullCell.InBounds(prey.MapHeld) && pullCell.Standable(prey.MapHeld) && pullCell.GetEdifice(prey.MapHeld) == null)
                 {
                     prey.Position = pullCell;
-                    if (prey.jobs != null)
-                    {
-                        prey.jobs.StopAll();
-                    }
+                    InterruptPrey(prey);
                     return true;
                 }
             }

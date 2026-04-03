@@ -1,10 +1,12 @@
 using System.Reflection;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 
 namespace CustomizableZombieHorde
 {
@@ -182,7 +184,7 @@ namespace CustomizableZombieHorde
         public static bool Prefix(Pawn_EquipmentTracker __instance, ThingWithComps newEq)
         {
             Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
-            if (!ZombieUtility.IsZombie(pawn))
+            if (!ZombieUtility.IsZombie(pawn) || ZombieLurkerUtility.IsColonyLurker(pawn))
             {
                 return true;
             }
@@ -225,6 +227,14 @@ namespace CustomizableZombieHorde
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.Kill))]
     public static class Patch_Pawn_Kill
     {
+        public static void Prefix(Pawn __instance)
+        {
+            if (ZombieUtility.IsVariant(__instance, ZombieVariant.Boomer))
+            {
+                ZombieSpecialUtility.TriggerBoomerBurstOnly(__instance);
+            }
+        }
+
         public static void Postfix(Pawn __instance)
         {
             if (ZombieUtility.IsZombie(__instance))
@@ -320,13 +330,28 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            if (ZombieUtility.IsZombie(victim) && !ZombieUtility.IsZombie(attacker))
+            bool attackerIsZombie = ZombieUtility.IsZombie(attacker);
+            bool victimIsZombie = ZombieUtility.IsZombie(victim);
+
+            if (victimIsZombie && !attackerIsZombie)
             {
-                dinfo.SetAmount(dinfo.Amount * 1.60f);
+                float amount = dinfo.Amount * 1.60f;
+                if (ZombieTraitUtility.HasSteadyHands(attacker) && ZombieTraitUtility.IsRangedAttack(attacker, dinfo))
+                {
+                    amount *= 1.30f;
+                }
+
+                dinfo.SetAmount(amount);
             }
-            else if (!ZombieUtility.IsZombie(victim) && ZombieUtility.IsZombie(attacker))
+            else if (!victimIsZombie && attackerIsZombie)
             {
-                dinfo.SetAmount(dinfo.Amount * 0.55f);
+                float amount = dinfo.Amount * 0.55f;
+                if (ZombieTraitUtility.HasHardToKill(victim))
+                {
+                    amount *= 0.75f;
+                }
+
+                dinfo.SetAmount(amount);
             }
         }
     }
@@ -365,6 +390,16 @@ namespace CustomizableZombieHorde
             {
                 ZombieSpecialUtility.TriggerBoomerBurst(victim, consumePawn: true);
             }
+
+            if (!ZombieUtility.IsZombie(victim)
+                && ZombieUtility.IsZombie(attacker)
+                && ZombieTraitUtility.HasQuickEscape(victim)
+                && victim.Spawned
+                && !victim.Downed
+                && !victim.Dead)
+            {
+                ZombieTraitUtility.TryTriggerQuickEscape(victim, attacker);
+            }
         }
     }
 
@@ -386,17 +421,173 @@ namespace CustomizableZombieHorde
 
         private static bool ShouldSuppressZombieHostility(Pawn possibleZombie, Pawn otherPawn)
         {
+            if (ZombieLurkerUtility.ShouldSuppressLurkerHostility(possibleZombie, otherPawn))
+            {
+                return true;
+            }
+
             if (!ZombieUtility.IsZombie(possibleZombie))
             {
                 return false;
             }
 
-            if (ZombieUtility.IsZombie(otherPawn))
+            if (ZombieRulesUtility.IsIgnoredByZombies(otherPawn))
             {
                 return true;
             }
 
-            return ZombieUtility.ShouldZombiesIgnore(otherPawn);
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(FloatMenuMakerMap), "AddHumanlikeOrders")]
+    public static class Patch_FloatMenuMakerMap_AddHumanlikeOrders
+    {
+        public static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts)
+        {
+            if (pawn == null || opts == null || pawn.Map == null || !pawn.IsColonistPlayerControlled)
+            {
+                return;
+            }
+
+            IntVec3 cell = IntVec3.FromVector3(clickPos);
+            if (!cell.InBounds(pawn.Map))
+            {
+                return;
+            }
+
+            List<Pawn> pawnsAtCell = cell.GetThingList(pawn.Map).OfType<Pawn>().ToList();
+            if (pawnsAtCell.Count == 0)
+            {
+                return;
+            }
+
+            foreach (Pawn lurker in pawnsAtCell.Where(ZombieLurkerUtility.IsPassiveLurker))
+            {
+                if (!pawn.CanReach(lurker, Verse.AI.PathEndMode.Touch, Danger.Some))
+                {
+                    opts.Add(new FloatMenuOption("Cannot tame lurker: no path to target", null));
+                    continue;
+                }
+
+                if (!pawn.CanReserve(lurker))
+                {
+                    opts.Add(new FloatMenuOption("Cannot tame lurker: reserved", null));
+                    continue;
+                }
+
+                Thing food = ZombieLurkerUtility.FindCarriedTameFood(pawn);
+                if (food == null)
+                {
+                    opts.Add(new FloatMenuOption("Tame lurker (requires rotten flesh or human meat)", null));
+                    continue;
+                }
+
+                string foodLabel = food.LabelCap;
+                opts.Add(new FloatMenuOption("Tame lurker using " + foodLabel, delegate
+                {
+                    Job job = JobMaker.MakeJob(ZombieDefOf.CZH_TameLurker, lurker);
+                    job.count = 1;
+                    pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+                }));
+            }
+
+            foreach (Pawn patient in pawnsAtCell.Where(ZombieBileUtility.NeedsBileTreatment))
+            {
+                if (!pawn.CanReach(patient, Verse.AI.PathEndMode.Touch, Danger.Some))
+                {
+                    opts.Add(new FloatMenuOption("Cannot administer bile treatment: no path", null));
+                    continue;
+                }
+
+                if (!pawn.CanReserve(patient))
+                {
+                    opts.Add(new FloatMenuOption("Cannot administer bile treatment: reserved", null));
+                    continue;
+                }
+
+                Thing kit = ZombieBileUtility.FindCarriedBileTreatmentKit(pawn);
+                if (kit == null)
+                {
+                    opts.Add(new FloatMenuOption("Administer bile treatment (requires a bile med kit)", null));
+                    continue;
+                }
+
+                string label = patient == pawn ? "Use bile med kit" : "Administer bile med kit to " + patient.LabelShortCap;
+                opts.Add(new FloatMenuOption(label, delegate
+                {
+                    Job job = JobMaker.MakeJob(ZombieDefOf.CZH_AdministerBileTreatment, patient);
+                    job.count = 1;
+                    pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+                }));
+            }
+        }
+    }
+
+
+
+    [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetInspectString))]
+    public static class Patch_Pawn_GetInspectString
+    {
+        public static void Postfix(Pawn __instance, ref string __result)
+        {
+            string extra = ZombieFeedbackUtility.GetPawnInspectString(__instance);
+            if (extra.NullOrEmpty())
+            {
+                return;
+            }
+
+            __result = __result.NullOrEmpty() ? extra : __result + "\n" + extra;
+        }
+    }
+
+    [HarmonyPatch(typeof(Corpse), nameof(Corpse.GetInspectString))]
+    public static class Patch_Corpse_GetInspectString
+    {
+        public static void Postfix(Corpse __instance, ref string __result)
+        {
+            string extra = ZombieFeedbackUtility.GetCorpseInspectString(__instance);
+            if (extra.NullOrEmpty())
+            {
+                return;
+            }
+
+            __result = __result.NullOrEmpty() ? extra : __result + "\n" + extra;
+        }
+    }
+
+    [HarmonyPatch(typeof(StatExtension), nameof(StatExtension.GetStatValue), new[] { typeof(Thing), typeof(StatDef), typeof(bool) })]
+    public static class Patch_StatExtension_GetStatValue
+    {
+        public static void Postfix(Thing thing, StatDef stat, ref float __result)
+        {
+            Pawn pawn = thing as Pawn;
+            if (pawn == null || stat == null)
+            {
+                return;
+            }
+
+            if (ZombieTraitUtility.HasHardToKill(pawn) && stat == StatDefOf.PainShockThreshold)
+            {
+                __result += 0.18f;
+            }
+
+            if (ZombieTraitUtility.HasSteadyHands(pawn) && stat == StatDefOf.ShootingAccuracyPawn)
+            {
+                __result *= 1.12f;
+            }
+
+            if (ZombieTraitUtility.HasQuickEscape(pawn))
+            {
+                if (stat == StatDefOf.MoveSpeed)
+                {
+                    __result += 0.35f;
+                }
+                else if (stat == StatDefOf.MeleeDodgeChance)
+                {
+                    __result += 0.08f;
+                }
+            }
         }
     }
 

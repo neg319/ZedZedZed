@@ -177,13 +177,13 @@ namespace CustomizableZombieHorde
         public static bool SpawnHuddledPack(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool applyDifficulty = true)
         {
             string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
-            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Huddle", customLetterText: "A knot of " + prefix.ToLowerInvariant() + "s has gathered in a restless huddle. They may stay put until something riles them.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.HuddledPack);
+            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Huddle", customLetterText: "A knot of " + prefix.ToLowerInvariant() + "s has gathered in a restless huddle just inside the map. They may stay put until something disturbs them, so watch exposed workers and animals.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.HuddledPack);
         }
 
         public static bool SpawnEdgeWanderers(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool applyDifficulty = true)
         {
             string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
-            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Edge Wanderers", customLetterText: "A band of " + prefix.ToLowerInvariant() + "s is slowly drifting along the edge of the map.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.EdgeWander);
+            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Edge Wanderers", customLetterText: "A band of " + prefix.ToLowerInvariant() + "s is slowly drifting along the edge of the map, probing the colony perimeter for an opening.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.EdgeWander);
         }
 
         public static bool SpawnHorde(Map map, int totalCount, int groups, string letterLabel, string letterText, bool ignoreCap = false, bool ignoreTimeOfDay = false)
@@ -300,7 +300,7 @@ namespace CustomizableZombieHorde
                 string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
                 Find.LetterStack.ReceiveLetter(
                     prefix + " Ground Burst",
-                    "The soil splits open inside your base and a small pack of " + prefix.ToLowerInvariant() + "s claws its way to the surface.",
+                    "The soil splits open inside your base and a small pack of " + prefix.ToLowerInvariant() + "s claws its way to the surface. Rally nearby colonists before the breach spreads through your interior rooms.",
                     LetterDefOf.ThreatSmall,
                     new TargetInfo(firstCell.IsValid ? firstCell : map.Center, map));
             }
@@ -464,23 +464,7 @@ namespace CustomizableZombieHorde
 
         private static ThingDef GetGraveThingDef(ZombieVariant variant)
         {
-            switch (variant)
-            {
-                case ZombieVariant.Crawler:
-                    return ZombieDefOf.CZH_Grave_Crawler;
-                case ZombieVariant.Boomer:
-                    return ZombieDefOf.CZH_Grave_Boomer;
-                case ZombieVariant.Sick:
-                    return ZombieDefOf.CZH_Grave_Sick;
-                case ZombieVariant.Drowned:
-                    return ZombieDefOf.CZH_Grave_Drowned;
-                case ZombieVariant.Tank:
-                    return ZombieDefOf.CZH_Grave_Tank;
-                case ZombieVariant.Grabber:
-                    return ZombieDefOf.CZH_Grave_Grabber;
-                default:
-                    return ZombieDefOf.CZH_Grave_Biter;
-            }
+            return ZombieVariantUtility.GetGraveThingDef(variant);
         }
 
         private static IntVec3 FindGraveEventCell(Map map, ThingDef graveDef)
@@ -693,13 +677,13 @@ namespace CustomizableZombieHorde
             switch (behavior)
             {
                 case ZombieSpawnEventType.HuddledPack:
-                    return "A knot of " + prefix.ToLowerInvariant() + "s has huddled together just inside the map, swaying and waiting to be stirred up.";
+                    return "A knot of " + prefix.ToLowerInvariant() + "s has huddled together just inside the map, swaying and waiting to be stirred up. Keep noncombatants away until you decide how to engage it.";
                 case ZombieSpawnEventType.EdgeWander:
-                    return "A group of " + prefix.ToLowerInvariant() + "s is wandering the outskirts of the map, circling the colony from a distance.";
+                    return "A group of " + prefix.ToLowerInvariant() + "s is wandering the outskirts of the map, circling the colony from a distance and looking for a weak approach.";
                 case ZombieSpawnEventType.GroundBurst:
-                    return "A pack of " + prefix.ToLowerInvariant() + "s has burst from the ground inside your colony.";
+                    return "A pack of " + prefix.ToLowerInvariant() + "s has burst from the ground inside your colony. This breach began inside your defenses, so respond quickly.";
                 default:
-                    return "A group of " + prefix.ToLowerInvariant() + "s has entered from the map edge and is drifting toward your colony.";
+                    return "A group of " + prefix.ToLowerInvariant() + "s has entered from the map edge and is drifting toward your colony. Pull back exposed workers and prepare a firing line.";
             }
         }
 

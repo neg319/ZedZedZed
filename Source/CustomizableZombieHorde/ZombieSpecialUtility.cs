@@ -20,8 +20,9 @@ namespace CustomizableZombieHorde
                 return result;
             }
 
-            int fleshCount = ZombieUtility.IsVariant(pawn, ZombieVariant.Tank) ? 18 : ZombieUtility.IsVariant(pawn, ZombieVariant.Crawler) ? 5 : 9;
-            int leatherCount = ZombieUtility.IsVariant(pawn, ZombieVariant.Tank) ? 14 : ZombieUtility.IsVariant(pawn, ZombieVariant.Crawler) ? 4 : 7;
+            ZombieButcherProfile profile = ZombieVariantUtility.GetButcherProfile(ZombieVariantUtility.GetVariant(pawn));
+            int fleshCount = profile?.FleshCount ?? 0;
+            int leatherCount = profile?.LeatherCount ?? 0;
 
             if (ZombieDefOf.CZH_RottenFlesh != null && fleshCount > 0)
             {
@@ -35,6 +36,14 @@ namespace CustomizableZombieHorde
                 Thing leather = ThingMaker.MakeThing(ZombieDefOf.CZH_RottenLeather);
                 leather.stackCount = leatherCount;
                 result.Add(leather);
+            }
+
+            int bileCount = ZombieBileUtility.GetButcheredBileCount(pawn);
+            if (ZombieDefOf.CZH_ZombieBile != null && bileCount > 0)
+            {
+                Thing bile = ThingMaker.MakeThing(ZombieDefOf.CZH_ZombieBile);
+                bile.stackCount = bileCount;
+                result.Add(bile);
             }
 
             return result;
@@ -365,7 +374,7 @@ namespace CustomizableZombieHorde
 
         public static void DropZombieBlood(Pawn pawn)
         {
-            if (pawn?.MapHeld == null)
+            if (pawn == null)
             {
                 return;
             }
@@ -376,50 +385,52 @@ namespace CustomizableZombieHorde
                 filth = ZombieDefOf.CZH_Filth_SickZombieBlood;
             }
 
-            if (filth != null)
-            {
-                FilthMaker.TryMakeFilth(pawn.PositionHeld, pawn.MapHeld, filth);
-            }
-        }
-
-        public static void HandleZombieDeathEffects(Pawn pawn)
-        {
-            if (!ZombieUtility.IsZombie(pawn) || pawn.MapHeld == null)
+            if (filth == null || !TryGetEffectLocation(pawn, out Map map, out IntVec3 pos))
             {
                 return;
             }
 
-            DropZombieBlood(pawn);
+            FilthMaker.TryMakeFilth(pos, map, filth);
+        }
+
+        public static void HandleZombieDeathEffects(Pawn pawn)
+        {
+            if (!ZombieUtility.IsZombie(pawn))
+            {
+                return;
+            }
 
             switch (ZombieUtility.GetVariant(pawn))
             {
                 case ZombieVariant.Boomer:
-                    TriggerBoomerBurst(pawn, consumePawn: false, force: !suppressBoomerKillBurst);
+                    if (TriggeredBoomerBursts.Contains(pawn.thingIDNumber))
+                    {
+                        FinalizeBoomerBurst(pawn);
+                    }
+                    else
+                    {
+                        TriggerBoomerBurst(pawn, consumePawn: false, force: !suppressBoomerKillBurst);
+                    }
                     break;
                 case ZombieVariant.Sick:
+                    DropZombieBlood(pawn);
                     DoSicknessBurst(pawn);
+                    break;
+                default:
+                    DropZombieBlood(pawn);
                     break;
             }
         }
 
         public static bool TriggerBoomerBurst(Pawn pawn, bool consumePawn, bool force = false)
         {
-            if (pawn == null || pawn.DestroyedOrNull() || !ZombieUtility.IsVariant(pawn, ZombieVariant.Boomer))
+            if (!TriggerBoomerBurstOnly(pawn, force))
             {
                 return false;
             }
 
-            int id = pawn.thingIDNumber;
-            if (!force && TriggeredBoomerBursts.Contains(id))
-            {
-                return false;
-            }
-
-            TriggeredBoomerBursts.Add(id);
             Map map = pawn.MapHeld;
             IntVec3 pos = pawn.PositionHeld;
-            DoAcidBurst(pawn);
-
             if (consumePawn && !pawn.Dead && !pawn.Destroyed)
             {
                 try
@@ -437,22 +448,73 @@ namespace CustomizableZombieHorde
             return true;
         }
 
+        public static bool TriggerBoomerBurstOnly(Pawn pawn, bool force = false)
+        {
+            if (pawn == null || pawn.DestroyedOrNull() || !ZombieUtility.IsVariant(pawn, ZombieVariant.Boomer))
+            {
+                return false;
+            }
+
+            int id = pawn.thingIDNumber;
+            if (!force && TriggeredBoomerBursts.Contains(id))
+            {
+                return false;
+            }
+
+            if (!TryGetEffectLocation(pawn, out Map map, out IntVec3 pos))
+            {
+                return false;
+            }
+
+            TriggeredBoomerBursts.Add(id);
+            DropZombieBlood(pawn);
+            DoAcidBurst(map, pos, pawn);
+            return true;
+        }
+
+        public static void FinalizeBoomerBurst(Pawn pawn)
+        {
+            if (pawn == null || !TriggeredBoomerBursts.Contains(pawn.thingIDNumber))
+            {
+                return;
+            }
+
+            ReplaceBoomerCorpseWithRottenFlesh(pawn, pawn.MapHeld, pawn.PositionHeld);
+        }
+
         private static void ReplaceBoomerCorpseWithRottenFlesh(Pawn pawn, Map map, IntVec3 pos)
         {
+            Corpse corpse = pawn?.Corpse;
+            if (corpse != null)
+            {
+                map = corpse.MapHeld ?? map;
+                if (corpse.PositionHeld.IsValid)
+                {
+                    pos = corpse.PositionHeld;
+                }
+            }
+            else if ((map == null || !pos.IsValid || !pos.InBounds(map)) && pawn != null)
+            {
+                corpse = pawn.MapHeld?.thingGrid?.ThingsAt(pawn.PositionHeld).OfType<Corpse>().FirstOrDefault(c => c.InnerPawn == pawn);
+                if (corpse != null)
+                {
+                    map = corpse.MapHeld;
+                    pos = corpse.PositionHeld;
+                }
+            }
+
             if (map == null || !pos.IsValid || !pos.InBounds(map))
             {
                 return;
             }
 
-            if (pawn != null && !pawn.Destroyed)
-            {
-                pawn.Destroy(DestroyMode.Vanish);
-            }
-
-            Corpse corpse = map.thingGrid.ThingsAt(pos).OfType<Corpse>().FirstOrDefault(c => c.InnerPawn == pawn);
             if (corpse != null && !corpse.Destroyed)
             {
                 corpse.Destroy(DestroyMode.Vanish);
+            }
+            else if (pawn != null && !pawn.Destroyed && !pawn.Dead)
+            {
+                pawn.Destroy(DestroyMode.Vanish);
             }
 
             ThingDef rottenFlesh = ZombieDefOf.CZH_RottenFlesh;
@@ -468,8 +530,21 @@ namespace CustomizableZombieHorde
 
         public static void DoAcidBurst(Pawn pawn)
         {
-            Map map = pawn.MapHeld;
-            IntVec3 center = pawn.PositionHeld;
+            if (!TryGetEffectLocation(pawn, out Map map, out IntVec3 center))
+            {
+                return;
+            }
+
+            DoAcidBurst(map, center, pawn);
+        }
+
+        private static void DoAcidBurst(Map map, IntVec3 center, Pawn instigator)
+        {
+            if (map == null || !center.IsValid || !center.InBounds(map))
+            {
+                return;
+            }
+
             foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, 2.9f, true))
             {
                 if (!cell.InBounds(map))
@@ -481,19 +556,43 @@ namespace CustomizableZombieHorde
                 List<Thing> things = cell.GetThingList(map);
                 for (int i = 0; i < things.Count; i++)
                 {
-                    if (things[i] is Pawn target && target != pawn && !ZombieUtility.IsZombie(target))
+                    if (things[i] is Pawn target && target != instigator && !ZombieUtility.IsZombie(target))
                     {
                         float damage = Rand.Range(7f, 12f);
-                        target.TakeDamage(new DamageInfo(ZombieDefOf.CZH_ZombieAcidBurn ?? DamageDefOf.Burn, damage, 0f, -1f, pawn));
+                        target.TakeDamage(new DamageInfo(ZombieDefOf.CZH_ZombieAcidBurn ?? DamageDefOf.Burn, damage, 0f, -1f, instigator));
                     }
                 }
             }
         }
 
+        private static bool TryGetEffectLocation(Pawn pawn, out Map map, out IntVec3 pos)
+        {
+            map = pawn?.MapHeld;
+            if (map != null)
+            {
+                pos = pawn.PositionHeld;
+                return pos.IsValid && pos.InBounds(map);
+            }
+
+            Corpse corpse = pawn?.Corpse;
+            map = corpse?.MapHeld;
+            if (map != null)
+            {
+                pos = corpse.PositionHeld;
+                return pos.IsValid && pos.InBounds(map);
+            }
+
+            pos = IntVec3.Invalid;
+            return false;
+        }
+
         public static void DoSicknessBurst(Pawn pawn)
         {
-            Map map = pawn.MapHeld;
-            IntVec3 center = pawn.PositionHeld;
+            if (!TryGetEffectLocation(pawn, out Map map, out IntVec3 center))
+            {
+                return;
+            }
+
             foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, 2.4f, true))
             {
                 if (!cell.InBounds(map))

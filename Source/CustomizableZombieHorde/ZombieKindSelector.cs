@@ -8,29 +8,48 @@ namespace CustomizableZombieHorde
     {
         public static PawnKindDef GetKindForVariant(ZombieVariant variant, Map map = null)
         {
-            switch (variant)
+            if (variant == ZombieVariant.Lurker)
             {
-                case ZombieVariant.Crawler:
-                    return GetNamedIfAllowed("CZH_Zombie_Crawler", CustomizableZombieHordeMod.Settings.allowCrawlers);
-                case ZombieVariant.Boomer:
-                    return GetNamedIfAllowed("CZH_Zombie_Boomer", CustomizableZombieHordeMod.Settings.allowBoomers);
-                case ZombieVariant.Sick:
-                    return GetNamedIfAllowed("CZH_Zombie_Sick", CustomizableZombieHordeMod.Settings.allowSick);
-                case ZombieVariant.Drowned:
-                    return GetNamedIfAllowed("CZH_Zombie_Drowned", CustomizableZombieHordeMod.Settings.allowDrowned);
-                case ZombieVariant.Tank:
-                    return GetNamedIfAllowed("CZH_Zombie_Tank", CustomizableZombieHordeMod.Settings.allowHeavies);
-                case ZombieVariant.Grabber:
-                    return GetNamedIfAllowed("CZH_Zombie_Grabber", CustomizableZombieHordeMod.Settings.allowGrabbers);
-                default:
-                    return GetNamedIfAllowed("CZH_Zombie_Biter", CustomizableZombieHordeMod.Settings.allowBiters)
-                        ?? DefDatabase<PawnKindDef>.GetNamedSilentFail("CZH_Zombie_Biter");
+                return DefDatabase<PawnKindDef>.GetNamedSilentFail(ZombieVariantUtility.GetKindDefName(variant));
             }
+
+            string defName = ZombieVariantUtility.GetKindDefName(variant);
+            bool enabled = IsVariantAllowed(variant, map);
+            PawnKindDef def = GetNamedIfAllowed(defName, enabled);
+            if (def != null)
+            {
+                return def;
+            }
+
+            return variant == ZombieVariant.Biter ? DefDatabase<PawnKindDef>.GetNamedSilentFail(ZombieVariantUtility.GetKindDefName(ZombieVariant.Biter)) : null;
         }
 
         public static bool IsVariantEnabled(ZombieVariant variant, Map map = null)
         {
             return GetKindForVariant(variant, map) != null;
+        }
+
+        private static bool IsVariantAllowed(ZombieVariant variant, Map map)
+        {
+            switch (variant)
+            {
+                case ZombieVariant.Crawler:
+                    return CustomizableZombieHordeMod.Settings.allowCrawlers;
+                case ZombieVariant.Boomer:
+                    return CustomizableZombieHordeMod.Settings.allowBoomers;
+                case ZombieVariant.Sick:
+                    return CustomizableZombieHordeMod.Settings.allowSick;
+                case ZombieVariant.Drowned:
+                    return CustomizableZombieHordeMod.Settings.allowDrowned && ZombieSpecialUtility.MapHasWater(map);
+                case ZombieVariant.Tank:
+                    return CustomizableZombieHordeMod.Settings.allowHeavies;
+                case ZombieVariant.Grabber:
+                    return CustomizableZombieHordeMod.Settings.allowGrabbers;
+                case ZombieVariant.Lurker:
+                    return true;
+                default:
+                    return CustomizableZombieHordeMod.Settings.allowBiters;
+            }
         }
 
         public static PawnKindDef GetRandomKind(Map map = null)

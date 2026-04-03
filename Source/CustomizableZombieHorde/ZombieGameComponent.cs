@@ -655,7 +655,7 @@ namespace CustomizableZombieHorde
                         CustomizableZombieHordeMod.Settings.bloodMoonBaseCount,
                         groups: 3,
                         letterLabel: "Blood Moon Rising",
-                        letterText: "A blood moon hangs over the colony. A massive wave of " + prefix.ToLowerInvariant() + "s surges toward your base from every direction.");
+                        letterText: "A blood moon hangs over the colony. A massive wave of " + prefix.ToLowerInvariant() + "s surges toward your base from every direction. Keep everyone inside your defenses and expect a sustained assault.");
                 }
                 else
                 {
@@ -664,7 +664,7 @@ namespace CustomizableZombieHorde
                         CustomizableZombieHordeMod.Settings.fullMoonBaseCount,
                         groups: 2,
                         letterLabel: "Full Moon Rising",
-                        letterText: "The full moon draws the dead from the dark. A larger horde of " + prefix.ToLowerInvariant() + "s is converging on your colony.");
+                        letterText: "The full moon draws the dead from the dark. A larger horde of " + prefix.ToLowerInvariant() + "s is converging on your colony. Bring wandering workers home and prepare your perimeter.");
                 }
             }
 
@@ -693,11 +693,11 @@ namespace CustomizableZombieHorde
             string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
             string text = isBloodMoon
                 ? (daysRemaining == 1
-                    ? "Tomorrow night, a blood moon will rise. Expect a massive surge of " + prefix.ToLowerInvariant() + "s."
-                    : "In about a week, a blood moon will rise. The dead will gather in far greater numbers than usual.")
+                    ? "Tomorrow night, a blood moon will rise. Expect a massive surge of " + prefix.ToLowerInvariant() + "s and keep everyone close to your defenses."
+                    : "In about a week, a blood moon will rise. The dead will gather in far greater numbers than usual, so use the time to stock medicine and shore up defenses.")
                 : (daysRemaining == 1
-                    ? "Tomorrow night, the full moon will rise. A larger wave of " + prefix.ToLowerInvariant() + "s is coming."
-                    : "In about a week, the next full moon will rise. The dead are beginning to stir.");
+                    ? "Tomorrow night, the full moon will rise. A larger wave of " + prefix.ToLowerInvariant() + "s is coming, so call workers back behind the perimeter before nightfall."
+                    : "In about a week, the next full moon will rise. The dead are beginning to stir, so use the warning to prepare traps, medicine, and fallback positions.");
 
             Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.ThreatBig, new TargetInfo(map.Center, map));
         }
@@ -714,6 +714,7 @@ namespace CustomizableZombieHorde
                         continue;
                     }
 
+                    liveZombieIds.Add(pawn.thingIDNumber);
 
                     if (pawn.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_ZombieRot) != true)
                     {
@@ -721,6 +722,18 @@ namespace CustomizableZombieHorde
                     }
 
                     ZombieUtility.SetZombieDisplayName(pawn);
+
+                    if (ZombieLurkerUtility.IsLurker(pawn))
+                    {
+                        ZombieLurkerUtility.EnsureLurkerZombiePassiveTrait(pawn);
+                    }
+
+                    if (ZombieLurkerUtility.IsColonyLurker(pawn))
+                    {
+                        ZombieUtility.RefreshDrownedState(pawn);
+                        continue;
+                    }
+
                     ZombieUtility.StripAllUsableItems(pawn);
                     ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: false);
                     ZombieUtility.RefreshDrownedState(pawn);
@@ -774,7 +787,7 @@ namespace CustomizableZombieHorde
                     int corpseId = corpse.thingIDNumber;
                     seenCorpseIds.Add(corpseId);
 
-                    if (ZombieUtility.HasHeadDamageOrDestruction(pawn))
+                    if (!ZombieUtility.CanReanimate(pawn))
                     {
                         corpseWakeTicks.Remove(corpseId);
                         continue;
@@ -800,6 +813,7 @@ namespace CustomizableZombieHorde
                     ZombieUtility.PrepareZombieForReanimation(pawn);
                     ZombiePawnFactory.FinalizeZombie(pawn, initialSpawn: false);
                     ZombieUtility.EnsureZombieAggression(pawn);
+                    ZombieFeedbackUtility.TrySendReanimationWarning(pawn);
                 }
             }
 

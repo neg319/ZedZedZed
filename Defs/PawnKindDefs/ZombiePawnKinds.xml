@@ -184,4 +184,30 @@
     </initialWillRange>
   </PawnKindDef>
 
+
+
+  <PawnKindDef>
+    <defName>CZH_Zombie_Lurker</defName>
+    <label>zombie lurker</label>
+    <race>Human</race>
+    <combatPower>25</combatPower>
+    <apparelMoney>
+      <min>0</min>
+      <max>35</max>
+    </apparelMoney>
+    <weaponMoney>
+      <min>0</min>
+      <max>0</max>
+    </weaponMoney>
+    <canArriveManhunter>false</canArriveManhunter>
+    <canBeSapper>false</canBeSapper>
+    <initialResistanceRange>
+      <min>0</min>
+      <max>0</max>
+    </initialResistanceRange>
+    <initialWillRange>
+      <min>0</min>
+      <max>0</max>
+    </initialWillRange>
+  </PawnKindDef>
 </Defs>

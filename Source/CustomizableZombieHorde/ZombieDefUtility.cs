@@ -14,7 +14,8 @@ namespace CustomizableZombieHorde
             { "CZH_Zombie_Sick", "Sick" },
             { "CZH_Zombie_Drowned", "Drowned" },
             { "CZH_Zombie_Tank", "Heavy" },
-            { "CZH_Zombie_Grabber", "Grabber" }
+            { "CZH_Zombie_Grabber", "Grabber" },
+            { "CZH_Zombie_Lurker", "Lurker" }
         };
 
         public static void ApplyDynamicLabels()
@@ -56,23 +57,7 @@ namespace CustomizableZombieHorde
 
         public static string GetVariantLabel(ZombieVariant variant)
         {
-            switch (variant)
-            {
-                case ZombieVariant.Crawler:
-                    return "Crawler";
-                case ZombieVariant.Boomer:
-                    return "Boomer";
-                case ZombieVariant.Sick:
-                    return "Sick";
-                case ZombieVariant.Drowned:
-                    return "Drowned";
-                case ZombieVariant.Tank:
-                    return "Heavy";
-                case ZombieVariant.Grabber:
-                    return "Grabber";
-                default:
-                    return "Biter";
-            }
+            return ZombieVariantUtility.GetVariantLabel(variant);
         }
 
 
@@ -95,13 +80,13 @@ namespace CustomizableZombieHorde
         public static string GetGraveLetterText(ZombieVariant variant)
         {
             string type = GetVariantLabel(variant).ToLowerInvariant();
-            return "The ground has split open and a " + type + " grave has burst up like an infestation. Destroy the grave or more " + type + " zombies will keep crawling out of it.";
+            return "The ground has split open and a " + type + " grave has burst up like an infestation. Destroy the grave quickly or more " + type + " corpses will keep clawing their way out.";
         }
 
         public static string ExampleNames(string prefix)
         {
             string clean = CleanPrefix(prefix);
-            return $"{clean} Biter, {clean} Crawler, {clean} Boomer, {clean} Sick, {clean} Drowned, {clean} Heavy";
+            return $"{clean} Biter, {clean} Crawler, {clean} Boomer, {clean} Sick, {clean} Drowned, {clean} Heavy, {clean} Lurker";
         }
 
         public static string CleanPrefix(string prefix)

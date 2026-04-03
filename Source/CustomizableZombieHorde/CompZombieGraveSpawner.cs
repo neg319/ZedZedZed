@@ -93,12 +93,14 @@ namespace CustomizableZombieHorde
         public override string CompInspectStringExtra()
         {
             int ticksLeft = nextBurstTick - (Find.TickManager?.TicksGame ?? 0);
+            string variantLabel = ZombieVariantUtility.GetVariantLabel(Variant).ToLowerInvariant();
             if (ticksLeft <= 0)
             {
-                return "The grave is stirring.";
+                return "The grave is stirring. Destroy it before more " + variantLabel + " corpses break free.";
             }
 
-            return "Next corpse burst in about " + ticksLeft.ToStringTicksToPeriod().Colorize(ColoredText.SubtleGrayColor);
+            return "Destroy this grave to stop new " + variantLabel + " corpses from spawning.
+Next corpse burst in about " + ticksLeft.ToStringTicksToPeriod().Colorize(ColoredText.SubtleGrayColor);
         }
 
         private void TrySpawnBurst()

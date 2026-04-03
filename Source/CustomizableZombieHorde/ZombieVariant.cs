@@ -8,6 +8,7 @@ namespace CustomizableZombieHorde
         Sick,
         Drowned,
         Tank,
-        Grabber
+        Grabber,
+        Lurker
     }
 }
