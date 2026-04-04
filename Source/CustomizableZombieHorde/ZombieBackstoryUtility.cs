@@ -115,10 +115,10 @@ namespace CustomizableZombieHorde
         {
             foreach (var pair in pairs)
             {
-                SkillRecord record = pawn.skills?.GetSkill(pair.def);
+                SkillRecord record = pawn.skills?.GetSkill(pair.Item1);
                 if (record != null)
                 {
-                    record.Level = pair.level;
+                    record.Level = pair.Item2;
                     record.passion = Passion.None;
                     record.xpSinceLastLevel = 0f;
                 }
