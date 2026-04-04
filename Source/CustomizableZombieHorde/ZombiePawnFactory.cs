@@ -129,11 +129,13 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            BackstoryDef childhood = DefDatabase<BackstoryDef>.GetNamedSilentFail(ZombieDefUtility.GetChildhoodBackstoryDefName(variant));
-            BackstoryDef adulthood = DefDatabase<BackstoryDef>.GetNamedSilentFail(ZombieDefUtility.GetAdulthoodBackstoryDefName(variant));
+            BackstoryDef childhood = ZombieBackstoryUtility.GetChildhood(variant, pawn);
+            BackstoryDef adulthood = ZombieBackstoryUtility.GetAdulthood(variant, pawn);
 
             TrySetBackstory(pawn.story, "Childhood", childhood);
             TrySetBackstory(pawn.story, "Adulthood", adulthood);
+            ForceBackstoryFields(pawn.story, childhood, adulthood);
+            ZombieBackstoryUtility.ApplySkillProfile(pawn, variant);
         }
 
         private static void TrySetBackstory(Pawn_StoryTracker story, string propertyName, BackstoryDef backstory)
@@ -160,6 +162,35 @@ namespace CustomizableZombieHorde
             {
                 var field = AccessTools.Field(story.GetType(), propertyName.ToLowerInvariant());
                 field?.SetValue(story, backstory);
+            }
+            catch
+            {
+            }
+        }
+
+
+        private static void ForceBackstoryFields(Pawn_StoryTracker story, BackstoryDef childhood, BackstoryDef adulthood)
+        {
+            if (story == null)
+            {
+                return;
+            }
+
+            try
+            {
+                AccessTools.Field(story.GetType(), "childhood")?.SetValue(story, childhood);
+                AccessTools.Field(story.GetType(), "adulthood")?.SetValue(story, adulthood);
+                AccessTools.Field(story.GetType(), "childhoodIdentifier")?.SetValue(story, childhood?.identifier);
+                AccessTools.Field(story.GetType(), "adulthoodIdentifier")?.SetValue(story, adulthood?.identifier);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                var resolve = AccessTools.Method(story.GetType(), "ResolveStoryDisabledWorkTagsFromBackstoriesAndTraits");
+                resolve?.Invoke(story, null);
             }
             catch
             {

@@ -376,6 +376,7 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref overviewScrollPosition, ref overviewViewHeight, out Listing_Standard listing, out Rect viewRect);
 
+            DrawInfoCard(listing, "What this tab does", "Overview is the quick setup tab. Use it for presets, the family name, the on-map counter, overall difficulty, and the broad pacing values that shape the mod before you dig into the detailed tabs.");
             DrawSectionLabel(listing, "Quick setup", "Start here if you just want the mod to feel good without hand tuning every system.");
             DrawPresetButtons(listing);
             DrawTextEntryCard(listing, "Family name", "This changes undead naming in pawn labels, letters, and other player-facing text.", ref zombiePrefix, "Zombie");
@@ -398,6 +399,7 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref eventsScrollPosition, ref eventsViewHeight, out Listing_Standard listing, out Rect viewRect);
 
+            DrawInfoCard(listing, "What this tab does", "Events controls when pressure arrives and what form it takes. Use this tab to tune the steady edge trickle, moon attacks, underground bursts, and grave incidents so your colony gets the kind of pacing you want.");
             DrawSectionLabel(listing, "Constant edge trickle", "Small groups entering from the edge keep pressure on the colony between major events.");
             DrawToggleCard(listing, "Enable constant edge trickle", "Undead keep shambling in from the map edges in small groups.", ref enableEdgeTrickle);
             DrawFloatStepperCard(listing, "Trickle interval", "Lower values mean small groups arrive more often.", ref trickleIntervalHours, 0.5f, 24f, 0.25f, "hours");
@@ -431,6 +433,7 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref variantsScrollPosition, ref variantsViewHeight, out Listing_Standard listing, out Rect viewRect);
 
+            DrawInfoCard(listing, "What this tab does", "Variants lets you decide which special strains are allowed to appear and what they are called in game. Turn off types you do not want in the pool, or rename them so the mod matches the theme and tone of your playthrough.");
             DrawSectionLabel(listing, "Variant roster", "Turn individual strains on or off. Disabled strains will not appear in standard random waves or grave events.");
             DrawVariantCard(listing, "Standard Biters", "Baseline shamblers. The common core of most packs and hordes.", ref allowBiters);
             DrawVariantCard(listing, "Crawlers", "Slow dragging corpses that pressure choke points and add creep factor.", ref allowCrawlers);
@@ -477,6 +480,7 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref advancedScrollPosition, ref advancedViewHeight, out Listing_Standard listing, out Rect viewRect);
 
+            DrawInfoCard(listing, "What this tab does", "Advanced is for deeper tuning after the main setup feels right. Use it to fine tune population pressure, reanimation timing, manual event sizes, and other values that are most useful when you are balancing the mod for your preferred difficulty.");
             DrawSectionLabel(listing, "Population tuning", "Fine control for players who want to tune pacing instead of using presets.");
             DrawDifficultyCard(listing);
             DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a newly created corpse to roll the fast strain.", ref fastZombieChance, 0f, 0.20f, 0.01f);
@@ -502,6 +506,7 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref debugScrollPosition, ref debugViewHeight, out Listing_Standard listing, out Rect viewRect);
 
+            DrawInfoCard(listing, "What this tab does", "Debug gives you manual control over the mod for testing. Use it to force specific events, spawn edge waves, trigger moon attacks, or create a lurker on demand while you are verifying behavior in a live colony.");
             DrawSectionLabel(listing, "Debug mode", "Use this tab for testing and screenshots. Leave it off during normal play.");
             DrawToggleCard(listing, "Enable debug controls", "Shows manual buttons to force waves, moon events, and burst events while a colony is loaded.", ref enableDebugControls);
 
@@ -592,14 +597,25 @@ namespace CustomizableZombieHorde
 
         private void DrawTextEntryCard(Listing_Standard listing, string label, string description, ref string value, string fallback)
         {
-            Rect row = DrawCard(listing, 72f);
-            Rect textRect = new Rect(row.x + 12f, row.y + 36f, row.width - 24f, 28f);
-            DrawCardText(row, label, description);
+            Rect row = DrawCard(listing, 86f);
+            float fieldWidth = 210f;
+            Rect leftRect = new Rect(row.x + 12f, row.y, row.width - fieldWidth - 28f, row.height);
+            Rect textRect = new Rect(row.x + row.width - fieldWidth - 12f, row.y + 28f, fieldWidth, 30f);
+
+            Text.Font = GameFont.Small;
+            GUI.color = Color.white;
+            Widgets.Label(new Rect(leftRect.x, leftRect.y + 8f, leftRect.width, 22f), label);
+            GUI.color = Color.gray;
+            Widgets.Label(new Rect(leftRect.x, leftRect.y + 28f, leftRect.width, 44f), description);
+            GUI.color = Color.white;
+
             value = Widgets.TextField(textRect, value ?? fallback);
             if (string.IsNullOrWhiteSpace(value))
             {
                 value = fallback;
             }
+
+            TooltipHandler.TipRegion(row, description);
         }
 
         private void DrawToggleCard(Listing_Standard listing, string label, string description, ref bool value)
@@ -651,15 +667,15 @@ namespace CustomizableZombieHorde
 
         private bool DrawActionCard(Listing_Standard listing, string label, string description)
         {
-            Rect row = DrawCard(listing, 68f);
+            Rect row = DrawCard(listing, 76f);
             DrawCardText(row, label, description);
-            Rect buttonRect = new Rect(row.x + row.width - 164f, row.y + 18f, 152f, 32f);
+            Rect buttonRect = new Rect(row.x + row.width - 164f, row.y + 22f, 152f, 32f);
             return Widgets.ButtonText(buttonRect, "Apply");
         }
 
         private void DrawInfoCard(Listing_Standard listing, string label, string description)
         {
-            Rect row = DrawCard(listing, 60f);
+            Rect row = DrawCard(listing, 68f);
             DrawCardText(row, label, description);
         }
 
@@ -739,7 +755,8 @@ namespace CustomizableZombieHorde
 
         private void DrawCardText(Rect row, string label, string description, string valueText = null)
         {
-            Rect textRect = new Rect(row.x + 12f, row.y + 8f, row.width - 220f, row.height - 16f);
+            float reservedRight = string.IsNullOrEmpty(valueText) ? 176f : 220f;
+            Rect textRect = new Rect(row.x + 12f, row.y + 8f, row.width - reservedRight, row.height - 16f);
             Text.Font = GameFont.Small;
             GUI.color = Color.white;
             Widgets.Label(new Rect(textRect.x, textRect.y, textRect.width, 22f), label);
