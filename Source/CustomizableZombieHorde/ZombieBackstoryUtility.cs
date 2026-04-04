@@ -55,7 +55,7 @@ namespace CustomizableZombieHorde
             {
                 switch (variant)
                 {
-                    case ZombieVariant.Heavy: return 8;
+                    case ZombieVariant.Tank: return 8;
                     case ZombieVariant.Biter: return 7;
                     case ZombieVariant.Grabber: return 6;
                     case ZombieVariant.Crawler: return 4;
@@ -72,7 +72,7 @@ namespace CustomizableZombieHorde
 
             if (def == SkillDefOf.Construction || def == SkillDefOf.Mining || def == SkillDefOf.Crafting)
             {
-                return variant == ZombieVariant.Heavy ? 2 : variant == ZombieVariant.Grabber ? 1 : 0;
+                return variant == ZombieVariant.Tank ? 2 : variant == ZombieVariant.Grabber ? 1 : 0;
             }
 
             if (def == SkillDefOf.Plants)
@@ -80,7 +80,7 @@ namespace CustomizableZombieHorde
                 return variant == ZombieVariant.Drowned ? 1 : 0;
             }
 
-            if (def == SkillDefOf.Medical)
+            if (def == SkillDefOf.Medicine)
             {
                 return variant == ZombieVariant.Sick ? 1 : 0;
             }
@@ -102,16 +102,16 @@ namespace CustomizableZombieHorde
                 case "Builder": SetSkills(pawn, (SkillDefOf.Construction, 9), (SkillDefOf.Crafting, 5), (SkillDefOf.Mining, 3)); break;
                 case "Miner": SetSkills(pawn, (SkillDefOf.Mining, 9), (SkillDefOf.Construction, 4), (SkillDefOf.Melee, 3)); break;
                 case "Farmer": SetSkills(pawn, (SkillDefOf.Plants, 9), (SkillDefOf.Animals, 5), (SkillDefOf.Cooking, 3)); break;
-                case "Doctor": SetSkills(pawn, (SkillDefOf.Medical, 9), (SkillDefOf.Intellectual, 5), (SkillDefOf.Social, 2)); break;
+                case "Doctor": SetSkills(pawn, (SkillDefOf.Medicine, 9), (SkillDefOf.Intellectual, 5), (SkillDefOf.Social, 2)); break;
                 case "Warden": SetSkills(pawn, (SkillDefOf.Social, 8), (SkillDefOf.Melee, 5), (SkillDefOf.Shooting, 3)); break;
                 case "Slave": SetSkills(pawn, (SkillDefOf.Plants, 5), (SkillDefOf.Mining, 5), (SkillDefOf.Construction, 5), (SkillDefOf.Melee, 2)); break;
                 case "Chef": SetSkills(pawn, (SkillDefOf.Cooking, 9), (SkillDefOf.Plants, 4), (SkillDefOf.Crafting, 4)); break;
-                case "Scientist": SetSkills(pawn, (SkillDefOf.Intellectual, 9), (SkillDefOf.Medical, 4), (SkillDefOf.Crafting, 3)); break;
+                case "Scientist": SetSkills(pawn, (SkillDefOf.Intellectual, 9), (SkillDefOf.Medicine, 4), (SkillDefOf.Crafting, 3)); break;
                 default: SetSkills(pawn, (SkillDefOf.Animals, 4), (SkillDefOf.Plants, 4), (SkillDefOf.Melee, 3)); break;
             }
         }
 
-        private static void SetSkills(Pawn pawn, params (SkillDef def, int level)[] pairs)
+        private static void SetSkills(Pawn pawn, params (SkillDef, int)[] pairs)
         {
             foreach (var pair in pairs)
             {
