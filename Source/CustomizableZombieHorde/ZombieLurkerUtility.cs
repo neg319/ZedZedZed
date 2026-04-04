@@ -119,10 +119,13 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            NeedDef moodDef = DefDatabase<NeedDef>.GetNamedSilentFail("Mood");
+            NeedDef joyDef = DefDatabase<NeedDef>.GetNamedSilentFail("Joy");
+
             for (int i = pawn.needs.AllNeeds.Count - 1; i >= 0; i--)
             {
                 Need need = pawn.needs.AllNeeds[i];
-                if (need?.def == NeedDefOf.Mood || need?.def == NeedDefOf.Joy)
+                if (need?.def == moodDef || need?.def == joyDef)
                 {
                     pawn.needs.AllNeeds.RemoveAt(i);
                 }
