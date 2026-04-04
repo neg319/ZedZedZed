@@ -49,7 +49,7 @@ namespace CustomizableZombieHorde
             { ZombieVariant.Lurker, "CZH_Zombie_Lurker" }
         };
 
-        private static readonly Dictionary<ZombieVariant, string> VariantLabels = new Dictionary<ZombieVariant, string>
+        private static readonly Dictionary<ZombieVariant, string> DefaultVariantLabels = new Dictionary<ZombieVariant, string>
         {
             { ZombieVariant.Biter, "Biter" },
             { ZombieVariant.Crawler, "Crawler" },
@@ -100,12 +100,17 @@ namespace CustomizableZombieHorde
 
         public static string GetVariantLabel(ZombieVariant variant)
         {
-            if (VariantLabels.TryGetValue(variant, out string label))
+            return ZombieDefUtility.GetVariantLabel(variant);
+        }
+
+        public static string GetDefaultVariantLabel(ZombieVariant variant)
+        {
+            if (DefaultVariantLabels.TryGetValue(variant, out string label))
             {
                 return label;
             }
 
-            return VariantLabels[ZombieVariant.Biter];
+            return DefaultVariantLabels[ZombieVariant.Biter];
         }
 
         public static bool IsSpecialVariant(ZombieVariant variant)

@@ -68,6 +68,15 @@ namespace CustomizableZombieHorde
         public bool allowHeavies = true;
         public bool allowGrabbers = true;
 
+        public string biterName = "Biter";
+        public string crawlerName = "Crawler";
+        public string boomerName = "Boomer";
+        public string sickName = "Sick";
+        public string drownedName = "Drowned";
+        public string heavyName = "Heavy";
+        public string grabberName = "Grabber";
+        public string lurkerName = "Lurker";
+
         public override void ExposeData()
         {
             Scribe_Values.Look(ref zombiePrefix, "zombiePrefix", "Zombie");
@@ -108,6 +117,15 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref allowDrowned, "allowDrowned", true);
             Scribe_Values.Look(ref allowHeavies, "allowHeavies", true);
             Scribe_Values.Look(ref allowGrabbers, "allowGrabbers", true);
+
+            Scribe_Values.Look(ref biterName, "biterName", "Biter");
+            Scribe_Values.Look(ref crawlerName, "crawlerName", "Crawler");
+            Scribe_Values.Look(ref boomerName, "boomerName", "Boomer");
+            Scribe_Values.Look(ref sickName, "sickName", "Sick");
+            Scribe_Values.Look(ref drownedName, "drownedName", "Drowned");
+            Scribe_Values.Look(ref heavyName, "heavyName", "Heavy");
+            Scribe_Values.Look(ref grabberName, "grabberName", "Grabber");
+            Scribe_Values.Look(ref lurkerName, "lurkerName", "Lurker");
 
             base.ExposeData();
             ClampAndRepair();
@@ -199,6 +217,15 @@ namespace CustomizableZombieHorde
             allowDrowned = true;
             allowHeavies = true;
             allowGrabbers = true;
+
+            biterName = "Biter";
+            crawlerName = "Crawler";
+            boomerName = "Boomer";
+            sickName = "Sick";
+            drownedName = "Drowned";
+            heavyName = "Heavy";
+            grabberName = "Grabber";
+            lurkerName = "Lurker";
         }
 
         private void ApplyCasualPreset()
@@ -246,6 +273,14 @@ namespace CustomizableZombieHorde
             }
 
             zombiePrefix = zombiePrefix.Trim();
+            biterName = NormalizeVariantName(biterName, "Biter");
+            crawlerName = NormalizeVariantName(crawlerName, "Crawler");
+            boomerName = NormalizeVariantName(boomerName, "Boomer");
+            sickName = NormalizeVariantName(sickName, "Sick");
+            drownedName = NormalizeVariantName(drownedName, "Drowned");
+            heavyName = NormalizeVariantName(heavyName, "Heavy");
+            grabberName = NormalizeVariantName(grabberName, "Grabber");
+            lurkerName = NormalizeVariantName(lurkerName, "Lurker");
             difficultyLevel = Mathf.Clamp(difficultyLevel, 0, 8);
 
             minGroupSize = Mathf.Clamp(minGroupSize, 1, 60);
@@ -273,6 +308,22 @@ namespace CustomizableZombieHorde
 
             graveEventMinDays = Mathf.Clamp(graveEventMinDays, 3f, 30f);
             graveEventMaxDays = Mathf.Clamp(graveEventMaxDays, graveEventMinDays, 40f);
+        }
+
+        private string NormalizeVariantName(string value, string fallback)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return fallback;
+            }
+
+            string trimmed = value.Trim();
+            if (trimmed.Length > 24)
+            {
+                trimmed = trimmed.Substring(0, 24).Trim();
+            }
+
+            return trimmed.NullOrEmpty() ? fallback : trimmed;
         }
 
         private void DrawHeader(Rect rect)
@@ -394,6 +445,17 @@ namespace CustomizableZombieHorde
                 DrawWarningCard(listing, "No variants are enabled. Standard Biters will be used as a safe fallback.");
             }
 
+            DrawSectionLabel(listing, "Custom variant names", "These names replace the built in variant titles in pawn labels, letters, grave warnings, and other player facing text.");
+            DrawTextEntryCard(listing, "Biter name", "The name used for the baseline shambler strain.", ref biterName, "Biter");
+            DrawTextEntryCard(listing, "Crawler name", "The name used for the dragging low to the ground strain.", ref crawlerName, "Crawler");
+            DrawTextEntryCard(listing, "Boomer name", "The name used for the unstable bursting strain.", ref boomerName, "Boomer");
+            DrawTextEntryCard(listing, "Sick name", "The name used for the plague spreading strain.", ref sickName, "Sick");
+            DrawTextEntryCard(listing, "Drowned name", "The name used for the blue waterlogged strain.", ref drownedName, "Drowned");
+            DrawTextEntryCard(listing, "Heavy name", "The name used for the large tank like strain.", ref heavyName, "Heavy");
+            DrawTextEntryCard(listing, "Grabber name", "The name used for the tongue pulling strain.", ref grabberName, "Grabber");
+            DrawTextEntryCard(listing, "Lurker name", "The name used for the passive tameable strain.", ref lurkerName, "Lurker");
+            DrawInfoCard(listing, "Example names", ZombieDefUtility.ExampleNames(zombiePrefix));
+
             DrawSectionLabel(listing, "Recommended setup", "Most players will want every strain enabled. Turn off a strain only if you dislike its gameplay role.");
             if (DrawActionCard(listing, "Enable every strain", "Restores the full special infected roster with one click."))
             {
@@ -470,6 +532,7 @@ namespace CustomizableZombieHorde
                 DrawDebugActionButton(listing, component, "Force sick grave now", "Forced a sick grave.", "Could not force a sick grave.");
                 DrawDebugActionButton(listing, component, "Force drowned grave now", "Forced a drowned grave.", "Could not force a drowned grave.");
                 DrawDebugActionButton(listing, component, "Force heavy grave now", "Forced a heavy grave.", "Could not force a heavy grave.");
+                DrawDebugActionButton(listing, component, "Spawn lurker now", "Spawned a lurker.", "Could not spawn a lurker.");
                 DrawDebugActionButton(listing, component, "Force grabber grave now", "Forced a grabber grave.", "Could not force a grabber grave.");
                 DrawDebugActionButton(listing, component, "Force full moon horde now", "Forced a full moon horde.", "Could not force a full moon horde.");
                 DrawDebugActionButton(listing, component, "Force blood moon horde now", "Forced a blood moon horde.", "Could not force a blood moon horde.");
@@ -656,6 +719,8 @@ namespace CustomizableZombieHorde
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Tank);
                 case "Force grabber grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Grabber);
+                case "Spawn lurker now":
+                    return component.DebugSpawnLurker();
                 case "Force full moon horde now":
                     return component.DebugForceMoonEvent(false);
                 case "Force blood moon horde now":
@@ -783,6 +848,24 @@ namespace CustomizableZombieHorde
             listing.CheckboxLabeled("Enable ground bursts", ref enableGroundBursts, "Allow buried groups to erupt from the ground.");
             listing.CheckboxLabeled("Enable grave events", ref enableGraveEvents, "Allow special grave structures to spawn as incidents.");
             listing.CheckboxLabeled("Enable debug controls", ref enableDebugControls, "Show manual debug spawn tools in this settings window.");
+            listing.Gap();
+            listing.Label("Variant names");
+            listing.Label("Biter");
+            biterName = listing.TextEntry(biterName ?? "Biter");
+            listing.Label("Crawler");
+            crawlerName = listing.TextEntry(crawlerName ?? "Crawler");
+            listing.Label("Boomer");
+            boomerName = listing.TextEntry(boomerName ?? "Boomer");
+            listing.Label("Sick");
+            sickName = listing.TextEntry(sickName ?? "Sick");
+            listing.Label("Drowned");
+            drownedName = listing.TextEntry(drownedName ?? "Drowned");
+            listing.Label("Heavy");
+            heavyName = listing.TextEntry(heavyName ?? "Heavy");
+            listing.Label("Grabber");
+            grabberName = listing.TextEntry(grabberName ?? "Grabber");
+            listing.Label("Lurker");
+            lurkerName = listing.TextEntry(lurkerName ?? "Lurker");
 
             listing.GapLine();
             listing.Label($"Difficulty: {difficultyLevel}");

@@ -308,6 +308,45 @@ namespace CustomizableZombieHorde
             return result;
         }
 
+        public bool DebugSpawnLurker()
+        {
+            Map map = GetDebugTargetMap();
+            if (map == null)
+            {
+                return false;
+            }
+
+            PawnKindDef kind = DefDatabase<PawnKindDef>.GetNamedSilentFail("CZH_Zombie_Lurker");
+            if (kind == null)
+            {
+                return false;
+            }
+
+            IntVec3 spawnCell;
+            if (!CellFinder.TryFindRandomCellNear(map.Center, map, 12, c => c.Walkable(map) && !c.Fogged(map), out spawnCell))
+            {
+                spawnCell = CellFinder.RandomClosewalkCellNear(map.Center, map, 12);
+            }
+
+            if (!spawnCell.IsValid)
+            {
+                spawnCell = map.Center;
+            }
+
+            Pawn lurker = PawnGenerator.GeneratePawn(kind);
+            if (lurker == null)
+            {
+                return false;
+            }
+
+            ZombieLurkerUtility.InitializeLurker(lurker);
+            GenSpawn.Spawn(lurker, spawnCell, map);
+            ZombieLurkerUtility.EnsurePassiveLurkerBehavior(lurker);
+            Messages.Message("A debug lurker has been spawned.", lurker, MessageTypeDefOf.NeutralEvent);
+            RefreshCurrentMapCount();
+            return true;
+        }
+
 
         public void RegisterBehavior(Pawn pawn, ZombieSpawnEventType behavior)
         {
