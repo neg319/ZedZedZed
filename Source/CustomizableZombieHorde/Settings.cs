@@ -117,38 +117,46 @@ namespace CustomizableZombieHorde
 
         public void DoWindowContents(Rect inRect)
         {
-            ClampAndRepair();
-
-            Rect headerRect = new Rect(inRect.x, inRect.y, inRect.width, 82f);
-            Rect tabsRect = new Rect(inRect.x, headerRect.yMax + 8f, inRect.width, 34f);
-            Rect bodyRect = new Rect(inRect.x, tabsRect.yMax + 8f, inRect.width, inRect.height - (tabsRect.yMax - inRect.y) - 8f);
-
-            DrawHeader(headerRect);
-            DrawTabButtons(tabsRect);
-
-            Widgets.DrawMenuSection(bodyRect);
-            Rect innerRect = bodyRect.ContractedBy(12f);
-
-            switch (selectedTab)
+            try
             {
-                case SettingsTab.Overview:
-                    DrawOverviewTab(innerRect);
-                    break;
-                case SettingsTab.Events:
-                    DrawEventsTab(innerRect);
-                    break;
-                case SettingsTab.Variants:
-                    DrawVariantsTab(innerRect);
-                    break;
-                case SettingsTab.Advanced:
-                    DrawAdvancedTab(innerRect);
-                    break;
-                case SettingsTab.Debug:
-                    DrawDebugTab(innerRect);
-                    break;
-            }
+                ClampAndRepair();
 
-            ClampAndRepair();
+                Rect headerRect = new Rect(inRect.x, inRect.y, inRect.width, 82f);
+                Rect tabsRect = new Rect(inRect.x, headerRect.yMax + 8f, inRect.width, 34f);
+                Rect bodyRect = new Rect(inRect.x, tabsRect.yMax + 8f, inRect.width, inRect.height - (tabsRect.yMax - inRect.y) - 8f);
+
+                DrawHeader(headerRect);
+                DrawTabButtons(tabsRect);
+
+                Widgets.DrawMenuSection(bodyRect);
+                Rect innerRect = bodyRect.ContractedBy(12f);
+
+                switch (selectedTab)
+                {
+                    case SettingsTab.Overview:
+                        DrawOverviewTab(innerRect);
+                        break;
+                    case SettingsTab.Events:
+                        DrawEventsTab(innerRect);
+                        break;
+                    case SettingsTab.Variants:
+                        DrawVariantsTab(innerRect);
+                        break;
+                    case SettingsTab.Advanced:
+                        DrawAdvancedTab(innerRect);
+                        break;
+                    case SettingsTab.Debug:
+                        DrawDebugTab(innerRect);
+                        break;
+                }
+
+                ClampAndRepair();
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error("[Zed Zed Zed] Settings UI fell back to simple mode. " + ex);
+                DrawFallbackWindow(inRect);
+            }
         }
 
         public void ResetToRecommendedDefaults()
@@ -752,6 +760,50 @@ namespace CustomizableZombieHorde
             {
                 value = Mathf.Min(max, value + step);
             }
+        }
+
+        private void DrawFallbackWindow(Rect inRect)
+        {
+            ClampAndRepair();
+            Widgets.DrawMenuSection(inRect);
+            Rect inner = inRect.ContractedBy(12f);
+            Listing_Standard listing = new Listing_Standard();
+            listing.Begin(inner);
+
+            Text.Font = GameFont.Medium;
+            listing.Label("Zed Zed Zed Settings");
+            Text.Font = GameFont.Small;
+            listing.GapLine();
+
+            listing.Label("Family name prefix");
+            zombiePrefix = listing.TextEntry(zombiePrefix ?? "Zombie");
+            listing.CheckboxLabeled("Show zombie counter", ref showZombieCounter, "Show the current undead count on player home maps.");
+            listing.CheckboxLabeled("Enable edge trickle", ref enableEdgeTrickle, "Allow small groups to keep wandering in from the map edge.");
+            listing.CheckboxLabeled("Enable moon events", ref enableMoonEvents, "Enable full moon and blood moon attacks.");
+            listing.CheckboxLabeled("Enable ground bursts", ref enableGroundBursts, "Allow buried groups to erupt from the ground.");
+            listing.CheckboxLabeled("Enable grave events", ref enableGraveEvents, "Allow special grave structures to spawn as incidents.");
+            listing.CheckboxLabeled("Enable debug controls", ref enableDebugControls, "Show manual debug spawn tools in this settings window.");
+
+            listing.GapLine();
+            listing.Label($"Difficulty: {difficultyLevel}");
+            difficultyLevel = (int)listing.Slider(difficultyLevel, 0, 8);
+            listing.Label($"Min group size: {minGroupSize}");
+            minGroupSize = (int)listing.Slider(minGroupSize, 1, 60);
+            listing.Label($"Max group size: {maxGroupSize}");
+            maxGroupSize = (int)listing.Slider(maxGroupSize, 1, 120);
+            listing.Label($"Fast strain chance: {fastZombieChance:P0}");
+            fastZombieChance = listing.Slider(fastZombieChance, 0f, 0.20f);
+            listing.Label($"Reanimation delay (hours): {resurrectionDelayHours:0.0}");
+            resurrectionDelayHours = listing.Slider(resurrectionDelayHours, 0.5f, 24f);
+
+            listing.GapLine();
+            if (listing.ButtonText("Reset to recommended defaults"))
+            {
+                ResetToRecommendedDefaults();
+            }
+
+            listing.End();
+            ClampAndRepair();
         }
 
         private static void ShowDebugResult(bool success, string successText, string failText)

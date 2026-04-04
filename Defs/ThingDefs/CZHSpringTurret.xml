@@ -1,23 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
-  <ThingDef ParentName="BuildingBase">
+  <ThingDef ParentName="TurretGunBase">
     <defName>CZH_Turret_Spring</defName>
     <label>spring turret</label>
-    <description>A compact automatic turret built around a simple spring drive and a stripped down targeter. It does not need power or ammo, fires a steady shot every second, and sits in the security tab right beside the rest of your colony defenses.</description>
-    <thingClass>Building_TurretGun</thingClass>
-    <category>Building</category>
-    <size>(1,1)</size>
-    <altitudeLayer>Building</altitudeLayer>
-    <drawerType>RealtimeOnly</drawerType>
-    <fillPercent>0.25</fillPercent>
-    <passability>Standable</passability>
-    <selectable>true</selectable>
-    <castEdgeShadows>false</castEdgeShadows>
-    <leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
-    <tickerType>Normal</tickerType>
-    <designationCategory>Security</designationCategory>
-    <clearBuildingArea>false</clearBuildingArea>
-    <uiIconPath>Things/Building/Security/CZHSpringTurretBase</uiIconPath>
+    <description>A compact automatic turret built around a simple spring drive and a stripped down targeter. It does not need power or ammo, fires a steady shot every second, and sits in the security tab beside the rest of your colony defenses.</description>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretBase</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -27,12 +13,14 @@
         <offset>(0,0,-0.04)</offset>
       </shadowData>
     </graphicData>
+    <uiIconPath>Things/Building/Security/CZHSpringTurretBase</uiIconPath>
+    <fillPercent>0.25</fillPercent>
+    <costStuffCount>100</costStuffCount>
     <stuffCategories>
       <li>Woody</li>
       <li>Stony</li>
       <li>Metallic</li>
     </stuffCategories>
-    <costStuffCount>100</costStuffCount>
     <statBases>
       <MaxHitPoints>90</MaxHitPoints>
       <WorkToBuild>12000</WorkToBuild>
@@ -43,7 +31,6 @@
     </statBases>
     <building>
       <turretGunDef>CZH_Gun_SpringTurret</turretGunDef>
-      <isInert>false</isInert>
       <ai_combatDangerous>true</ai_combatDangerous>
       <buildingTags>
         <li>Security</li>
@@ -51,31 +38,19 @@
     </building>
   </ThingDef>
 
-  <ThingDef>
+  <ThingDef ParentName="BaseHumanMakeableGun">
     <defName>CZH_Gun_SpringTurret</defName>
     <label>spring turret gun</label>
-    <thingClass>Verse.ThingWithComps</thingClass>
-    <category>Item</category>
-    <selectable>false</selectable>
-    <drawerType>RealtimeOnly</drawerType>
-    <altitudeLayer>Item</altitudeLayer>
-    <tickerType>Never</tickerType>
-    <tradeability>None</tradeability>
-    <smeltable>false</smeltable>
-    <useHitPoints>false</useHitPoints>
-    <rotatable>false</rotatable>
-    <thingCategories>
-      <li>WeaponsRanged</li>
-    </thingCategories>
-    <comps>
-      <li Class="CompProperties_Equippable" />
-    </comps>
+    <description>An internal gun definition used by the spring turret.</description>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretTop</texPath>
       <graphicClass>Graphic_Single</graphicClass>
       <drawSize>(1,1)</drawSize>
       <shaderType>Cutout</shaderType>
     </graphicData>
+    <weaponTags>
+      <li>TurretGun</li>
+    </weaponTags>
     <statBases>
       <Mass>1</Mass>
       <AccuracyTouch>1.00</AccuracyTouch>
@@ -83,6 +58,7 @@
       <AccuracyMedium>0.94</AccuracyMedium>
       <AccuracyLong>0.90</AccuracyLong>
       <RangedWeapon_Cooldown>1.00</RangedWeapon_Cooldown>
+      <MarketValue>0</MarketValue>
     </statBases>
     <verbs>
       <li>
