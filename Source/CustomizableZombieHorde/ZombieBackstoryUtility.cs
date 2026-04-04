@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using RimWorld;
 using Verse;
 
@@ -97,18 +96,109 @@ namespace CustomizableZombieHorde
                 skill.xpSinceLastLevel = 0f;
             }
 
+            // Every lurker gets a little low-randomized usefulness and basic self-defense.
+            SetSkills(
+                pawn,
+                (SkillDefOf.Melee, StableRange(pawn, archetype + "_Melee", 1, 4)),
+                (SkillDefOf.Shooting, StableRange(pawn, archetype + "_Shooting", 1, 4)),
+                (SkillDefOf.Plants, StableRange(pawn, archetype + "_PlantsMinor", 0, 3)),
+                (SkillDefOf.Crafting, StableRange(pawn, archetype + "_CraftMinor", 0, 3)),
+                (SkillDefOf.Construction, StableRange(pawn, archetype + "_BuildMinor", 0, 3)),
+                (SkillDefOf.Mining, StableRange(pawn, archetype + "_MineMinor", 0, 3)),
+                (SkillDefOf.Cooking, StableRange(pawn, archetype + "_CookMinor", 0, 3)),
+                (SkillDefOf.Animals, StableRange(pawn, archetype + "_AnimalMinor", 0, 3)),
+                (SkillDefOf.Medicine, StableRange(pawn, archetype + "_MedicMinor", 0, 3)),
+                (SkillDefOf.Intellectual, StableRange(pawn, archetype + "_ThinkMinor", 0, 3)),
+                (SkillDefOf.Social, StableRange(pawn, archetype + "_SocialMinor", 0, 3))
+            );
+
             switch (archetype)
             {
-                case "Builder": SetSkills(pawn, (SkillDefOf.Construction, 9), (SkillDefOf.Crafting, 5), (SkillDefOf.Mining, 3)); break;
-                case "Miner": SetSkills(pawn, (SkillDefOf.Mining, 9), (SkillDefOf.Construction, 4), (SkillDefOf.Melee, 3)); break;
-                case "Farmer": SetSkills(pawn, (SkillDefOf.Plants, 9), (SkillDefOf.Animals, 5), (SkillDefOf.Cooking, 3)); break;
-                case "Doctor": SetSkills(pawn, (SkillDefOf.Medicine, 9), (SkillDefOf.Intellectual, 5), (SkillDefOf.Social, 2)); break;
-                case "Warden": SetSkills(pawn, (SkillDefOf.Social, 8), (SkillDefOf.Melee, 5), (SkillDefOf.Shooting, 3)); break;
-                case "Slave": SetSkills(pawn, (SkillDefOf.Plants, 5), (SkillDefOf.Mining, 5), (SkillDefOf.Construction, 5), (SkillDefOf.Melee, 2)); break;
-                case "Chef": SetSkills(pawn, (SkillDefOf.Cooking, 9), (SkillDefOf.Plants, 4), (SkillDefOf.Crafting, 4)); break;
-                case "Scientist": SetSkills(pawn, (SkillDefOf.Intellectual, 9), (SkillDefOf.Medicine, 4), (SkillDefOf.Crafting, 3)); break;
-                default: SetSkills(pawn, (SkillDefOf.Animals, 4), (SkillDefOf.Plants, 4), (SkillDefOf.Melee, 3)); break;
+                case "Builder":
+                    SetSkills(
+                        pawn,
+                        (SkillDefOf.Construction, StableRange(pawn, "Builder_Construction", 4, 8)),
+                        (SkillDefOf.Crafting, StableRange(pawn, "Builder_Crafting", 3, 6)),
+                        (SkillDefOf.Mining, StableRange(pawn, "Builder_Mining", 2, 5))
+                    );
+                    break;
+                case "Miner":
+                    SetSkills(
+                        pawn,
+                        (SkillDefOf.Mining, StableRange(pawn, "Miner_Mining", 4, 8)),
+                        (SkillDefOf.Construction, StableRange(pawn, "Miner_Construction", 2, 5)),
+                        (SkillDefOf.Melee, StableRange(pawn, "Miner_Melee", 2, 5))
+                    );
+                    break;
+                case "Farmer":
+                    SetSkills(
+                        pawn,
+                        (SkillDefOf.Plants, StableRange(pawn, "Farmer_Plants", 4, 8)),
+                        (SkillDefOf.Animals, StableRange(pawn, "Farmer_Animals", 2, 5)),
+                        (SkillDefOf.Cooking, StableRange(pawn, "Farmer_Cooking", 1, 4))
+                    );
+                    break;
+                case "Doctor":
+                    SetSkills(
+                        pawn,
+                        (SkillDefOf.Medicine, StableRange(pawn, "Doctor_Medicine", 4, 8)),
+                        (SkillDefOf.Intellectual, StableRange(pawn, "Doctor_Intellectual", 2, 5)),
+                        (SkillDefOf.Social, StableRange(pawn, "Doctor_Social", 1, 4))
+                    );
+                    break;
+                case "Warden":
+                    SetSkills(
+                        pawn,
+                        (SkillDefOf.Social, StableRange(pawn, "Warden_Social", 4, 8)),
+                        (SkillDefOf.Melee, StableRange(pawn, "Warden_Melee", 2, 5)),
+                        (SkillDefOf.Shooting, StableRange(pawn, "Warden_Shooting", 2, 5))
+                    );
+                    break;
+                case "Slave":
+                    SetSkills(
+                        pawn,
+                        (SkillDefOf.Plants, StableRange(pawn, "Slave_Plants", 3, 6)),
+                        (SkillDefOf.Mining, StableRange(pawn, "Slave_Mining", 3, 6)),
+                        (SkillDefOf.Construction, StableRange(pawn, "Slave_Construction", 3, 6))
+                    );
+                    break;
+                case "Chef":
+                    SetSkills(
+                        pawn,
+                        (SkillDefOf.Cooking, StableRange(pawn, "Chef_Cooking", 4, 8)),
+                        (SkillDefOf.Plants, StableRange(pawn, "Chef_Plants", 2, 5)),
+                        (SkillDefOf.Crafting, StableRange(pawn, "Chef_Crafting", 2, 5))
+                    );
+                    break;
+                case "Scientist":
+                    SetSkills(
+                        pawn,
+                        (SkillDefOf.Intellectual, StableRange(pawn, "Scientist_Intellectual", 4, 8)),
+                        (SkillDefOf.Medicine, StableRange(pawn, "Scientist_Medicine", 2, 5)),
+                        (SkillDefOf.Crafting, StableRange(pawn, "Scientist_Crafting", 1, 4))
+                    );
+                    break;
+                default:
+                    SetSkills(
+                        pawn,
+                        (SkillDefOf.Animals, StableRange(pawn, "Default_Animals", 2, 4)),
+                        (SkillDefOf.Plants, StableRange(pawn, "Default_Plants", 2, 4)),
+                        (SkillDefOf.Melee, StableRange(pawn, "Default_Melee", 1, 4))
+                    );
+                    break;
             }
+        }
+
+        private static int StableRange(Pawn pawn, string salt, int minInclusive, int maxInclusive)
+        {
+            if (maxInclusive <= minInclusive)
+            {
+                return minInclusive;
+            }
+
+            string seed = (pawn?.GetUniqueLoadID() ?? "lurker") + "_" + salt;
+            int hash = Math.Abs(seed.GetHashCode());
+            return minInclusive + (hash % (maxInclusive - minInclusive + 1));
         }
 
         private static void SetSkills(Pawn pawn, params (SkillDef, int)[] pairs)
@@ -118,7 +208,7 @@ namespace CustomizableZombieHorde
                 SkillRecord record = pawn.skills?.GetSkill(pair.Item1);
                 if (record != null)
                 {
-                    record.Level = pair.Item2;
+                    record.Level = Math.Max(record.Level, pair.Item2);
                     record.passion = Passion.None;
                     record.xpSinceLastLevel = 0f;
                 }
@@ -135,7 +225,6 @@ namespace CustomizableZombieHorde
             string existing = pawn.GetUniqueLoadID();
             if (pawn.mindState != null)
             {
-                // use thinkData constant hash for stable per pawn assignment without save component
                 int index = Math.Abs(existing.GetHashCode()) % LurkerArchetypes.Length;
                 return LurkerArchetypes[index];
             }

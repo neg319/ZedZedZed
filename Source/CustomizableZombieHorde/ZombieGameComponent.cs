@@ -765,6 +765,7 @@ namespace CustomizableZombieHorde
                     if (ZombieLurkerUtility.IsLurker(pawn))
                     {
                         ZombieLurkerUtility.EnsureLurkerZombiePassiveTrait(pawn);
+                        ZombieLurkerUtility.EnsureEmotionlessLurker(pawn);
                     }
 
                     if (ZombieLurkerUtility.IsColonyLurker(pawn))

@@ -77,6 +77,7 @@ namespace CustomizableZombieHorde
             }
 
             EnsureLurkerZombiePassiveTrait(lurker);
+            EnsureEmotionlessLurker(lurker);
             TrySetFaction(lurker, Faction.OfPlayer);
 
             try
@@ -99,6 +100,7 @@ namespace CustomizableZombieHorde
             }
 
             EnsureLurkerZombiePassiveTrait(lurker);
+            EnsureEmotionlessLurker(lurker);
             ZombiePawnFactory.FinalizeZombie(lurker, initialSpawn: true, desiredFaction: null);
             ClearFaction(lurker);
             lurker.jobs?.StopAll();
@@ -110,8 +112,27 @@ namespace CustomizableZombieHorde
             ZombieTraitUtility.EnsureTrait(pawn, ZombieDefOf.CZH_Trait_ZombiePassive);
         }
 
+        public static void EnsureEmotionlessLurker(Pawn pawn)
+        {
+            if (!IsLurker(pawn) || pawn.needs == null || pawn.needs.AllNeeds == null)
+            {
+                return;
+            }
+
+            for (int i = pawn.needs.AllNeeds.Count - 1; i >= 0; i--)
+            {
+                Need need = pawn.needs.AllNeeds[i];
+                if (need?.def == NeedDefOf.Mood || need?.def == NeedDefOf.Joy)
+                {
+                    pawn.needs.AllNeeds.RemoveAt(i);
+                }
+            }
+        }
+
         public static void EnsurePassiveLurkerBehavior(Pawn pawn)
         {
+            EnsureEmotionlessLurker(pawn);
+
             if (!IsPassiveLurker(pawn) || pawn.Dead || pawn.Destroyed || !pawn.Spawned || pawn.jobs == null || pawn.Downed)
             {
                 return;
@@ -148,6 +169,40 @@ namespace CustomizableZombieHorde
             }
 
             return false;
+        }
+
+
+        public static Thing FindAvailableTameFood(Pawn pawn, Map map)
+        {
+            Thing carried = FindCarriedTameFood(pawn);
+            if (carried != null)
+            {
+                return carried;
+            }
+
+            if (map?.listerThings == null)
+            {
+                return null;
+            }
+
+            Thing best = null;
+            float bestDistance = float.MaxValue;
+            foreach (Thing thing in map.listerThings.AllThings)
+            {
+                if (!IsValidTameFood(thing) || thing.IsForbidden(pawn) || !pawn.CanReserveAndReach(thing, PathEndMode.Touch, Danger.Some))
+                {
+                    continue;
+                }
+
+                float distance = pawn.PositionHeld.DistanceToSquared(thing.PositionHeld);
+                if (distance < bestDistance)
+                {
+                    best = thing;
+                    bestDistance = distance;
+                }
+            }
+
+            return best;
         }
 
         public static Thing FindCarriedTameFood(Pawn pawn)

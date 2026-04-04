@@ -8,17 +8,35 @@ namespace CustomizableZombieHorde
     public class JobDriver_TameLurker : JobDriver
     {
         private const TargetIndex LurkerInd = TargetIndex.A;
+        private const TargetIndex FoodInd = TargetIndex.B;
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
-            return pawn.Reserve(TargetA, job, 1, -1, null, errorOnFailed);
+            bool reservedLurker = pawn.Reserve(TargetA, job, 1, -1, null, errorOnFailed);
+            if (!reservedLurker)
+            {
+                return false;
+            }
+
+            if (job.targetB.IsValid && job.targetB.HasThing)
+            {
+                pawn.Reserve(job.targetB.Thing, job, 1, -1, null, errorOnFailed);
+            }
+
+            return true;
         }
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
             this.FailOnDestroyedNullOrForbidden(LurkerInd);
             this.FailOn(() => !ZombieLurkerUtility.IsPassiveLurker(TargetThingA as Pawn));
-            this.FailOn(() => ZombieLurkerUtility.FindCarriedTameFood(pawn) == null);
+            this.FailOn(() => ZombieLurkerUtility.FindCarriedTameFood(pawn) == null && (!job.targetB.IsValid || job.targetB.Thing == null));
+
+            if (ZombieLurkerUtility.FindCarriedTameFood(pawn) == null && job.targetB.IsValid && job.targetB.Thing != null)
+            {
+                yield return Toils_Goto.GotoThing(FoodInd, PathEndMode.Touch);
+                yield return Toils_Haul.StartCarryThing(FoodInd, putRemainderInQueue: false);
+            }
 
             yield return Toils_Goto.GotoThing(LurkerInd, PathEndMode.Touch);
 

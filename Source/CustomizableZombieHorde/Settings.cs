@@ -25,7 +25,7 @@ namespace CustomizableZombieHorde
 
         private float overviewViewHeight = 1100f;
         private float eventsViewHeight = 1500f;
-        private float variantsViewHeight = 1000f;
+        private float variantsViewHeight = 1500f;
         private float advancedViewHeight = 1200f;
         private float debugViewHeight = 1400f;
 
@@ -472,7 +472,7 @@ namespace CustomizableZombieHorde
             }
 
             listing.End();
-            variantsViewHeight = Mathf.Max(1000f, listing.CurHeight + 24f);
+            variantsViewHeight = Mathf.Max(1500f, listing.CurHeight + 24f);
             Widgets.EndScrollView();
         }
 
@@ -597,16 +597,16 @@ namespace CustomizableZombieHorde
 
         private void DrawTextEntryCard(Listing_Standard listing, string label, string description, ref string value, string fallback)
         {
-            Rect row = DrawCard(listing, 86f);
-            float fieldWidth = 210f;
-            Rect leftRect = new Rect(row.x + 12f, row.y, row.width - fieldWidth - 28f, row.height);
-            Rect textRect = new Rect(row.x + row.width - fieldWidth - 12f, row.y + 28f, fieldWidth, 30f);
+            Rect row = DrawCard(listing, 108f);
+            Rect labelRect = new Rect(row.x + 12f, row.y + 8f, row.width - 24f, 22f);
+            Rect descRect = new Rect(row.x + 12f, row.y + 30f, row.width - 24f, 36f);
+            Rect textRect = new Rect(row.x + 12f, row.y + 70f, row.width - 24f, 28f);
 
             Text.Font = GameFont.Small;
             GUI.color = Color.white;
-            Widgets.Label(new Rect(leftRect.x, leftRect.y + 8f, leftRect.width, 22f), label);
+            Widgets.Label(labelRect, label);
             GUI.color = Color.gray;
-            Widgets.Label(new Rect(leftRect.x, leftRect.y + 28f, leftRect.width, 44f), description);
+            Widgets.Label(descRect, description);
             GUI.color = Color.white;
 
             value = Widgets.TextField(textRect, value ?? fallback);
@@ -667,7 +667,7 @@ namespace CustomizableZombieHorde
 
         private bool DrawActionCard(Listing_Standard listing, string label, string description)
         {
-            Rect row = DrawCard(listing, 76f);
+            Rect row = DrawCard(listing, 86f);
             DrawCardText(row, label, description);
             Rect buttonRect = new Rect(row.x + row.width - 164f, row.y + 22f, 152f, 32f);
             return Widgets.ButtonText(buttonRect, "Apply");
@@ -675,7 +675,7 @@ namespace CustomizableZombieHorde
 
         private void DrawInfoCard(Listing_Standard listing, string label, string description)
         {
-            Rect row = DrawCard(listing, 68f);
+            Rect row = DrawCard(listing, 84f);
             DrawCardText(row, label, description);
         }
 
@@ -755,19 +755,19 @@ namespace CustomizableZombieHorde
 
         private void DrawCardText(Rect row, string label, string description, string valueText = null)
         {
-            float reservedRight = string.IsNullOrEmpty(valueText) ? 176f : 220f;
-            Rect textRect = new Rect(row.x + 12f, row.y + 8f, row.width - reservedRight, row.height - 16f);
+            float reservedRight = string.IsNullOrEmpty(valueText) ? 196f : 228f;
+            Rect textRect = new Rect(row.x + 12f, row.y + 8f, Mathf.Max(120f, row.width - reservedRight), row.height - 16f);
             Text.Font = GameFont.Small;
             GUI.color = Color.white;
             Widgets.Label(new Rect(textRect.x, textRect.y, textRect.width, 22f), label);
             GUI.color = Color.gray;
-            Widgets.Label(new Rect(textRect.x, textRect.y + 20f, textRect.width, textRect.height - 20f), description);
+            Widgets.Label(new Rect(textRect.x, textRect.y + 20f, textRect.width, Mathf.Max(18f, textRect.height - 20f)), description);
             GUI.color = Color.white;
 
             if (!string.IsNullOrEmpty(valueText))
             {
-                Text.Anchor = TextAnchor.MiddleRight;
-                Widgets.Label(new Rect(row.x + row.width - 292f, row.y + 8f, 100f, 22f), valueText);
+                Text.Anchor = TextAnchor.UpperRight;
+                Widgets.Label(new Rect(row.x + row.width - 220f, row.y + 8f, 96f, 22f), valueText);
                 Text.Anchor = TextAnchor.UpperLeft;
             }
         }
@@ -776,7 +776,8 @@ namespace CustomizableZombieHorde
         {
             float buttonWidth = 34f;
             float valueWidth = 92f;
-            Rect minusRect = new Rect(row.x + row.width - 132f, row.y + 18f, buttonWidth, 32f);
+            float totalWidth = buttonWidth + 4f + valueWidth + 4f + buttonWidth;
+            Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, row.y + 18f, buttonWidth, 32f);
             Rect valueRect = new Rect(minusRect.xMax + 4f, row.y + 18f, valueWidth, 32f);
             Rect plusRect = new Rect(valueRect.xMax + 4f, row.y + 18f, buttonWidth, 32f);
 
@@ -800,7 +801,8 @@ namespace CustomizableZombieHorde
         {
             float buttonWidth = 34f;
             float valueWidth = 92f;
-            Rect minusRect = new Rect(row.x + row.width - 132f, row.y + 18f, buttonWidth, 32f);
+            float totalWidth = buttonWidth + 4f + valueWidth + 4f + buttonWidth;
+            Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, row.y + 18f, buttonWidth, 32f);
             Rect valueRect = new Rect(minusRect.xMax + 4f, row.y + 18f, valueWidth, 32f);
             Rect plusRect = new Rect(valueRect.xMax + 4f, row.y + 18f, buttonWidth, 32f);
 
@@ -824,7 +826,8 @@ namespace CustomizableZombieHorde
         {
             float buttonWidth = 34f;
             float valueWidth = 92f;
-            Rect minusRect = new Rect(row.x + row.width - 132f, row.y + 18f, buttonWidth, 32f);
+            float totalWidth = buttonWidth + 4f + valueWidth + 4f + buttonWidth;
+            Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, row.y + 18f, buttonWidth, 32f);
             Rect valueRect = new Rect(minusRect.xMax + 4f, row.y + 18f, valueWidth, 32f);
             Rect plusRect = new Rect(valueRect.xMax + 4f, row.y + 18f, buttonWidth, 32f);
 

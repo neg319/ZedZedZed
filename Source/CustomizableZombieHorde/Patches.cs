@@ -441,7 +441,7 @@ namespace CustomizableZombieHorde
     }
 
     [HarmonyPatch]
-    public static class Patch_FloatMenuMakerMap_ChoicesAtFor
+    public static partial class Patch_FloatMenuMakerMap_ChoicesAtFor
     {
         private static MethodBase cachedTarget;
 
@@ -490,6 +490,61 @@ namespace CustomizableZombieHorde
             }
 
             IntVec3 cell = IntVec3.FromVector3(clickPos);
+            AddCustomHumanlikeOrders(cell, pawn, opts);
+        }
+    }
+
+    [HarmonyPatch]
+    public static class Patch_FloatMenuMakerMap_AddHumanlikeOrders_Fallback
+    {
+        private static MethodBase cachedTarget;
+
+        public static bool Prepare()
+        {
+            cachedTarget = ResolveTargetMethod();
+            return cachedTarget != null;
+        }
+
+        public static MethodBase TargetMethod()
+        {
+            return cachedTarget ?? ResolveTargetMethod();
+        }
+
+        private static MethodBase ResolveTargetMethod()
+        {
+            foreach (MethodInfo method in typeof(FloatMenuMakerMap).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                if (method.Name != "AddHumanlikeOrders")
+                {
+                    continue;
+                }
+
+                ParameterInfo[] parameters = method.GetParameters();
+                if (parameters.Length >= 3 && parameters[0].ParameterType == typeof(Vector3) && parameters[1].ParameterType == typeof(Pawn) && typeof(List<FloatMenuOption>).IsAssignableFrom(parameters[2].ParameterType))
+                {
+                    return method;
+                }
+            }
+
+            return null;
+        }
+
+        public static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts)
+        {
+            if (pawn == null || opts == null || pawn.Map == null || !pawn.IsColonistPlayerControlled)
+            {
+                return;
+            }
+
+            IntVec3 cell = IntVec3.FromVector3(clickPos);
+            Patch_FloatMenuMakerMap_ChoicesAtFor.AddCustomHumanlikeOrders(cell, pawn, opts);
+        }
+    }
+
+    public static partial class Patch_FloatMenuMakerMap_ChoicesAtFor
+    {
+        public static void AddCustomHumanlikeOrders(IntVec3 cell, Pawn pawn, List<FloatMenuOption> opts)
+        {
             if (!cell.InBounds(pawn.Map))
             {
                 return;
@@ -515,20 +570,28 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                Thing food = ZombieLurkerUtility.FindCarriedTameFood(pawn);
+                Thing food = ZombieLurkerUtility.FindAvailableTameFood(pawn, pawn.Map);
                 if (food == null)
                 {
+                    opts.Add(new FloatMenuOption("Recruit lurker (requires rotten flesh or human meat)", null));
                     opts.Add(new FloatMenuOption("Tame lurker (requires rotten flesh or human meat)", null));
                     continue;
                 }
 
                 string foodLabel = food.LabelCap;
-                opts.Add(new FloatMenuOption("Tame lurker using " + foodLabel, delegate
+                Action startTame = delegate
                 {
                     Job job = JobMaker.MakeJob(ZombieDefOf.CZH_TameLurker, lurker);
+                    if (pawn.carryTracker?.CarriedThing != food)
+                    {
+                        job.targetB = food;
+                    }
                     job.count = 1;
                     pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
-                }));
+                };
+
+                opts.Add(new FloatMenuOption("Recruit lurker using " + foodLabel, startTame));
+                opts.Add(new FloatMenuOption("Tame lurker using " + foodLabel, startTame));
             }
 
             foreach (Pawn patient in pawnsAtCell.Where(ZombieBileUtility.NeedsBileTreatment))
