@@ -440,11 +440,18 @@ namespace CustomizableZombieHorde
         }
     }
 
-    [HarmonyPatch(typeof(FloatMenuMakerMap), "AddHumanlikeOrders")]
-    public static class Patch_FloatMenuMakerMap_AddHumanlikeOrders
+    [HarmonyPatch]
+    public static class Patch_FloatMenuMakerMap_ChoicesAtFor
     {
-        public static void Postfix(Vector3 clickPos, Pawn pawn, List<FloatMenuOption> opts)
+        public static MethodBase TargetMethod()
         {
+            return AccessTools.Method(typeof(FloatMenuMakerMap), "ChoicesAtFor", new[] { typeof(Vector3), typeof(Pawn) })
+                ?? AccessTools.Method(typeof(FloatMenuMakerMap), "AddHumanlikeOrders", new[] { typeof(Vector3), typeof(Pawn), typeof(List<FloatMenuOption>) });
+        }
+
+        public static void Postfix(Vector3 clickPos, Pawn pawn, ref List<FloatMenuOption> __result)
+        {
+            List<FloatMenuOption> opts = __result;
             if (pawn == null || opts == null || pawn.Map == null || !pawn.IsColonistPlayerControlled)
             {
                 return;

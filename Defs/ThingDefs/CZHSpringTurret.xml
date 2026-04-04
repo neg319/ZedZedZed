@@ -54,7 +54,7 @@
   <ThingDef>
     <defName>CZH_Gun_SpringTurret</defName>
     <label>spring turret gun</label>
-    <thingClass>RimWorld.Gun</thingClass>
+    <thingClass>Verse.ThingWithComps</thingClass>
     <category>Item</category>
     <selectable>false</selectable>
     <drawerType>RealtimeOnly</drawerType>
@@ -64,6 +64,12 @@
     <smeltable>false</smeltable>
     <useHitPoints>false</useHitPoints>
     <rotatable>false</rotatable>
+    <thingCategories>
+      <li>WeaponsRanged</li>
+    </thingCategories>
+    <comps>
+      <li Class="CompProperties_Equippable" />
+    </comps>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretTop</texPath>
       <graphicClass>Graphic_Single</graphicClass>
