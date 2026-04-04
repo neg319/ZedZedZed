@@ -443,10 +443,42 @@ namespace CustomizableZombieHorde
     [HarmonyPatch]
     public static class Patch_FloatMenuMakerMap_ChoicesAtFor
     {
+        private static MethodBase cachedTarget;
+
+        public static bool Prepare()
+        {
+            cachedTarget = ResolveTargetMethod();
+            return cachedTarget != null;
+        }
+
         public static MethodBase TargetMethod()
         {
-            return AccessTools.Method(typeof(FloatMenuMakerMap), "ChoicesAtFor", new[] { typeof(Vector3), typeof(Pawn) })
-                ?? AccessTools.Method(typeof(FloatMenuMakerMap), "AddHumanlikeOrders", new[] { typeof(Vector3), typeof(Pawn), typeof(List<FloatMenuOption>) });
+            return cachedTarget ?? ResolveTargetMethod();
+        }
+
+        private static MethodBase ResolveTargetMethod()
+        {
+            MethodBase direct = AccessTools.Method(typeof(FloatMenuMakerMap), "ChoicesAtFor", new[] { typeof(Vector3), typeof(Pawn) });
+            if (direct != null)
+            {
+                return direct;
+            }
+
+            foreach (MethodInfo method in typeof(FloatMenuMakerMap).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                if (method.Name != "ChoicesAtFor")
+                {
+                    continue;
+                }
+
+                ParameterInfo[] parameters = method.GetParameters();
+                if (parameters.Length >= 2 && parameters[0].ParameterType == typeof(Vector3) && parameters[1].ParameterType == typeof(Pawn) && typeof(List<FloatMenuOption>).IsAssignableFrom(method.ReturnType))
+                {
+                    return method;
+                }
+            }
+
+            return null;
         }
 
         public static void Postfix(Vector3 clickPos, Pawn pawn, ref List<FloatMenuOption> __result)
