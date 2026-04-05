@@ -7,15 +7,14 @@ namespace CustomizableZombieHorde
 {
     public static class ZombiePawnFactory
     {
+        [ThreadStatic]
+        public static bool SuppressZombieRelationGeneration;
+
         public static Pawn GenerateZombie(PawnKindDef kind, Faction faction)
         {
             Pawn pawn = null;
-
+            SuppressZombieRelationGeneration = true;
             try
-            {
-                pawn = PawnGenerator.GeneratePawn(kind);
-            }
-            catch
             {
                 try
                 {
@@ -23,8 +22,19 @@ namespace CustomizableZombieHorde
                 }
                 catch
                 {
-                    return null;
+                    try
+                    {
+                        pawn = PawnGenerator.GeneratePawn(kind);
+                    }
+                    catch
+                    {
+                        return null;
+                    }
                 }
+            }
+            finally
+            {
+                SuppressZombieRelationGeneration = false;
             }
 
             FinalizeZombie(pawn, initialSpawn: true, desiredFaction: faction);
@@ -64,6 +74,14 @@ namespace CustomizableZombieHorde
             else if (ZombieLurkerUtility.IsLurker(pawn))
             {
                 ZombieLurkerUtility.ClearFaction(pawn);
+            }
+
+            try
+            {
+                pawn.relations?.ClearAllRelations();
+            }
+            catch
+            {
             }
 
             ZombieUtility.SetZombieDisplayName(pawn);

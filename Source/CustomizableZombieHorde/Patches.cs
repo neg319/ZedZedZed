@@ -178,7 +178,26 @@ namespace CustomizableZombieHorde
         }
     }
 
-    [HarmonyPatch(typeof(Pawn_EquipmentTracker), nameof(Pawn_EquipmentTracker.AddEquipment))]
+    
+    [HarmonyPatch(typeof(PawnGenerator), "GeneratePawnRelations")]
+    public static class Patch_PawnGenerator_GeneratePawnRelations
+    {
+        public static bool Prefix(Pawn pawn)
+        {
+            if (ZombiePawnFactory.SuppressZombieRelationGeneration)
+            {
+                return false;
+            }
+
+            if (pawn?.kindDef?.defName != null && pawn.kindDef.defName.StartsWith("CZH_Zombie_"))
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
+[HarmonyPatch(typeof(Pawn_EquipmentTracker), nameof(Pawn_EquipmentTracker.AddEquipment))]
     public static class Patch_Pawn_EquipmentTracker_AddEquipment
     {
         public static bool Prefix(Pawn_EquipmentTracker __instance, ThingWithComps newEq)
@@ -560,12 +579,14 @@ namespace CustomizableZombieHorde
             {
                 if (!pawn.CanReach(lurker, Verse.AI.PathEndMode.Touch, Danger.Some))
                 {
+                    opts.Add(new FloatMenuOption("Cannot recruit lurker: no path to target", null));
                     opts.Add(new FloatMenuOption("Cannot tame lurker: no path to target", null));
                     continue;
                 }
 
                 if (!pawn.CanReserve(lurker))
                 {
+                    opts.Add(new FloatMenuOption("Cannot recruit lurker: reserved", null));
                     opts.Add(new FloatMenuOption("Cannot tame lurker: reserved", null));
                     continue;
                 }
@@ -573,8 +594,8 @@ namespace CustomizableZombieHorde
                 Thing food = ZombieLurkerUtility.FindAvailableTameFood(pawn, pawn.Map);
                 if (food == null)
                 {
-                    opts.Add(new FloatMenuOption("Recruit lurker (requires rotten flesh or human meat in a stockpile)", null));
-                    opts.Add(new FloatMenuOption("Tame lurker (requires rotten flesh or human meat in a stockpile)", null));
+                    opts.Add(new FloatMenuOption("Recruit lurker like a prisoner using stockpiled rotten flesh or human meat", null));
+                    opts.Add(new FloatMenuOption("Tame lurker using stockpiled rotten flesh or human meat", null));
                     continue;
                 }
 
@@ -601,7 +622,7 @@ namespace CustomizableZombieHorde
                     pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
                 };
 
-                opts.Add(new FloatMenuOption("Recruit lurker using " + foodLabel, startRecruit));
+                opts.Add(new FloatMenuOption("Recruit lurker using " + foodLabel + " (warden style)", startRecruit));
                 opts.Add(new FloatMenuOption("Tame lurker using " + foodLabel, startTame));
             }
 

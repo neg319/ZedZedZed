@@ -30,9 +30,25 @@ namespace CustomizableZombieHorde
         {
             this.FailOnDestroyedNullOrForbidden(LurkerInd);
             this.FailOn(() => !ZombieLurkerUtility.IsPassiveLurker(TargetThingA as Pawn));
-            this.FailOn(() => ZombieLurkerUtility.FindCarriedTameFood(pawn) == null && (!job.targetB.IsValid || job.targetB.Thing == null));
+            this.FailOn(() => ZombieLurkerUtility.FindCarriedTameFood(pawn) == null && ZombieLurkerUtility.FindAvailableTameFood(pawn, pawn.Map) == null);
 
-            if (ZombieLurkerUtility.FindCarriedTameFood(pawn) == null && job.targetB.IsValid && job.targetB.Thing != null)
+            Toil findFood = Toils_General.Do(delegate
+            {
+                if (ZombieLurkerUtility.FindCarriedTameFood(pawn) != null)
+                {
+                    return;
+                }
+
+                Thing food = job.targetB.IsValid && job.targetB.HasThing ? job.targetB.Thing : ZombieLurkerUtility.FindAvailableTameFood(pawn, pawn.Map);
+                if (food != null)
+                {
+                    job.targetB = food;
+                }
+            });
+            findFood.defaultCompleteMode = ToilCompleteMode.Instant;
+            yield return findFood;
+
+            if (ZombieLurkerUtility.FindCarriedTameFood(pawn) == null)
             {
                 yield return Toils_Goto.GotoThing(FoodInd, PathEndMode.Touch);
                 yield return Toils_Haul.StartCarryThing(FoodInd, putRemainderInQueue: false);

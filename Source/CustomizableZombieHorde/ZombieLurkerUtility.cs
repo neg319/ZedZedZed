@@ -61,7 +61,7 @@ namespace CustomizableZombieHorde
 
         public static void ClearFaction(Pawn pawn)
         {
-            if (pawn == null)
+            if (pawn == null || pawn.Faction == null)
             {
                 return;
             }
@@ -272,8 +272,7 @@ namespace CustomizableZombieHorde
         public static float GetRecruitChance(Pawn recruiter, Thing food, Pawn lurker)
         {
             int social = recruiter?.skills?.GetSkill(SkillDefOf.Social)?.Level ?? 0;
-            int animals = recruiter?.skills?.GetSkill(SkillDefOf.Animals)?.Level ?? 0;
-            float chance = 0.12f + social * 0.045f + animals * 0.01f;
+            float chance = 0.20f + social * 0.05f;
             if (food?.def?.defName == HumanMeatDefName)
             {
                 chance += 0.10f;
@@ -283,12 +282,17 @@ namespace CustomizableZombieHorde
                 chance += 0.05f;
             }
 
+            if (recruiter?.workSettings != null && recruiter.workSettings.WorkIsActive(WorkTypeDefOf.Warden))
+            {
+                chance += 0.08f;
+            }
+
             if (lurker?.story?.traits?.HasTrait(TraitDefOf.Psychopath) == true)
             {
                 chance += 0.03f;
             }
 
-            return Mathf.Clamp(chance, 0.08f, 0.95f);
+            return Mathf.Clamp(chance, 0.12f, 0.98f);
         }
 
         public static bool ConsumeOneUnit(Pawn pawn, Thing preferredFood = null)
@@ -325,6 +329,25 @@ namespace CustomizableZombieHorde
 
         private static void TrySetFaction(Pawn pawn, Faction faction)
         {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            if (pawn.Faction == faction)
+            {
+                return;
+            }
+
+            try
+            {
+                pawn.SetFaction(faction);
+                return;
+            }
+            catch
+            {
+            }
+
             try
             {
                 AccessTools.Method(typeof(Pawn), "SetFaction", new[] { typeof(Faction), typeof(Pawn) })?.Invoke(pawn, new object[] { faction, null });

@@ -23,12 +23,10 @@
       </shadowData>
     </graphicData>
     <uiIconPath>Things/Building/Security/CZHSpringTurretBase</uiIconPath>
-    <costStuffCount>100</costStuffCount>
-    <stuffCategories>
-      <li>Woody</li>
-      <li>Stony</li>
-      <li>Metallic</li>
-    </stuffCategories>
+    <costList>
+      <Steel>100</Steel>
+      <ComponentIndustrial>2</ComponentIndustrial>
+    </costList>
     <designationCategory>Security</designationCategory>
     <placeWorkers>
       <li>RimWorld.PlaceWorker_ShowTurretRadius</li>
@@ -37,10 +35,6 @@
     <pathCost>30</pathCost>
     <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
     <leaveResourcesWhenKilled>true</leaveResourcesWhenKilled>
-    <comps>
-      <li Class="CompProperties_Forbiddable" />
-      <li Class="CompProperties_TurretGun" />
-    </comps>
     <building>
       <turretGunDef>CZH_Gun_SpringTurret</turretGunDef>
       <ai_combatDangerous>true</ai_combatDangerous>
@@ -49,6 +43,10 @@
         <li>Security</li>
       </buildingTags>
     </building>
+    <comps>
+      <li Class="CompProperties_Forbiddable" />
+      <li Class="RimWorld.CompProperties_TurretGun" />
+    </comps>
     <statBases>
       <MaxHitPoints>180</MaxHitPoints>
       <WorkToBuild>12000</WorkToBuild>
@@ -58,13 +56,14 @@
     </statBases>
   </ThingDef>
 
-  <ThingDef ParentName="BaseWeapon">
+  <ThingDef>
     <defName>CZH_Gun_SpringTurret</defName>
     <label>spring turret gun</label>
     <description>An internal gun definition used by the spring turret.</description>
-    <techLevel>Industrial</techLevel>
     <thingClass>Verse.ThingWithComps</thingClass>
     <category>Item</category>
+    <techLevel>Industrial</techLevel>
+    <drawGUIOverlay>false</drawGUIOverlay>
     <drawerType>RealtimeOnly</drawerType>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretTop</texPath>
@@ -72,9 +71,6 @@
       <drawSize>(1,1)</drawSize>
       <shaderType>Cutout</shaderType>
     </graphicData>
-    <weaponTags>
-      <li>TurretGun</li>
-    </weaponTags>
     <verbs>
       <li>
         <verbClass>Verb_Shoot</verbClass>
@@ -88,6 +84,9 @@
         <muzzleFlashScale>5</muzzleFlashScale>
       </li>
     </verbs>
+    <comps>
+      <li Class="RimWorld.CompProperties_Equippable" />
+    </comps>
     <statBases>
       <Mass>1</Mass>
       <MarketValue>0</MarketValue>
