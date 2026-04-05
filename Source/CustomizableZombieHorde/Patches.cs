@@ -15,7 +15,7 @@ namespace CustomizableZombieHorde
     public static class Patch_PawnRenderer_RenderPawnAt
     {
         private static readonly Material DirtMat = MaterialPool.MatFrom("PawnOverlays/ZombieDirtBody", ShaderDatabase.CutoutSkin, Color.white);
-        private static readonly Material GrabberTongueMat = MaterialPool.MatFrom("Things/Effect/GrabberTongue", ShaderDatabase.Transparent, new Color(0.58f, 0.78f, 0.38f, 0.95f));
+        private static readonly Graphic VanillaSkeletonThinGraphic = GraphicDatabase.Get<Graphic_Multi>("Skeletons/Skeleton_Thin", ShaderDatabase.CutoutSkin, Vector2.one, Color.white);
         private static readonly PropertyInfo HumanlikeBodySetProperty = AccessTools.Property(typeof(MeshPool), "humanlikeBodySet") ?? AccessTools.Property(typeof(MeshPool), "humanlikeSet");
 
         private static Mesh GetHumanlikeBodyMesh(Rot4 rot)
@@ -46,57 +46,9 @@ namespace CustomizableZombieHorde
 
         private static void DrawGrabberTongue(Pawn pawn, Vector3 drawLoc)
         {
-            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) || Current.Game == null)
-            {
-                return;
-            }
-
-            ZombieGameComponent component = Current.Game.GetComponent<ZombieGameComponent>();
-            Pawn target = component?.GetGrabberTongueTarget(pawn);
-            if (target == null || target.Destroyed || !target.Spawned || target.Map != pawn.Map)
-            {
-                return;
-            }
-
-            Vector3 start = GetTongueMouthPoint(pawn, drawLoc);
-            start.y = AltitudeLayer.MetaOverlays.AltitudeFor();
-            Vector3 end = target.DrawPos + (target.DrawPos - drawLoc).normalized * -0.10f;
-            end.y = start.y;
-            Vector3 delta = end - start;
-            float length = delta.magnitude;
-            if (length < 0.1f)
-            {
-                return;
-            }
-
-            Vector3 center = (start + end) * 0.5f;
-            float angle = Mathf.Atan2(delta.x, delta.z) * Mathf.Rad2Deg;
-            float pulse = 0.10f + Mathf.Abs(Mathf.Sin((Find.TickManager?.TicksGame ?? 0) * 0.18f)) * 0.06f;
-            Matrix4x4 matrix = Matrix4x4.TRS(center, Quaternion.AngleAxis(angle, Vector3.up), new Vector3(pulse, 1f, length));
-            Graphics.DrawMesh(MeshPool.plane10, matrix, GrabberTongueMat, 0);
+            return;
         }
 
-        private static Vector3 GetTongueMouthPoint(Pawn pawn, Vector3 drawLoc)
-        {
-            Vector3 forward;
-            switch (pawn.Rotation.AsInt)
-            {
-                case 1:
-                    forward = new Vector3(0.18f, 0f, 0f);
-                    break;
-                case 2:
-                    forward = new Vector3(0f, 0f, -0.20f);
-                    break;
-                case 3:
-                    forward = new Vector3(-0.18f, 0f, 0f);
-                    break;
-                default:
-                    forward = new Vector3(0f, 0f, 0.20f);
-                    break;
-            }
-
-            return drawLoc + forward + new Vector3(0f, 0f, 0.04f);
-        }
 
         public static void Postfix(PawnRenderer __instance, Vector3 drawLoc, Rot4? rotOverride = null, bool neverAimWeapon = false)
         {
@@ -116,7 +68,9 @@ namespace CustomizableZombieHorde
             loc.y += 0.003f;
 
             Color overlayColor = ZombieVisualUtility.GetOverlayColor(pawn);
-            Material variantMat = MaterialPool.MatFrom(ZombieVisualUtility.GetVariantOverlayPath(pawn, ZombieUtility.GetVariant(pawn)), ShaderDatabase.CutoutSkin, overlayColor);
+            Material variantMat = ZombieVisualUtility.ShouldLookSkeletal(pawn) && VanillaSkeletonThinGraphic != null
+                ? VanillaSkeletonThinGraphic.MatAt(rot)
+                : MaterialPool.MatFrom(ZombieVisualUtility.GetVariantOverlayPath(pawn, ZombieUtility.GetVariant(pawn)), ShaderDatabase.CutoutSkin, overlayColor);
 
             DrawGrabberTongue(pawn, drawLoc);
 
@@ -354,7 +308,17 @@ namespace CustomizableZombieHorde
 
             if (victimIsZombie && !attackerIsZombie)
             {
-                float amount = dinfo.Amount * (ZombieUtility.IsVariant(victim, ZombieVariant.Biter) ? 4.80f : 1.60f);
+                float zombieDamageMultiplier = 1.60f;
+                if (ZombieUtility.IsVariant(victim, ZombieVariant.Biter))
+                {
+                    zombieDamageMultiplier = 4.80f;
+                }
+                else if (ZombieUtility.IsVariant(victim, ZombieVariant.Boomer))
+                {
+                    zombieDamageMultiplier = 6.40f;
+                }
+
+                float amount = dinfo.Amount * zombieDamageMultiplier;
                 if (ZombieTraitUtility.HasSteadyHands(attacker) && ZombieTraitUtility.IsRangedAttack(attacker, dinfo))
                 {
                     amount *= 1.30f;

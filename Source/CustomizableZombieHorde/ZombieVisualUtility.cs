@@ -80,12 +80,7 @@ namespace CustomizableZombieHorde
 
         public static bool ShouldLookSkeletal(Pawn pawn)
         {
-            if (pawn == null || ZombieUtility.GetVariant(pawn) != ZombieVariant.Biter)
-            {
-                return false;
-            }
-
-            return Mathf.Abs(pawn.thingIDNumber) % 9 == 0;
+            return ZombieUtility.IsSkeletonBiter(pawn) || ZombieUtility.ShouldSpawnAsSkeletonBiter(pawn);
         }
 
         public static bool ShouldLookDesiccated(Pawn pawn)

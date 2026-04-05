@@ -136,7 +136,7 @@
   <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Grabber</defName>
     <label>grabber grave</label>
-    <description>A stretched, split grave whose corpses lash out with long tongues before dragging prey in close.</description>
+    <description>A stretched, split grave whose corpses seize prey and pin them down while they struggle to break free.</description>
     <comps>
       <li Class="CustomizableZombieHorde.CompProperties_ZombieGraveSpawner">
         <compClass>CustomizableZombieHorde.CompZombieGraveSpawner</compClass>

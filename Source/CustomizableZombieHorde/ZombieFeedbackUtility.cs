@@ -64,7 +64,17 @@ namespace CustomizableZombieHorde
             }
 
             LastGrabberWarningTickByTarget[prey.thingIDNumber] = ticksGame;
-            Messages.Message(grabber.LabelShortCap + " lashes its tongue around " + prey.LabelShortCap + " and starts dragging them closer.", prey, MessageTypeDefOf.NegativeEvent);
+            Messages.Message(grabber.LabelShortCap + " grabs " + prey.LabelShortCap + " and pins them in place. They start struggling to break free.", prey, MessageTypeDefOf.NegativeEvent);
+        }
+
+        public static void TrySendGrabberEscapeMessage(Pawn prey, Pawn grabber)
+        {
+            if (prey == null || !prey.IsColonistPlayerControlled)
+            {
+                return;
+            }
+
+            Messages.Message(prey.LabelShortCap + " breaks free from " + (grabber?.LabelShortCap ?? "the grabber") + ".", prey, MessageTypeDefOf.NeutralEvent);
         }
 
         public static void TrySendReanimationWarning(Pawn pawn)

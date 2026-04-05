@@ -66,6 +66,11 @@ namespace CustomizableZombieHorde
                 {
                     pawn.style.beardDef = BeardDefOf.NoBeard;
                 }
+
+                if (ZombieUtility.ShouldSpawnAsSkeletonBiter(pawn))
+                {
+                    TrySetHairDef(pawn, "Shaved");
+                }
             }
 
             if (desiredFaction != null)
@@ -230,6 +235,41 @@ namespace CustomizableZombieHorde
                 {
                     hairColorProperty.SetValue(pawn.story, hairColor, null);
                 }
+            }
+            catch
+            {
+            }
+        }
+
+        private static void TrySetHairDef(Pawn pawn, string hairDefName)
+        {
+            if (pawn?.story == null || hairDefName.NullOrEmpty())
+            {
+                return;
+            }
+
+            HairDef hairDef = DefDatabase<HairDef>.GetNamedSilentFail(hairDefName);
+            if (hairDef == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var hairDefProperty = AccessTools.Property(pawn.story.GetType(), "hairDef");
+                if (hairDefProperty != null && hairDefProperty.CanWrite)
+                {
+                    hairDefProperty.SetValue(pawn.story, hairDef, null);
+                    return;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                AccessTools.Field(pawn.story.GetType(), "hairDef")?.SetValue(pawn.story, hairDef);
             }
             catch
             {

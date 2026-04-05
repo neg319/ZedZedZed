@@ -779,6 +779,7 @@ namespace CustomizableZombieHorde
                     ZombieUtility.RefreshDrownedState(pawn);
                     ZombieUtility.EnsureZombieAggression(pawn);
                     ZombieSpecialUtility.HandleDrownedBehavior(pawn);
+                    ZombieSpecialUtility.HandleSickSpitAttack(pawn);
                 }
             }
 

@@ -441,7 +441,7 @@ namespace CustomizableZombieHorde
             DrawVariantCard(listing, "Sick", "Disease-spreading corpses that contaminate blood trails and can infect colonists.", ref allowSick);
             DrawVariantCard(listing, "Drowned", "Water-adapted corpses that are strongest near rivers, marshes, and shorelines.", ref allowDrowned);
             DrawVariantCard(listing, "Heavies", "Large resilient corpses that soak damage and hit harder in melee.", ref allowHeavies);
-            DrawVariantCard(listing, "Grabbers", "Tongue-lashing corpses that try to drag colonists into close range.", ref allowGrabbers);
+            DrawVariantCard(listing, "Grabbers", "Corpse grapplers that pin colonists in place until they break free.", ref allowGrabbers);
 
             if (!allowBiters && !allowCrawlers && !allowBoomers && !allowSick && !allowDrowned && !allowHeavies && !allowGrabbers)
             {
@@ -455,7 +455,7 @@ namespace CustomizableZombieHorde
             DrawTextEntryCard(listing, "Sick name", "The name used for the plague spreading strain.", ref sickName, "Sick");
             DrawTextEntryCard(listing, "Drowned name", "The name used for the blue waterlogged strain.", ref drownedName, "Drowned");
             DrawTextEntryCard(listing, "Heavy name", "The name used for the large tank like strain.", ref heavyName, "Heavy");
-            DrawTextEntryCard(listing, "Grabber name", "The name used for the tongue pulling strain.", ref grabberName, "Grabber");
+            DrawTextEntryCard(listing, "Grabber name", "The name used for the grappling strain.", ref grabberName, "Grabber");
             DrawTextEntryCard(listing, "Lurker name", "The name used for the passive tameable strain.", ref lurkerName, "Lurker");
             DrawInfoCard(listing, "Example names", ZombieDefUtility.ExampleNames(zombiePrefix));
 

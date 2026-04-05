@@ -33,6 +33,18 @@ namespace CustomizableZombieHorde
             return IsZombie(pawn) && GetVariant(pawn) == variant;
         }
 
+        public static bool ShouldSpawnAsSkeletonBiter(Pawn pawn)
+        {
+            return pawn != null && IsVariant(pawn, ZombieVariant.Biter) && Mathf.Abs(pawn.thingIDNumber) % 20 == 0;
+        }
+
+        public static bool IsSkeletonBiter(Pawn pawn)
+        {
+            return pawn?.health?.hediffSet != null
+                && IsVariant(pawn, ZombieVariant.Biter)
+                && pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieSkeletonBiter);
+        }
+
         public static BodyPartRecord GetHeadPart(Pawn pawn)
         {
             if (pawn?.RaceProps?.body?.AllParts == null || pawn.health?.hediffSet == null)
@@ -172,6 +184,11 @@ namespace CustomizableZombieHorde
             if (IsVariant(pawn, ZombieVariant.Biter) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieBiter))
             {
                 pawn.health.AddHediff(ZombieDefOf.CZH_ZombieBiter);
+            }
+
+            if (ShouldSpawnAsSkeletonBiter(pawn) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieSkeletonBiter))
+            {
+                pawn.health.AddHediff(ZombieDefOf.CZH_ZombieSkeletonBiter);
             }
 
             if (IsVariant(pawn, ZombieVariant.Crawler) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieCrawler))
@@ -766,7 +783,7 @@ namespace CustomizableZombieHorde
                     }
 
                     float distanceSquared = pawn.PositionHeld.DistanceToSquared(prey.PositionHeld);
-                    if (distanceSquared > 2.2f * 2.2f && ZombieGrabberUtility.TryForceTongueStart(pawn, prey))
+                    if (distanceSquared <= ZombieGrabberUtility.HoldStartRange * ZombieGrabberUtility.HoldStartRange && ZombieGrabberUtility.TryForceTongueStart(pawn, prey))
                     {
                         return;
                     }

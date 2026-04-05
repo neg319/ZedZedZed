@@ -155,6 +155,25 @@
   </HediffDef>
 
   <HediffDef>
+    <defName>CZH_ZombieSkeletonBiter</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>skeletal biter strain</label>
+    <description>This skeletal shambling strain is brittle, uncanny, and slower than a standard biter.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>skeletal</label>
+        <statOffsets>
+          <MoveSpeed>-0.80</MoveSpeed>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
     <defName>CZH_ZombieCrawler</defName>
     <hediffClass>HediffWithComps</hediffClass>
     <label>crawler body</label>

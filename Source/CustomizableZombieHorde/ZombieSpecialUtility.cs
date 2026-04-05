@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using RimWorld;
+using UnityEngine;
 using Verse;
 using Verse.AI;
 
@@ -9,6 +11,11 @@ namespace CustomizableZombieHorde
     public static class ZombieSpecialUtility
     {
         private static readonly HashSet<int> TriggeredBoomerBursts = new HashSet<int>();
+        private static readonly Dictionary<int, int> LastSickSpitTickByPawn = new Dictionary<int, int>();
+        private const int SickSpitCooldownTicks = 780;
+        private const float SickSpitMinRange = 2.9f;
+        private const float SickSpitMaxRange = 12.9f;
+        private const float SickSpitChancePerCheck = 0.34f;
         private static bool suppressBoomerKillBurst;
 
 
@@ -24,29 +31,39 @@ namespace CustomizableZombieHorde
             int fleshCount = profile?.FleshCount ?? 0;
             int leatherCount = profile?.LeatherCount ?? 0;
 
-            if (ZombieDefOf.CZH_RottenFlesh != null && fleshCount > 0)
-            {
-                Thing flesh = ThingMaker.MakeThing(ZombieDefOf.CZH_RottenFlesh);
-                flesh.stackCount = fleshCount;
-                result.Add(flesh);
-            }
-
-            if (ZombieDefOf.CZH_RottenLeather != null && leatherCount > 0)
-            {
-                Thing leather = ThingMaker.MakeThing(ZombieDefOf.CZH_RottenLeather);
-                leather.stackCount = leatherCount;
-                result.Add(leather);
-            }
+            TryAddStackedThing(result, ZombieDefOf.CZH_RottenFlesh, fleshCount, "rotten flesh");
+            TryAddStackedThing(result, ZombieDefOf.CZH_RottenLeather, leatherCount, "rotten leather");
 
             int bileCount = ZombieBileUtility.GetButcheredBileCount(pawn);
-            if (ZombieDefOf.CZH_ZombieBile != null && bileCount > 0)
-            {
-                Thing bile = ThingMaker.MakeThing(ZombieDefOf.CZH_ZombieBile);
-                bile.stackCount = bileCount;
-                result.Add(bile);
-            }
+            TryAddStackedThing(result, ZombieDefOf.CZH_ZombieBile, bileCount, "zombie bile");
 
             return result;
+        }
+
+
+        private static void TryAddStackedThing(List<Thing> result, ThingDef def, int count, string label)
+        {
+            if (result == null || def == null || count <= 0)
+            {
+                return;
+            }
+
+            try
+            {
+                Thing thing = ThingMaker.MakeThing(def);
+                if (thing == null)
+                {
+                    return;
+                }
+
+                int stackLimit = thing.def?.stackLimit ?? count;
+                thing.stackCount = count < 1 ? 1 : (count > stackLimit ? stackLimit : count);
+                result.Add(thing);
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error($"[ZedZedZed] Failed to create {label} butcher product from def {def.defName}: {ex}");
+            }
         }
 
         public static Pawn FindClosestLivingPrey(Pawn pawn, float radius)
@@ -608,6 +625,145 @@ namespace CustomizableZombieHorde
                         ZombieTraitUtility.TryApplyZombieSickness(target, 0.22f);
                     }
                 }
+            }
+        }
+
+        public static void HandleSickSpitAttack(Pawn pawn)
+        {
+            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Sick) || pawn?.MapHeld == null || pawn.Dead || pawn.Downed || pawn.stances?.stunner?.Stunned == true)
+            {
+                return;
+            }
+
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            int pawnId = pawn.thingIDNumber;
+            if (LastSickSpitTickByPawn.TryGetValue(pawnId, out int lastSpitTick) && ticksGame - lastSpitTick < SickSpitCooldownTicks)
+            {
+                return;
+            }
+
+            Pawn prey = FindClosestLivingPrey(pawn, SickSpitMaxRange);
+            if (prey == null || prey.Dead || prey.Destroyed || prey.MapHeld != pawn.MapHeld)
+            {
+                return;
+            }
+
+            float distanceSquared = pawn.PositionHeld.DistanceToSquared(prey.PositionHeld);
+            if (distanceSquared < SickSpitMinRange * SickSpitMinRange || distanceSquared > SickSpitMaxRange * SickSpitMaxRange)
+            {
+                return;
+            }
+
+            if (!GenSight.LineOfSight(pawn.PositionHeld, prey.PositionHeld, pawn.MapHeld))
+            {
+                return;
+            }
+
+            if (pawn.CurJobDef == JobDefOf.AttackMelee && distanceSquared <= 5.8f)
+            {
+                return;
+            }
+
+            if (!Rand.Chance(SickSpitChancePerCheck))
+            {
+                return;
+            }
+
+            if (TryLaunchProjectile(pawn, prey, ZombieDefOf.CZH_SickSpitProjectile))
+            {
+                LastSickSpitTickByPawn[pawnId] = ticksGame;
+            }
+        }
+
+        private static bool TryLaunchProjectile(Pawn launcher, Pawn target, ThingDef projectileDef)
+        {
+            if (launcher == null || target == null || projectileDef == null || launcher.MapHeld == null || !launcher.Spawned)
+            {
+                return false;
+            }
+
+            try
+            {
+                Thing thing = ThingMaker.MakeThing(projectileDef);
+                if (!(thing is Projectile projectile))
+                {
+                    return false;
+                }
+
+                GenSpawn.Spawn(projectile, launcher.PositionHeld, launcher.MapHeld);
+                Vector3 origin = launcher.DrawPos;
+                LocalTargetInfo usedTarget = new LocalTargetInfo(target);
+                LocalTargetInfo intendedTarget = new LocalTargetInfo(target);
+
+                MethodInfo launchMethod = typeof(Projectile)
+                    .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Where(method => method.Name == "Launch")
+                    .OrderByDescending(method => method.GetParameters().Length)
+                    .FirstOrDefault();
+
+                if (launchMethod == null)
+                {
+                    projectile.Destroy(DestroyMode.Vanish);
+                    return false;
+                }
+
+                ParameterInfo[] parameters = launchMethod.GetParameters();
+                object[] args = new object[parameters.Length];
+                int localTargetCount = 0;
+
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    ParameterInfo parameter = parameters[i];
+                    Type parameterType = parameter.ParameterType;
+
+                    if (typeof(Thing).IsAssignableFrom(parameterType))
+                    {
+                        if (parameter.Name != null && parameter.Name.ToLowerInvariant().Contains("equipment"))
+                        {
+                            args[i] = null;
+                        }
+                        else
+                        {
+                            args[i] = launcher;
+                        }
+                    }
+                    else if (parameterType == typeof(Vector3))
+                    {
+                        args[i] = origin;
+                    }
+                    else if (parameterType == typeof(LocalTargetInfo))
+                    {
+                        args[i] = localTargetCount++ == 0 ? usedTarget : intendedTarget;
+                    }
+                    else if (parameterType == typeof(ProjectileHitFlags))
+                    {
+                        args[i] = ProjectileHitFlags.IntendedTarget;
+                    }
+                    else if (parameterType == typeof(bool))
+                    {
+                        args[i] = false;
+                    }
+                    else if (parameter.HasDefaultValue)
+                    {
+                        args[i] = parameter.DefaultValue;
+                    }
+                    else if (parameterType.IsValueType)
+                    {
+                        args[i] = Activator.CreateInstance(parameterType);
+                    }
+                    else
+                    {
+                        args[i] = null;
+                    }
+                }
+
+                launchMethod.Invoke(projectile, args);
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error($"[ZedZedZed] Failed to launch sick spit projectile: {ex}");
+                return false;
             }
         }
 
