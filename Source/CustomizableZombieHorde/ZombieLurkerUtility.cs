@@ -78,11 +78,45 @@ namespace CustomizableZombieHorde
 
             EnsureLurkerZombiePassiveTrait(lurker);
             EnsureEmotionlessLurker(lurker);
+            ClearGuestState(lurker);
             TrySetFaction(lurker, Faction.OfPlayer);
+            ClearHostilityState(lurker);
 
             try
             {
                 lurker.jobs?.StopAll();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                AccessTools.Method(lurker.jobs?.GetType(), "ClearQueuedJobs")?.Invoke(lurker.jobs, null);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                AccessTools.Method(lurker.mindState?.GetType(), "Reset", new[] { typeof(bool) })?.Invoke(lurker.mindState, new object[] { true });
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                AccessTools.Method(lurker.drafter?.GetType(), "Notify_DraftedToggled")?.Invoke(lurker.drafter, null);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                AccessTools.Method(lurker.playerSettings?.GetType(), "Notify_FactionChanged")?.Invoke(lurker.playerSettings, null);
             }
             catch
             {
@@ -325,6 +359,239 @@ namespace CustomizableZombieHorde
             }
 
             return true;
+        }
+
+        public static bool TryStartRecruitFromSocialTab(Pawn lurker, out string failureReason)
+        {
+            failureReason = null;
+            if (!TryGetRecruitOrderData(lurker, out Pawn recruiter, out Thing food, out failureReason))
+            {
+                return false;
+            }
+
+            Job job = JobMaker.MakeJob(ZombieDefOf.CZH_RecruitLurker, lurker);
+            if (recruiter.carryTracker?.CarriedThing != food && FindCarriedTameFood(recruiter) == null)
+            {
+                job.targetB = food;
+            }
+            job.count = 1;
+
+            if (!recruiter.jobs.TryTakeOrderedJob(job, JobTag.Misc))
+            {
+                failureReason = recruiter.LabelShortCap + " could not start the recruit job.";
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool TryGetRecruitOrderData(Pawn lurker, out Pawn recruiter, out Thing food, out string failureReason)
+        {
+            recruiter = null;
+            food = null;
+            failureReason = null;
+
+            if (lurker == null || lurker.Destroyed || lurker.Dead)
+            {
+                failureReason = "Lurker is not available.";
+                return false;
+            }
+
+            if (!IsPassiveLurker(lurker))
+            {
+                failureReason = "This lurker is no longer passive or recruitable.";
+                return false;
+            }
+
+            if (lurker.MapHeld == null)
+            {
+                failureReason = "Lurker is not on a map.";
+                return false;
+            }
+
+            float bestScore = float.MinValue;
+            string lastReachIssue = null;
+            string lastFoodIssue = null;
+
+            List<Pawn> colonists = lurker.MapHeld.mapPawns?.FreeColonistsSpawned;
+            if (colonists == null || colonists.Count == 0)
+            {
+                failureReason = "No free colonist is available to recruit this lurker.";
+                return false;
+            }
+
+            for (int i = 0; i < colonists.Count; i++)
+            {
+                Pawn candidate = colonists[i];
+                if (!IsValidRecruiter(candidate))
+                {
+                    continue;
+                }
+
+                if (!candidate.CanReserve(lurker))
+                {
+                    lastReachIssue = "Another pawn already reserved the lurker.";
+                    continue;
+                }
+
+                if (!candidate.CanReach(lurker, PathEndMode.Touch, Danger.Some))
+                {
+                    lastReachIssue = candidate.LabelShortCap + " cannot reach the lurker.";
+                    continue;
+                }
+
+                Thing candidateFood = FindAvailableTameFood(candidate, candidate.MapHeld);
+                if (candidateFood == null)
+                {
+                    lastFoodIssue = "Needs rotten flesh or human meat in inventory or a stockpile.";
+                    continue;
+                }
+
+                float score = ScoreRecruiter(candidate, lurker, candidateFood);
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    recruiter = candidate;
+                    food = candidateFood;
+                }
+            }
+
+            if (recruiter != null)
+            {
+                return true;
+            }
+
+            failureReason = lastFoodIssue ?? lastReachIssue ?? "No colonist is currently able to recruit this lurker.";
+            return false;
+        }
+
+        public static string GetRecruitSocialCardLabel(Pawn lurker)
+        {
+            if (!TryGetRecruitOrderData(lurker, out Pawn recruiter, out Thing food, out _))
+            {
+                return "Recruit Lurker";
+            }
+
+            float chance = GetRecruitChance(recruiter, food, lurker);
+            return "Recruit Lurker (" + chance.ToStringPercent("F0") + ")";
+        }
+
+        public static string GetRecruitSocialCardTooltip(Pawn lurker)
+        {
+            if (!TryGetRecruitOrderData(lurker, out Pawn recruiter, out Thing food, out string failureReason))
+            {
+                return failureReason ?? "No colonist can recruit this lurker right now.";
+            }
+
+            float chance = GetRecruitChance(recruiter, food, lurker);
+            return recruiter.LabelShortCap + " will attempt to recruit this lurker using " + food.LabelCap + ". Success chance: " + chance.ToStringPercent("F0") + ".";
+        }
+
+        private static bool IsValidRecruiter(Pawn pawn)
+        {
+            if (pawn == null || pawn.Destroyed || pawn.Dead || pawn.Downed || !pawn.Spawned || !pawn.IsColonistPlayerControlled)
+            {
+                return false;
+            }
+
+            if (pawn.InMentalState || pawn.WorkTagIsDisabled(WorkTags.Social))
+            {
+                return false;
+            }
+
+            return pawn.jobs != null;
+        }
+
+        private static float ScoreRecruiter(Pawn recruiter, Pawn lurker, Thing food)
+        {
+            int social = recruiter.skills?.GetSkill(SkillDefOf.Social)?.Level ?? 0;
+            float score = social * 25f;
+            if (recruiter.workSettings != null && recruiter.workSettings.WorkIsActive(WorkTypeDefOf.Warden))
+            {
+                score += 40f;
+            }
+
+            if (recruiter.carryTracker?.CarriedThing == food || FindCarriedTameFood(recruiter) == food)
+            {
+                score += 25f;
+            }
+
+            score -= recruiter.PositionHeld.DistanceToSquared(lurker.PositionHeld) * 0.02f;
+            return score;
+        }
+
+        private static void ClearGuestState(Pawn pawn)
+        {
+            if (pawn?.guest == null)
+            {
+                return;
+            }
+
+            try
+            {
+                foreach (System.Reflection.MethodInfo method in typeof(Pawn_GuestTracker).GetMethods())
+                {
+                    if (method.Name != "SetGuestStatus")
+                    {
+                        continue;
+                    }
+
+                    System.Reflection.ParameterInfo[] parameters = method.GetParameters();
+                    object[] args = new object[parameters.Length];
+                    bool supported = true;
+                    for (int i = 0; i < parameters.Length; i++)
+                    {
+                        Type parameterType = parameters[i].ParameterType;
+                        if (parameterType == typeof(Faction) || !parameterType.IsValueType)
+                        {
+                            args[i] = null;
+                        }
+                        else if (parameterType == typeof(bool))
+                        {
+                            args[i] = false;
+                        }
+                        else if (parameterType.IsEnum)
+                        {
+                            args[i] = Activator.CreateInstance(parameterType);
+                        }
+                        else
+                        {
+                            supported = false;
+                            break;
+                        }
+                    }
+
+                    if (supported)
+                    {
+                        method.Invoke(pawn.guest, args);
+                    }
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private static void ClearHostilityState(Pawn pawn)
+        {
+            try
+            {
+                if (pawn?.mindState?.mentalStateHandler?.InMentalState == true)
+                {
+                    pawn.mindState.mentalStateHandler.Reset();
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                pawn?.mindState?.enemyTarget = null;
+            }
+            catch
+            {
+            }
         }
 
         private static void TrySetFaction(Pawn pawn, Faction faction)
