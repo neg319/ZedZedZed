@@ -169,6 +169,11 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            if (IsVariant(pawn, ZombieVariant.Biter) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieBiter))
+            {
+                pawn.health.AddHediff(ZombieDefOf.CZH_ZombieBiter);
+            }
+
             if (IsVariant(pawn, ZombieVariant.Crawler) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieCrawler))
             {
                 pawn.health.AddHediff(ZombieDefOf.CZH_ZombieCrawler);

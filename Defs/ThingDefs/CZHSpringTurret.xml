@@ -46,9 +46,7 @@
     </building>
     <comps>
       <li Class="CompProperties_Forbiddable" />
-      <li Class="RimWorld.CompProperties_TurretGun">
-        <turretDef>CZH_Gun_SpringTurret</turretDef>
-      </li>
+      <li Class="RimWorld.CompProperties_TurretGun" />
     </comps>
     <statBases>
       <MaxHitPoints>180</MaxHitPoints>

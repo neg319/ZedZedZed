@@ -13,7 +13,9 @@
     <useHitPoints>true</useHitPoints>
     <pathCost>15</pathCost>
     <comps>
-      <li Class="CompProperties_Forbiddable" />
+      <li>
+        <compClass>CompForbiddable</compClass>
+      </li>
     </comps>
   </ThingDef>
 

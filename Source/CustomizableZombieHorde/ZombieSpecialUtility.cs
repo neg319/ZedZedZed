@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
@@ -13,41 +12,6 @@ namespace CustomizableZombieHorde
         private static bool suppressBoomerKillBurst;
 
 
-        private static void AddThingIfCreated(List<Thing> result, ThingDef def, int count, string context)
-        {
-            Thing thing = TryMakeStackedThing(def, count, context);
-            if (thing != null)
-            {
-                result.Add(thing);
-            }
-        }
-
-        private static Thing TryMakeStackedThing(ThingDef def, int count, string context)
-        {
-            if (def == null || count <= 0)
-            {
-                return null;
-            }
-
-            try
-            {
-                Thing thing = ThingMaker.MakeThing(def);
-                if (thing == null)
-                {
-                    return null;
-                }
-
-                int stackLimit = Math.Max(1, thing.def.stackLimit);
-                thing.stackCount = Math.Min(count, stackLimit);
-                return thing;
-            }
-            catch (Exception ex)
-            {
-                Log.ErrorOnce($"ZedZedZed failed to create {context} ({def.defName}): {ex}", Gen.HashCombineInt(def.shortHash, context.GetHashCode()));
-                return null;
-            }
-        }
-
         public static IEnumerable<Thing> BuildZombieButcherProducts(Pawn pawn)
         {
             List<Thing> result = new List<Thing>();
@@ -60,11 +24,27 @@ namespace CustomizableZombieHorde
             int fleshCount = profile?.FleshCount ?? 0;
             int leatherCount = profile?.LeatherCount ?? 0;
 
-            AddThingIfCreated(result, ZombieDefOf.CZH_RottenFlesh, fleshCount, "rotten flesh butcher product");
-            AddThingIfCreated(result, ZombieDefOf.CZH_RottenLeather, leatherCount, "rotten leather butcher product");
+            if (ZombieDefOf.CZH_RottenFlesh != null && fleshCount > 0)
+            {
+                Thing flesh = ThingMaker.MakeThing(ZombieDefOf.CZH_RottenFlesh);
+                flesh.stackCount = fleshCount;
+                result.Add(flesh);
+            }
+
+            if (ZombieDefOf.CZH_RottenLeather != null && leatherCount > 0)
+            {
+                Thing leather = ThingMaker.MakeThing(ZombieDefOf.CZH_RottenLeather);
+                leather.stackCount = leatherCount;
+                result.Add(leather);
+            }
 
             int bileCount = ZombieBileUtility.GetButcheredBileCount(pawn);
-            AddThingIfCreated(result, ZombieDefOf.CZH_ZombieBile, bileCount, "zombie bile butcher product");
+            if (ZombieDefOf.CZH_ZombieBile != null && bileCount > 0)
+            {
+                Thing bile = ThingMaker.MakeThing(ZombieDefOf.CZH_ZombieBile);
+                bile.stackCount = bileCount;
+                result.Add(bile);
+            }
 
             return result;
         }
@@ -543,11 +523,9 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Thing flesh = TryMakeStackedThing(rottenFlesh, Rand.RangeInclusive(1, 10), "boomer rotten flesh burst");
-            if (flesh != null)
-            {
-                GenPlace.TryPlaceThing(flesh, pos, map, ThingPlaceMode.Near);
-            }
+            Thing flesh = ThingMaker.MakeThing(rottenFlesh);
+            flesh.stackCount = Rand.RangeInclusive(1, 10);
+            GenPlace.TryPlaceThing(flesh, pos, map, ThingPlaceMode.Near);
         }
 
         public static void DoAcidBurst(Pawn pawn)

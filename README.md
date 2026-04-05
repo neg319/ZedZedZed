@@ -51,3 +51,4 @@ The GitHub workflow produces:
 - The source is kept in the repository. The workflow artifact is the installable build.
 - Harmony is still required at runtime.
 - This project has been cleaned up as a full, vibe coded source package meant to be practical to maintain and expand.
+test

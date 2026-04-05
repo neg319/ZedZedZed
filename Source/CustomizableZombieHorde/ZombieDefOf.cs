@@ -10,6 +10,7 @@ namespace CustomizableZombieHorde
         public static HediffDef CZH_ZombieLimbDecay;
         public static HediffDef CZH_ZombieOpenWound;
         public static HediffDef CZH_ZombieRunner;
+        public static HediffDef CZH_ZombieBiter;
         public static HediffDef CZH_ZombieCrawler;
         public static HediffDef CZH_ZombieTank;
         public static HediffDef CZH_ZombieDrownedLand;

@@ -354,7 +354,7 @@ namespace CustomizableZombieHorde
 
             if (victimIsZombie && !attackerIsZombie)
             {
-                float amount = dinfo.Amount * 1.60f;
+                float amount = dinfo.Amount * (ZombieUtility.IsVariant(victim, ZombieVariant.Biter) ? 4.80f : 1.60f);
                 if (ZombieTraitUtility.HasSteadyHands(attacker) && ZombieTraitUtility.IsRangedAttack(attacker, dinfo))
                 {
                     amount *= 1.30f;
@@ -659,51 +659,6 @@ namespace CustomizableZombieHorde
     }
 
 
-
-    [HarmonyPatch(typeof(SocialCardUtility), nameof(SocialCardUtility.DrawSocialCard))]
-    public static class Patch_SocialCardUtility_DrawSocialCard
-    {
-        private const float ButtonWidth = 180f;
-        private const float ButtonHeight = 24f;
-        private const float Margin = 10f;
-
-        public static void Postfix(Rect rect, Pawn pawn)
-        {
-            if (!ZombieLurkerUtility.IsPassiveLurker(pawn))
-            {
-                return;
-            }
-
-            Rect buttonRect = new Rect(rect.x + rect.width - ButtonWidth - Margin, rect.y + 5f, ButtonWidth, ButtonHeight);
-            string label = ZombieLurkerUtility.GetRecruitSocialCardLabel(pawn);
-            string tooltip = ZombieLurkerUtility.GetRecruitSocialCardTooltip(pawn);
-            TooltipHandler.TipRegion(buttonRect, tooltip);
-
-            bool canRecruit = ZombieLurkerUtility.TryGetRecruitOrderData(pawn, out _, out _, out _);
-            bool oldEnabled = GUI.enabled;
-            GUI.enabled = canRecruit;
-            bool clicked = Widgets.ButtonText(buttonRect, label);
-            GUI.enabled = oldEnabled;
-
-            Rect hintRect = new Rect(buttonRect.x - 120f, buttonRect.y + ButtonHeight + 2f, ButtonWidth + 120f, 22f);
-            GUI.color = Color.gray;
-            Widgets.Label(hintRect, canRecruit ? "Uses the best available colonist and rotten flesh or human meat." : tooltip);
-            GUI.color = Color.white;
-
-            if (!clicked)
-            {
-                return;
-            }
-
-            if (ZombieLurkerUtility.TryStartRecruitFromSocialTab(pawn, out string failureReason))
-            {
-                Messages.Message("A colonist has begun recruiting " + pawn.LabelShortCap + ".", pawn, MessageTypeDefOf.TaskCompletion, historical: false);
-                return;
-            }
-
-            Messages.Message(failureReason ?? "Could not start lurker recruitment.", pawn, MessageTypeDefOf.RejectInput, historical: false);
-        }
-    }
 
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetInspectString))]
     public static class Patch_Pawn_GetInspectString

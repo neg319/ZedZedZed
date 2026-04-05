@@ -136,6 +136,25 @@
   </HediffDef>
 
   <HediffDef>
+    <defName>CZH_ZombieBiter</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>frail biter strain</label>
+    <description>This weak shambling strain tears poorly and falls apart under focused attacks.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>frail</label>
+        <statOffsets>
+          <MeleeDamageFactor>-0.43</MeleeDamageFactor>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
     <defName>CZH_ZombieCrawler</defName>
     <hediffClass>HediffWithComps</hediffClass>
     <label>crawler body</label>
