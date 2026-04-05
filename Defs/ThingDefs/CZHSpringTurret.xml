@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
-  <ThingDef>
+  <ThingDef ParentName="BuildingBase">
     <defName>CZH_Turret_Spring</defName>
     <label>spring turret</label>
     <description>A compact automatic turret built around a simple spring drive and a stripped down targeter. It does not need power or ammo, fires a steady shot every second, and sits in the security tab beside the rest of your colony defenses.</description>
@@ -35,13 +35,10 @@
     <passability>PassThroughOnly</passability>
     <pathCost>30</pathCost>
     <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
-    <constructEffect>ConstructMetal</constructEffect>
     <leaveResourcesWhenKilled>true</leaveResourcesWhenKilled>
     <comps>
       <li Class="CompProperties_Forbiddable" />
-      <li Class="CompProperties_TurretGun">
-        <turretTopDrawSize>1</turretTopDrawSize>
-      </li>
+      <li Class="CompProperties_TurretGun" />
     </comps>
     <building>
       <turretGunDef>CZH_Gun_SpringTurret</turretGunDef>
@@ -56,10 +53,17 @@
       <Mass>28</Mass>
       <MarketValue>280</MarketValue>
       <Flammability>0.65</Flammability>
+      <TurretBurstWarmupTime>0.18</TurretBurstWarmupTime>
+      <TurretGunCombatCooldown>1.00</TurretGunCombatCooldown>
+      <TurretRotationSpeed>25</TurretRotationSpeed>
+      <VerbPropertiesAdjustedAccuracyTouch>1.00</VerbPropertiesAdjustedAccuracyTouch>
+      <VerbPropertiesAdjustedAccuracyShort>0.98</VerbPropertiesAdjustedAccuracyShort>
+      <VerbPropertiesAdjustedAccuracyMedium>0.94</VerbPropertiesAdjustedAccuracyMedium>
+      <VerbPropertiesAdjustedAccuracyLong>0.90</VerbPropertiesAdjustedAccuracyLong>
     </statBases>
   </ThingDef>
 
-  <ThingDef>
+  <ThingDef ParentName="BaseWeapon">
     <defName>CZH_Gun_SpringTurret</defName>
     <label>spring turret gun</label>
     <description>An internal gun definition used by the spring turret.</description>
@@ -72,22 +76,9 @@
       <drawSize>(1,1)</drawSize>
       <shaderType>Cutout</shaderType>
     </graphicData>
-    <equipmentType>Primary</equipmentType>
     <weaponTags>
       <li>TurretGun</li>
     </weaponTags>
-    <comps>
-      <li Class="CompProperties_Equippable" />
-    </comps>
-    <statBases>
-      <Mass>1</Mass>
-      <AccuracyTouch>1.00</AccuracyTouch>
-      <AccuracyShort>0.98</AccuracyShort>
-      <AccuracyMedium>0.94</AccuracyMedium>
-      <AccuracyLong>0.90</AccuracyLong>
-      <RangedWeapon_Cooldown>1.00</RangedWeapon_Cooldown>
-      <MarketValue>0</MarketValue>
-    </statBases>
     <verbs>
       <li>
         <verbClass>Verb_Shoot</verbClass>
@@ -101,6 +92,15 @@
         <muzzleFlashScale>5</muzzleFlashScale>
       </li>
     </verbs>
+    <statBases>
+      <Mass>1</Mass>
+      <MarketValue>0</MarketValue>
+      <AccuracyTouch>1.00</AccuracyTouch>
+      <AccuracyShort>0.98</AccuracyShort>
+      <AccuracyMedium>0.94</AccuracyMedium>
+      <AccuracyLong>0.90</AccuracyLong>
+      <RangedWeapon_Cooldown>1.00</RangedWeapon_Cooldown>
+    </statBases>
   </ThingDef>
 
   <ThingDef ParentName="BaseBullet">

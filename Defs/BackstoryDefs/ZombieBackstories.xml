@@ -21,11 +21,7 @@
       <Plants>-3</Plants>
       <Cooking>-3</Cooking>
       <Crafting>-3</Crafting>
-      <Artistic>-8</Artistic>
-      <Medical>-5</Medical>
-      <Social>-8</Social>
-      <Animals>-8</Animals>
-      <Intellectual>-8</Intellectual>
+      <Medicine>-5</Medicine>
     </skillGains>
   </BackstoryDef>
   <BackstoryDef>
@@ -49,11 +45,7 @@
       <Plants>-3</Plants>
       <Cooking>-3</Cooking>
       <Crafting>-3</Crafting>
-      <Artistic>-8</Artistic>
-      <Medical>-5</Medical>
-      <Social>-8</Social>
-      <Animals>-8</Animals>
-      <Intellectual>-8</Intellectual>
+      <Medicine>-5</Medicine>
     </skillGains>
   </BackstoryDef>
 
@@ -68,7 +60,7 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>2</Melee><Mining>1</Mining><Shooting>-5</Shooting><Construction>-4</Construction><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Artistic>-8</Artistic><Medical>-6</Medical><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>2</Melee><Mining>1</Mining><Shooting>-5</Shooting><Construction>-4</Construction><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
     </skillGains>
   </BackstoryDef>
   <BackstoryDef>
@@ -82,7 +74,7 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>2</Melee><Mining>1</Mining><Shooting>-5</Shooting><Construction>-4</Construction><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Artistic>-8</Artistic><Medical>-6</Medical><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>2</Melee><Mining>1</Mining><Shooting>-5</Shooting><Construction>-4</Construction><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
     </skillGains>
   </BackstoryDef>
 
@@ -97,7 +89,7 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>1</Melee><Shooting>-6</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Artistic>-8</Artistic><Medical>-6</Medical><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>1</Melee><Shooting>-6</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
     </skillGains>
   </BackstoryDef>
   <BackstoryDef>
@@ -111,7 +103,7 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>1</Melee><Shooting>-6</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Artistic>-8</Artistic><Medical>-6</Medical><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>1</Melee><Shooting>-6</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
     </skillGains>
   </BackstoryDef>
 
@@ -126,7 +118,7 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>1</Melee><Medical>1</Medical><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Artistic>-8</Artistic><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>1</Melee><Medicine>1</Medicine><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting>
     </skillGains>
   </BackstoryDef>
   <BackstoryDef>
@@ -140,7 +132,7 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>1</Melee><Medical>1</Medical><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Artistic>-8</Artistic><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>1</Melee><Medicine>1</Medicine><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting>
     </skillGains>
   </BackstoryDef>
 
@@ -155,7 +147,7 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>2</Melee><Plants>1</Plants><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Cooking>-4</Cooking><Crafting>-4</Crafting><Artistic>-8</Artistic><Medical>-6</Medical><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>2</Melee><Plants>1</Plants><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
     </skillGains>
   </BackstoryDef>
   <BackstoryDef>
@@ -169,7 +161,7 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>2</Melee><Plants>1</Plants><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Cooking>-4</Cooking><Crafting>-4</Crafting><Artistic>-8</Artistic><Medical>-6</Medical><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>2</Melee><Plants>1</Plants><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
     </skillGains>
   </BackstoryDef>
 
@@ -184,7 +176,7 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>5</Melee><Construction>1</Construction><Mining>1</Mining><Shooting>-5</Shooting><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Artistic>-8</Artistic><Medical>-6</Medical><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>5</Melee><Construction>1</Construction><Mining>1</Mining><Shooting>-5</Shooting><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
     </skillGains>
   </BackstoryDef>
   <BackstoryDef>
@@ -198,7 +190,7 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>5</Melee><Construction>1</Construction><Mining>1</Mining><Shooting>-5</Shooting><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Artistic>-8</Artistic><Medical>-6</Medical><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>5</Melee><Construction>1</Construction><Mining>1</Mining><Shooting>-5</Shooting><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
     </skillGains>
   </BackstoryDef>
 
@@ -213,7 +205,7 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>3</Melee><Crafting>1</Crafting><Shooting>-4</Shooting><Construction>-3</Construction><Mining>-3</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Artistic>-8</Artistic><Medical>-6</Medical><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>3</Melee><Crafting>1</Crafting><Shooting>-4</Shooting><Construction>-3</Construction><Mining>-3</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Medicine>-6</Medicine>
     </skillGains>
   </BackstoryDef>
   <BackstoryDef>
@@ -227,80 +219,80 @@
       <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
-      <Melee>3</Melee><Crafting>1</Crafting><Shooting>-4</Shooting><Construction>-3</Construction><Mining>-3</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Artistic>-8</Artistic><Medical>-6</Medical><Social>-8</Social><Animals>-8</Animals><Intellectual>-8</Intellectual>
+      <Melee>3</Melee><Crafting>1</Crafting><Shooting>-4</Shooting><Construction>-3</Construction><Mining>-3</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Medicine>-6</Medicine>
     </skillGains>
   </BackstoryDef>
 
   <!-- Lurker archetypes -->
   <BackstoryDef>
     <defName>CZH_BackstoryChild_LurkerBuilder</defName><title>Lurker Builder</title><titleShort>Lurker Builder</titleShort><baseDesc>Some buried reflex for measuring, fitting, and patching still lingers beneath the rot.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
-    <skillGains><Construction>4</Construction><Crafting>2</Crafting><Social>-2</Social><Intellectual>-2</Intellectual></skillGains>
+    <skillGains><Construction>4</Construction><Crafting>2</Crafting></skillGains>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_LurkerBuilder</defName><title>Lurker Builder</title><titleShort>Lurker Builder</titleShort><baseDesc>Even half-dead, this lurker knows how to raise walls and put broken places back together.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
-    <skillGains><Construction>5</Construction><Crafting>2</Crafting><Mining>1</Mining><Social>-2</Social></skillGains>
+    <skillGains><Construction>5</Construction><Crafting>2</Crafting><Mining>1</Mining></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
     <defName>CZH_BackstoryChild_LurkerMiner</defName><title>Lurker Miner</title><titleShort>Lurker Miner</titleShort><baseDesc>Old muscle memory still guides the pick and the swing.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
-    <skillGains><Mining>4</Mining><Construction>1</Construction><Melee>1</Melee><Social>-2</Social></skillGains>
+    <skillGains><Mining>4</Mining><Construction>1</Construction><Melee>1</Melee></skillGains>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_LurkerMiner</defName><title>Lurker Miner</title><titleShort>Lurker Miner</titleShort><baseDesc>This lurker still knows how to chew through rock and haul stone from the dark.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
-    <skillGains><Mining>5</Mining><Construction>1</Construction><Melee>1</Melee><Social>-2</Social></skillGains>
+    <skillGains><Mining>5</Mining><Construction>1</Construction><Melee>1</Melee></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
     <defName>CZH_BackstoryChild_LurkerFarmer</defName><title>Lurker Farmer</title><titleShort>Lurker Farmer</titleShort><baseDesc>Hands once used to soil and rows still remember how to tend living things.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
-    <skillGains><Plants>4</Plants><Animals>2</Animals><Social>-1</Social></skillGains>
+    <skillGains><Plants>4</Plants></skillGains>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_LurkerFarmer</defName><title>Lurker Farmer</title><titleShort>Lurker Farmer</titleShort><baseDesc>This lurker moves slowly, but it can still sow, cut, and gather with patient rhythm.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
-    <skillGains><Plants>5</Plants><Animals>2</Animals><Cooking>1</Cooking><Social>-1</Social></skillGains>
+    <skillGains><Plants>5</Plants><Cooking>1</Cooking></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
     <defName>CZH_BackstoryChild_LurkerDoctor</defName><title>Lurker Doctor</title><titleShort>Lurker Doctor</titleShort><baseDesc>Somewhere under the hunger, precise hands and clinical habits remain.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
-    <skillGains><Medical>4</Medical><Intellectual>2</Intellectual><Social>-1</Social></skillGains>
+    <skillGains><Medicine>4</Medicine></skillGains>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_LurkerDoctor</defName><title>Lurker Doctor</title><titleShort>Lurker Doctor</titleShort><baseDesc>This lurker still recalls dressings, stitches, and the quiet routine of treatment.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
-    <skillGains><Medical>5</Medical><Intellectual>2</Intellectual><Social>-1</Social></skillGains>
+    <skillGains><Medicine>5</Medicine></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
     <defName>CZH_BackstoryChild_LurkerWarden</defName><title>Lurker Warden</title><titleShort>Lurker Warden</titleShort><baseDesc>Discipline and routine shaped this one long before it became a shambling thing.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
-    <skillGains><Social>2</Social><Melee>2</Melee><Construction>1</Construction></skillGains>
+    <skillGains><Melee>2</Melee><Construction>1</Construction></skillGains>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_LurkerWarden</defName><title>Lurker Warden</title><titleShort>Lurker Warden</titleShort><baseDesc>This lurker still knows how to watch doors, control prisoners, and enforce order.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
-    <skillGains><Social>4</Social><Melee>2</Melee><Shooting>1</Shooting></skillGains>
+    <skillGains><Melee>2</Melee><Shooting>1</Shooting></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
     <defName>CZH_BackstoryChild_LurkerSlave</defName><title>Lurker Slave</title><titleShort>Lurker Slave</titleShort><baseDesc>Endless labor carved obedience and endurance deep into deadened flesh.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
-    <skillGains><Construction>2</Construction><Mining>2</Mining><Plants>2</Plants><Social>-3</Social></skillGains>
+    <skillGains><Construction>2</Construction><Mining>2</Mining><Plants>2</Plants></skillGains>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_LurkerSlave</defName><title>Lurker Slave</title><titleShort>Lurker Slave</titleShort><baseDesc>This lurker is suited for hauling, field work, and the sort of labor no one else wants.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
-    <skillGains><Construction>2</Construction><Mining>2</Mining><Plants>2</Plants><Melee>1</Melee><Social>-3</Social></skillGains>
+    <skillGains><Construction>2</Construction><Mining>2</Mining><Plants>2</Plants><Melee>1</Melee></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
     <defName>CZH_BackstoryChild_LurkerChef</defName><title>Lurker Chef</title><titleShort>Lurker Chef</titleShort><baseDesc>Knife work, heat, and practiced routine still linger in these ruined motions.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
-    <skillGains><Cooking>4</Cooking><Crafting>1</Crafting><Social>-1</Social></skillGains>
+    <skillGains><Cooking>4</Cooking><Crafting>1</Crafting></skillGains>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_LurkerChef</defName><title>Lurker Chef</title><titleShort>Lurker Chef</titleShort><baseDesc>This lurker can still portion ingredients, tend stoves, and turn scraps into meals.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
-    <skillGains><Cooking>5</Cooking><Crafting>1</Crafting><Plants>1</Plants><Social>-1</Social></skillGains>
+    <skillGains><Cooking>5</Cooking><Crafting>1</Crafting><Plants>1</Plants></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
     <defName>CZH_BackstoryChild_LurkerScientist</defName><title>Lurker Scientist</title><titleShort>Lurker Scientist</titleShort><baseDesc>Amid the ruin, some fragment of method, analysis, and old curiosity still remains.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
-    <skillGains><Intellectual>4</Intellectual><Medical>1</Medical><Social>-1</Social></skillGains>
+    <skillGains><Medicine>1</Medicine></skillGains>
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_LurkerScientist</defName><title>Lurker Scientist</title><titleShort>Lurker Scientist</titleShort><baseDesc>This lurker still remembers how to study, record, and reason, even if the soul behind it is dim.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
-    <skillGains><Intellectual>5</Intellectual><Medical>1</Medical><Crafting>1</Crafting><Social>-1</Social></skillGains>
+    <skillGains><Medicine>1</Medicine><Crafting>1</Crafting></skillGains>
   </BackstoryDef>
 </Defs>

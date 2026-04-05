@@ -658,8 +658,7 @@ namespace CustomizableZombieHorde
         }
     }
 
-    [HarmonyPatch(typeof(StatExtension), nameof(StatExtension.GetStatValue), new[] { typeof(Thing), typeof(StatDef), typeof(bool) })]
-    public static class Patch_StatExtension_GetStatValue
+    public static class Patch_StatExtension_GetStatValue_Disabled
     {
         public static void Postfix(Thing thing, StatDef stat, ref float __result)
         {
