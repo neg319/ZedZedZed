@@ -53,13 +53,6 @@
       <Mass>28</Mass>
       <MarketValue>280</MarketValue>
       <Flammability>0.65</Flammability>
-      <TurretBurstWarmupTime>0.18</TurretBurstWarmupTime>
-      <TurretGunCombatCooldown>1.00</TurretGunCombatCooldown>
-      <TurretRotationSpeed>25</TurretRotationSpeed>
-      <VerbPropertiesAdjustedAccuracyTouch>1.00</VerbPropertiesAdjustedAccuracyTouch>
-      <VerbPropertiesAdjustedAccuracyShort>0.98</VerbPropertiesAdjustedAccuracyShort>
-      <VerbPropertiesAdjustedAccuracyMedium>0.94</VerbPropertiesAdjustedAccuracyMedium>
-      <VerbPropertiesAdjustedAccuracyLong>0.90</VerbPropertiesAdjustedAccuracyLong>
     </statBases>
   </ThingDef>
 
@@ -67,6 +60,7 @@
     <defName>CZH_Gun_SpringTurret</defName>
     <label>spring turret gun</label>
     <description>An internal gun definition used by the spring turret.</description>
+    <techLevel>Industrial</techLevel>
     <thingClass>ThingWithComps</thingClass>
     <category>Item</category>
     <drawerType>MapMeshOnly</drawerType>

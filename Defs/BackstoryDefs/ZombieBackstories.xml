@@ -9,7 +9,7 @@
     <shuffleable>false</shuffleable>
     <workDisables>
       <li>Intellectual</li>
-      <li>Artistic</li>
+      
       <li>Social</li>
       <li>Animals</li>
     </workDisables>
@@ -33,7 +33,7 @@
     <shuffleable>false</shuffleable>
     <workDisables>
       <li>Intellectual</li>
-      <li>Artistic</li>
+      
       <li>Social</li>
       <li>Animals</li>
     </workDisables>
@@ -57,7 +57,7 @@
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>2</Melee><Mining>1</Mining><Shooting>-5</Shooting><Construction>-4</Construction><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
@@ -71,7 +71,7 @@
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>2</Melee><Mining>1</Mining><Shooting>-5</Shooting><Construction>-4</Construction><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
@@ -86,7 +86,7 @@
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>1</Melee><Shooting>-6</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
@@ -100,7 +100,7 @@
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>1</Melee><Shooting>-6</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
@@ -115,7 +115,7 @@
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>1</Melee><Medicine>1</Medicine><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting>
@@ -129,7 +129,7 @@
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>1</Melee><Medicine>1</Medicine><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting>
@@ -144,7 +144,7 @@
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>2</Melee><Plants>1</Plants><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
@@ -158,7 +158,7 @@
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>2</Melee><Plants>1</Plants><Shooting>-5</Shooting><Construction>-4</Construction><Mining>-4</Mining><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
@@ -173,7 +173,7 @@
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>5</Melee><Construction>1</Construction><Mining>1</Mining><Shooting>-5</Shooting><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
@@ -187,7 +187,7 @@
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>5</Melee><Construction>1</Construction><Mining>1</Mining><Shooting>-5</Shooting><Plants>-4</Plants><Cooking>-4</Cooking><Crafting>-4</Crafting><Medicine>-6</Medicine>
@@ -202,7 +202,7 @@
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>3</Melee><Crafting>1</Crafting><Shooting>-4</Shooting><Construction>-3</Construction><Mining>-3</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Medicine>-6</Medicine>
@@ -216,7 +216,7 @@
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
-      <li>Intellectual</li><li>Artistic</li><li>Social</li><li>Animals</li>
+      <li>Intellectual</li><li>Social</li><li>Animals</li>
     </workDisables>
     <skillGains>
       <Melee>3</Melee><Crafting>1</Crafting><Shooting>-4</Shooting><Construction>-3</Construction><Mining>-3</Mining><Plants>-4</Plants><Cooking>-4</Cooking><Medicine>-6</Medicine>
