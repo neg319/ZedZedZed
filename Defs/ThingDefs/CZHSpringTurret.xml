@@ -29,7 +29,8 @@
     </costList>
     <designationCategory>Security</designationCategory>
     <placeWorkers>
-      <li>RimWorld.PlaceWorker_ShowTurretRadius</li>
+      <li>PlaceWorker_TurretTop</li>
+      <li>PlaceWorker_ShowTurretRadius</li>
     </placeWorkers>
     <passability>PassThroughOnly</passability>
     <pathCost>30</pathCost>
@@ -56,37 +57,19 @@
     </statBases>
   </ThingDef>
 
-  <ThingDef>
+  <ThingDef ParentName="BaseWeaponTurret">
     <defName>CZH_Gun_SpringTurret</defName>
     <label>spring turret gun</label>
     <description>An internal gun definition used by the spring turret.</description>
-    <thingClass>Verse.ThingWithComps</thingClass>
-    <category>Item</category>
     <techLevel>Industrial</techLevel>
     <drawGUIOverlay>false</drawGUIOverlay>
-    <drawerType>RealtimeOnly</drawerType>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretTop</texPath>
       <graphicClass>Graphic_Single</graphicClass>
       <drawSize>(1,1)</drawSize>
       <shaderType>Cutout</shaderType>
     </graphicData>
-    <verbs>
-      <li>
-        <verbClass>Verb_Shoot</verbClass>
-        <hasStandardCommand>false</hasStandardCommand>
-        <warmupTime>0.18</warmupTime>
-        <defaultProjectile>CZH_Bullet_SpringTurret</defaultProjectile>
-        <range>28.9</range>
-        <ticksBetweenBurstShots>60</ticksBetweenBurstShots>
-        <burstShotCount>1</burstShotCount>
-        <soundCast>Shot_Autopistol</soundCast>
-        <muzzleFlashScale>5</muzzleFlashScale>
-      </li>
-    </verbs>
-    <comps>
-      <li Class="RimWorld.CompProperties_Equippable" />
-    </comps>
+    <altitudeLayer>BuildingOnTop</altitudeLayer>
     <statBases>
       <Mass>1</Mass>
       <MarketValue>0</MarketValue>
@@ -96,6 +79,19 @@
       <AccuracyLong>0.90</AccuracyLong>
       <RangedWeapon_Cooldown>1.00</RangedWeapon_Cooldown>
     </statBases>
+    <verbs>
+      <li>
+        <verbClass>Verb_Shoot</verbClass>
+        <hasStandardCommand>true</hasStandardCommand>
+        <warmupTime>0.18</warmupTime>
+        <defaultProjectile>CZH_Bullet_SpringTurret</defaultProjectile>
+        <range>28.9</range>
+        <ticksBetweenBurstShots>60</ticksBetweenBurstShots>
+        <burstShotCount>1</burstShotCount>
+        <soundCast>Shot_Autopistol</soundCast>
+        <muzzleFlashScale>5</muzzleFlashScale>
+      </li>
+    </verbs>
   </ThingDef>
 
   <ThingDef ParentName="BaseBullet">
