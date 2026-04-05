@@ -197,6 +197,11 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
+                if (thing.MapHeld == null || !thing.PositionHeld.IsValid || thing.PositionHeld.GetSlotGroup(thing.MapHeld) == null)
+                {
+                    continue;
+                }
+
                 float distance = pawn.PositionHeld.DistanceToSquared(thing.PositionHeld);
                 if (distance < bestDistance)
                 {
@@ -262,6 +267,28 @@ namespace CustomizableZombieHorde
             }
 
             return Mathf.Clamp(chance, 0.08f, 0.92f);
+        }
+
+        public static float GetRecruitChance(Pawn recruiter, Thing food, Pawn lurker)
+        {
+            int social = recruiter?.skills?.GetSkill(SkillDefOf.Social)?.Level ?? 0;
+            int animals = recruiter?.skills?.GetSkill(SkillDefOf.Animals)?.Level ?? 0;
+            float chance = 0.12f + social * 0.045f + animals * 0.01f;
+            if (food?.def?.defName == HumanMeatDefName)
+            {
+                chance += 0.10f;
+            }
+            else if (food?.def == ZombieDefOf.CZH_RottenFlesh)
+            {
+                chance += 0.05f;
+            }
+
+            if (lurker?.story?.traits?.HasTrait(TraitDefOf.Psychopath) == true)
+            {
+                chance += 0.03f;
+            }
+
+            return Mathf.Clamp(chance, 0.08f, 0.95f);
         }
 
         public static bool ConsumeOneUnit(Pawn pawn, Thing preferredFood = null)

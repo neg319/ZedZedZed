@@ -44,6 +44,7 @@ namespace CustomizableZombieHorde
 
         public static IncidentDef CZH_LurkerArrives;
         public static JobDef CZH_TameLurker;
+        public static JobDef CZH_RecruitLurker;
         public static JobDef CZH_AdministerBileTreatment;
 
         static ZombieDefOf()

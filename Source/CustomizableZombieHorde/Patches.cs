@@ -573,12 +573,23 @@ namespace CustomizableZombieHorde
                 Thing food = ZombieLurkerUtility.FindAvailableTameFood(pawn, pawn.Map);
                 if (food == null)
                 {
-                    opts.Add(new FloatMenuOption("Recruit lurker (requires rotten flesh or human meat)", null));
-                    opts.Add(new FloatMenuOption("Tame lurker (requires rotten flesh or human meat)", null));
+                    opts.Add(new FloatMenuOption("Recruit lurker (requires rotten flesh or human meat in a stockpile)", null));
+                    opts.Add(new FloatMenuOption("Tame lurker (requires rotten flesh or human meat in a stockpile)", null));
                     continue;
                 }
 
                 string foodLabel = food.LabelCap;
+                Action startRecruit = delegate
+                {
+                    Job job = JobMaker.MakeJob(ZombieDefOf.CZH_RecruitLurker, lurker);
+                    if (pawn.carryTracker?.CarriedThing != food)
+                    {
+                        job.targetB = food;
+                    }
+                    job.count = 1;
+                    pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+                };
+
                 Action startTame = delegate
                 {
                     Job job = JobMaker.MakeJob(ZombieDefOf.CZH_TameLurker, lurker);
@@ -590,7 +601,7 @@ namespace CustomizableZombieHorde
                     pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
                 };
 
-                opts.Add(new FloatMenuOption("Recruit lurker using " + foodLabel, startTame));
+                opts.Add(new FloatMenuOption("Recruit lurker using " + foodLabel, startRecruit));
                 opts.Add(new FloatMenuOption("Tame lurker using " + foodLabel, startTame));
             }
 

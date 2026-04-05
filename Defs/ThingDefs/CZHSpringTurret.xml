@@ -4,9 +4,10 @@
     <defName>CZH_Turret_Spring</defName>
     <label>spring turret</label>
     <description>A compact automatic turret built around a simple spring drive and a stripped down targeter. It does not need power or ammo, fires a steady shot every second, and sits in the security tab beside the rest of your colony defenses.</description>
-    <thingClass>Building_TurretGun</thingClass>
+    <thingClass>RimWorld.Building_TurretGun</thingClass>
     <category>Building</category>
-    <drawerType>MapMeshOnly</drawerType>
+    <drawerType>MapMeshAndRealTime</drawerType>
+    <tickerType>Normal</tickerType>
     <altitudeLayer>Building</altitudeLayer>
     <castEdgeShadows>true</castEdgeShadows>
     <fillPercent>0.25</fillPercent>
@@ -30,7 +31,7 @@
     </stuffCategories>
     <designationCategory>Security</designationCategory>
     <placeWorkers>
-      <li>PlaceWorker_ShowTurretRadius</li>
+      <li>RimWorld.PlaceWorker_ShowTurretRadius</li>
     </placeWorkers>
     <passability>PassThroughOnly</passability>
     <pathCost>30</pathCost>
@@ -43,12 +44,13 @@
     <building>
       <turretGunDef>CZH_Gun_SpringTurret</turretGunDef>
       <ai_combatDangerous>true</ai_combatDangerous>
+      <isEdifice>true</isEdifice>
       <buildingTags>
         <li>Security</li>
       </buildingTags>
     </building>
     <statBases>
-      <MaxHitPoints>90</MaxHitPoints>
+      <MaxHitPoints>180</MaxHitPoints>
       <WorkToBuild>12000</WorkToBuild>
       <Mass>28</Mass>
       <MarketValue>280</MarketValue>
@@ -61,9 +63,9 @@
     <label>spring turret gun</label>
     <description>An internal gun definition used by the spring turret.</description>
     <techLevel>Industrial</techLevel>
-    <thingClass>ThingWithComps</thingClass>
+    <thingClass>Verse.ThingWithComps</thingClass>
     <category>Item</category>
-    <drawerType>MapMeshOnly</drawerType>
+    <drawerType>RealtimeOnly</drawerType>
     <graphicData>
       <texPath>Things/Building/Security/CZHSpringTurretTop</texPath>
       <graphicClass>Graphic_Single</graphicClass>

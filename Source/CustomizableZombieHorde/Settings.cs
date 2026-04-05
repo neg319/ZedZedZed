@@ -629,31 +629,31 @@ namespace CustomizableZombieHorde
 
         private void DrawDifficultyCard(Listing_Standard listing)
         {
-            Rect row = DrawCard(listing, 72f);
+            Rect row = DrawCard(listing, 96f);
             string description = "Global population multiplier for major spawns. Higher values mean more bodies in serious events.";
-            DrawCardText(row, "Difficulty", description, $"Level {difficultyLevel}  |  {DifficultyMultiplier:0.00}x zombies");
-            DrawStepperControls(row, ref difficultyLevel, 0, 8, 1, "");
+            DrawCardText(row, "Difficulty", description);
+            DrawStepperControls(row, ref difficultyLevel, 0, 8, 1, $"Level {difficultyLevel}  |  {DifficultyMultiplier:0.00}x");
         }
 
         private void DrawIntStepperCard(Listing_Standard listing, string label, string description, ref int value, int min, int max, int step)
         {
-            Rect row = DrawCard(listing, 72f);
-            DrawCardText(row, label, description, value.ToString());
-            DrawStepperControls(row, ref value, min, max, step, "");
+            Rect row = DrawCard(listing, 96f);
+            DrawCardText(row, label, description);
+            DrawStepperControls(row, ref value, min, max, step, value.ToString());
         }
 
         private void DrawFloatStepperCard(Listing_Standard listing, string label, string description, ref float value, float min, float max, float step, string suffix)
         {
-            Rect row = DrawCard(listing, 72f);
-            DrawCardText(row, label, description, $"{value:0.0} {suffix}".Trim());
-            DrawStepperControls(row, ref value, min, max, step, suffix);
+            Rect row = DrawCard(listing, 96f);
+            DrawCardText(row, label, description);
+            DrawStepperControls(row, ref value, min, max, step, $"{value:0.0} {suffix}".Trim());
         }
 
         private void DrawPercentStepperCard(Listing_Standard listing, string label, string description, ref float value, float min, float max, float step)
         {
-            Rect row = DrawCard(listing, 72f);
-            DrawCardText(row, label, description, $"{value * 100f:0}%");
-            DrawPercentControls(row, ref value, min, max, step);
+            Rect row = DrawCard(listing, 96f);
+            DrawCardText(row, label, description);
+            DrawPercentControls(row, ref value, min, max, step, $"{value * 100f:0}%");
         }
 
         private void DrawVariantCard(Listing_Standard listing, string label, string description, ref bool value)
@@ -772,14 +772,15 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private void DrawStepperControls(Rect row, ref int value, int min, int max, int step, string suffix)
+        private void DrawStepperControls(Rect row, ref int value, int min, int max, int step, string displayText)
         {
             float buttonWidth = 34f;
-            float valueWidth = 92f;
-            float totalWidth = buttonWidth + 4f + valueWidth + 4f + buttonWidth;
-            Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, row.y + 18f, buttonWidth, 32f);
-            Rect valueRect = new Rect(minusRect.xMax + 4f, row.y + 18f, valueWidth, 32f);
-            Rect plusRect = new Rect(valueRect.xMax + 4f, row.y + 18f, buttonWidth, 32f);
+            float valueWidth = 140f;
+            float totalWidth = buttonWidth + 8f + valueWidth + 8f + buttonWidth;
+            float controlsY = row.y + row.height - 42f;
+            Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, controlsY, buttonWidth, 30f);
+            Rect valueRect = new Rect(minusRect.xMax + 8f, controlsY, valueWidth, 30f);
+            Rect plusRect = new Rect(valueRect.xMax + 8f, controlsY, buttonWidth, 30f);
 
             if (Widgets.ButtonText(minusRect, "-"))
             {
@@ -788,7 +789,7 @@ namespace CustomizableZombieHorde
 
             Widgets.DrawBoxSolid(valueRect, new Color(0.16f, 0.16f, 0.16f));
             Text.Anchor = TextAnchor.MiddleCenter;
-            Widgets.Label(valueRect, value.ToString());
+            Widgets.Label(valueRect, string.IsNullOrEmpty(displayText) ? value.ToString() : displayText);
             Text.Anchor = TextAnchor.UpperLeft;
 
             if (Widgets.ButtonText(plusRect, "+"))
@@ -797,14 +798,15 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private void DrawStepperControls(Rect row, ref float value, float min, float max, float step, string suffix)
+        private void DrawStepperControls(Rect row, ref float value, float min, float max, float step, string displayText)
         {
             float buttonWidth = 34f;
-            float valueWidth = 92f;
-            float totalWidth = buttonWidth + 4f + valueWidth + 4f + buttonWidth;
-            Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, row.y + 18f, buttonWidth, 32f);
-            Rect valueRect = new Rect(minusRect.xMax + 4f, row.y + 18f, valueWidth, 32f);
-            Rect plusRect = new Rect(valueRect.xMax + 4f, row.y + 18f, buttonWidth, 32f);
+            float valueWidth = 140f;
+            float totalWidth = buttonWidth + 8f + valueWidth + 8f + buttonWidth;
+            float controlsY = row.y + row.height - 42f;
+            Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, controlsY, buttonWidth, 30f);
+            Rect valueRect = new Rect(minusRect.xMax + 8f, controlsY, valueWidth, 30f);
+            Rect plusRect = new Rect(valueRect.xMax + 8f, controlsY, buttonWidth, 30f);
 
             if (Widgets.ButtonText(minusRect, "-"))
             {
@@ -813,7 +815,7 @@ namespace CustomizableZombieHorde
 
             Widgets.DrawBoxSolid(valueRect, new Color(0.16f, 0.16f, 0.16f));
             Text.Anchor = TextAnchor.MiddleCenter;
-            Widgets.Label(valueRect, $"{value:0.0}");
+            Widgets.Label(valueRect, string.IsNullOrEmpty(displayText) ? $"{value:0.0}" : displayText);
             Text.Anchor = TextAnchor.UpperLeft;
 
             if (Widgets.ButtonText(plusRect, "+"))
@@ -822,14 +824,15 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private void DrawPercentControls(Rect row, ref float value, float min, float max, float step)
+        private void DrawPercentControls(Rect row, ref float value, float min, float max, float step, string displayText)
         {
             float buttonWidth = 34f;
-            float valueWidth = 92f;
-            float totalWidth = buttonWidth + 4f + valueWidth + 4f + buttonWidth;
-            Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, row.y + 18f, buttonWidth, 32f);
-            Rect valueRect = new Rect(minusRect.xMax + 4f, row.y + 18f, valueWidth, 32f);
-            Rect plusRect = new Rect(valueRect.xMax + 4f, row.y + 18f, buttonWidth, 32f);
+            float valueWidth = 140f;
+            float totalWidth = buttonWidth + 8f + valueWidth + 8f + buttonWidth;
+            float controlsY = row.y + row.height - 42f;
+            Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, controlsY, buttonWidth, 30f);
+            Rect valueRect = new Rect(minusRect.xMax + 8f, controlsY, valueWidth, 30f);
+            Rect plusRect = new Rect(valueRect.xMax + 8f, controlsY, buttonWidth, 30f);
 
             if (Widgets.ButtonText(minusRect, "-"))
             {
@@ -838,7 +841,7 @@ namespace CustomizableZombieHorde
 
             Widgets.DrawBoxSolid(valueRect, new Color(0.16f, 0.16f, 0.16f));
             Text.Anchor = TextAnchor.MiddleCenter;
-            Widgets.Label(valueRect, $"{value * 100f:0}%");
+            Widgets.Label(valueRect, string.IsNullOrEmpty(displayText) ? $"{value * 100f:0}%" : displayText);
             Text.Anchor = TextAnchor.UpperLeft;
 
             if (Widgets.ButtonText(plusRect, "+"))

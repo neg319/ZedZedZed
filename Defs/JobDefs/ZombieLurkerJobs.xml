@@ -6,4 +6,10 @@
     <reportString>taming a lurker.</reportString>
     <casualInterruptible>false</casualInterruptible>
   </JobDef>
+  <JobDef>
+    <defName>CZH_RecruitLurker</defName>
+    <driverClass>CustomizableZombieHorde.JobDriver_RecruitLurker</driverClass>
+    <reportString>recruiting a lurker.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+  </JobDef>
 </Defs>
