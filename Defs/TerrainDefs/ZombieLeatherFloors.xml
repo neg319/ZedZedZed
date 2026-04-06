@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <TerrainDef>
+    <defName>CZH_RottenLeatherFloor</defName>
+    <label>rotten leather floor</label>
+    <description>A seamless floor of rendered hide cut from the shambling dead. It is unsettling underfoot, but sturdy enough for rough colony use.</description>
+    <texturePath>Terrain/RottenLeatherFloor</texturePath>
+    <renderPrecedence>212</renderPrecedence>
+    <constructEffect>ConstructDirt</constructEffect>
+    <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    <designationCategory>Floors</designationCategory>
+    <resourcesFractionWhenDeconstructed>0.5</resourcesFractionWhenDeconstructed>
+    <pathCost>0</pathCost>
+    <fertility>0</fertility>
+    <costList>
+      <CZH_RottenLeather>4</CZH_RottenLeather>
+    </costList>
+    <statBases>
+      <WorkToBuild>120</WorkToBuild>
+      <Beauty>-1</Beauty>
+      <Cleanliness>-0.02</Cleanliness>
+      <Flammability>0</Flammability>
+    </statBases>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>CZH_StitchedRottenLeatherFloor</defName>
+    <label>stitched rotten leather floor</label>
+    <description>Large hide panels sewn together into a grim floor covering. The broad patches echo the same bruised tones seen on the wandering dead.</description>
+    <texturePath>Terrain/StitchedRottenLeatherFloor</texturePath>
+    <renderPrecedence>213</renderPrecedence>
+    <constructEffect>ConstructDirt</constructEffect>
+    <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    <designationCategory>Floors</designationCategory>
+    <resourcesFractionWhenDeconstructed>0.5</resourcesFractionWhenDeconstructed>
+    <pathCost>0</pathCost>
+    <fertility>0</fertility>
+    <costList>
+      <CZH_RottenLeather>5</CZH_RottenLeather>
+    </costList>
+    <statBases>
+      <WorkToBuild>130</WorkToBuild>
+      <Beauty>0</Beauty>
+      <Cleanliness>-0.01</Cleanliness>
+      <Flammability>0</Flammability>
+    </statBases>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>CZH_PatchworkRottenLeatherFloor</defName>
+    <label>patchwork rotten leather floor</label>
+    <description>A carefully stitched spread of mismatched hide squares. Its mottled tones resemble the many faded shades seen across the horde.</description>
+    <texturePath>Terrain/PatchworkLeatherFloor</texturePath>
+    <renderPrecedence>214</renderPrecedence>
+    <constructEffect>ConstructDirt</constructEffect>
+    <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    <designationCategory>Floors</designationCategory>
+    <resourcesFractionWhenDeconstructed>0.5</resourcesFractionWhenDeconstructed>
+    <pathCost>0</pathCost>
+    <fertility>0</fertility>
+    <costList>
+      <CZH_RottenLeather>6</CZH_RottenLeather>
+    </costList>
+    <statBases>
+      <WorkToBuild>145</WorkToBuild>
+      <Beauty>1</Beauty>
+      <Cleanliness>0</Cleanliness>
+      <Flammability>0</Flammability>
+    </statBases>
+  </TerrainDef>
+
+  <TerrainDef>
+    <defName>CZH_MottledHideFloor</defName>
+    <label>mottled hide floor</label>
+    <description>A grim leather floor with muted green gray staining and dark skin like blotches. It blends the palette of several strains into one seamless surface.</description>
+    <texturePath>Terrain/MottledHideFloor</texturePath>
+    <renderPrecedence>211</renderPrecedence>
+    <constructEffect>ConstructDirt</constructEffect>
+    <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    <designationCategory>Floors</designationCategory>
+    <resourcesFractionWhenDeconstructed>0.5</resourcesFractionWhenDeconstructed>
+    <pathCost>0</pathCost>
+    <fertility>0</fertility>
+    <costList>
+      <CZH_RottenLeather>5</CZH_RottenLeather>
+    </costList>
+    <statBases>
+      <WorkToBuild>125</WorkToBuild>
+      <Beauty>0</Beauty>
+      <Cleanliness>-0.01</Cleanliness>
+      <Flammability>0</Flammability>
+    </statBases>
+  </TerrainDef>
+
+</Defs>
