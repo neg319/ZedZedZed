@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using UnityEngine;
 using HarmonyLib;
 using RimWorld;
@@ -96,6 +97,8 @@ namespace CustomizableZombieHorde
             ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: initialSpawn);
             ZombieUtility.ApplyLimbDecay(pawn);
             ZombieUtility.ApplyVariantHediffs(pawn);
+            ZombieUtility.ApplyCrawlerLegDamage(pawn);
+            ApplyZombieXenotype(pawn);
 
             if (initialSpawn)
             {
@@ -112,6 +115,60 @@ namespace CustomizableZombieHorde
             ZombieUtility.MarkPawnGraphicsDirty(pawn);
         }
 
+
+        private static void ApplyZombieXenotype(Pawn pawn)
+        {
+            if (pawn?.genes == null)
+            {
+                return;
+            }
+
+            string xenotypeName = ZombieUtility.IsSkeletonBiter(pawn) || ZombieUtility.ShouldSpawnAsSkeletonBiter(pawn)
+                ? "Waster"
+                : "Baseliner";
+            XenotypeDef xenotype = DefDatabase<XenotypeDef>.GetNamedSilentFail(xenotypeName);
+            if (xenotype == null)
+            {
+                return;
+            }
+
+            try
+            {
+                MethodInfo setXenotype = AccessTools.Method(pawn.genes.GetType(), "SetXenotype", new[] { typeof(XenotypeDef) })
+                    ?? AccessTools.Method(pawn.genes.GetType(), "SetXenotypeDirect", new[] { typeof(XenotypeDef) });
+                if (setXenotype != null)
+                {
+                    setXenotype.Invoke(pawn.genes, new object[] { xenotype });
+                    return;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                PropertyInfo xenotypeProperty = AccessTools.Property(pawn.genes.GetType(), "Xenotype");
+                if (xenotypeProperty != null && xenotypeProperty.CanWrite)
+                {
+                    xenotypeProperty.SetValue(pawn.genes, xenotype, null);
+                    return;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                FieldInfo xenotypeField = AccessTools.Field(pawn.genes.GetType(), "xenotype")
+                    ?? AccessTools.Field(pawn.genes.GetType(), "xenotypeDef");
+                xenotypeField?.SetValue(pawn.genes, xenotype);
+            }
+            catch
+            {
+            }
+        }
 
         private static void TryAssignFaction(Pawn pawn, Faction faction)
         {

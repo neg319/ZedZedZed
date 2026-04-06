@@ -45,6 +45,51 @@ namespace CustomizableZombieHorde
                 && pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieSkeletonBiter);
         }
 
+        public static float GetZombieIncomingDamageMultiplier(Pawn pawn)
+        {
+            if (!IsZombie(pawn))
+            {
+                return 1f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Biter))
+            {
+                return 4f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Crawler))
+            {
+                return 4f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Boomer))
+            {
+                return 6.67f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Sick))
+            {
+                return 2f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Drowned))
+            {
+                return 4f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Tank))
+            {
+                return 1f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Grabber))
+            {
+                return 2.86f;
+            }
+
+            return 1.60f;
+        }
+
         public static BodyPartRecord GetHeadPart(Pawn pawn)
         {
             if (pawn?.RaceProps?.body?.AllParts == null || pawn.health?.hediffSet == null)
@@ -106,6 +151,48 @@ namespace CustomizableZombieHorde
                 if (!pawn.health.hediffSet.PartIsMissing(part) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieLimbDecay, part))
                 {
                     pawn.health.AddHediff(ZombieDefOf.CZH_ZombieLimbDecay, part);
+                }
+            }
+        }
+
+        public static void ApplyCrawlerLegDamage(Pawn pawn)
+        {
+            if (!IsVariant(pawn, ZombieVariant.Crawler) || pawn?.health?.hediffSet == null || pawn.RaceProps?.body?.AllParts == null)
+            {
+                return;
+            }
+
+            foreach (BodyPartRecord part in pawn.RaceProps.body.AllParts)
+            {
+                if (part?.def != BodyPartDefOf.Leg || pawn.health.hediffSet.PartIsMissing(part))
+                {
+                    continue;
+                }
+
+                if (!pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieOpenWound, part))
+                {
+                    pawn.health.AddHediff(ZombieDefOf.CZH_ZombieOpenWound, part);
+                }
+
+                Hediff_Injury existingInjury = pawn.health.hediffSet.hediffs
+                    .OfType<Hediff_Injury>()
+                    .FirstOrDefault(injury => injury.Part == part && !injury.IsPermanent() && injury.Severity >= 12f);
+                if (existingInjury != null)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    Hediff injury = HediffMaker.MakeHediff(HediffDefOf.Cut, pawn, part);
+                    if (injury != null)
+                    {
+                        injury.Severity = 12f;
+                        pawn.health.AddHediff(injury, part);
+                    }
+                }
+                catch
+                {
                 }
             }
         }
@@ -561,6 +648,31 @@ namespace CustomizableZombieHorde
                     pawn.health.AddHediff(ZombieDefOf.CZH_ZombieDrownedLand);
                 }
             }
+        }
+
+        public static void HandleDrownedRegeneration(Pawn pawn)
+        {
+            if (!IsVariant(pawn, ZombieVariant.Drowned) || pawn?.health?.hediffSet == null || !pawn.Spawned)
+            {
+                return;
+            }
+
+            if (!IsWaterCell(pawn.PositionHeld, pawn.MapHeld) || !pawn.IsHashIntervalTick(300))
+            {
+                return;
+            }
+
+            Hediff_Injury injury = pawn.health.hediffSet.hediffs
+                .OfType<Hediff_Injury>()
+                .Where(hediff => !hediff.IsPermanent() && hediff.Part != null && !pawn.health.hediffSet.PartIsMissing(hediff.Part))
+                .OrderByDescending(hediff => hediff.Severity)
+                .FirstOrDefault();
+            if (injury == null)
+            {
+                return;
+            }
+
+            injury.Heal(0.40f);
         }
 
         public static void EnsureZombieAggression(Pawn pawn)

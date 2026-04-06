@@ -21,6 +21,8 @@ namespace CustomizableZombieHorde
         private int cachedCurrentMapZombieCount = 0;
         private int cachedZombieCountTick = -1;
         private int lastGuaranteeAttemptTick = -1;
+        private int bloodMoonActiveUntilTick = -1;
+        private int nextBloodMoonRushTick = -1;
         private Dictionary<int, int> lastNightlySpawnDayByMap = new Dictionary<int, int>();
         private Dictionary<int, int> zombieBehaviorByPawnId = new Dictionary<int, int>();
 
@@ -42,6 +44,8 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref cachedCurrentMapZombieCount, "cachedCurrentMapZombieCount", 0);
             Scribe_Values.Look(ref cachedZombieCountTick, "cachedZombieCountTick", -1);
             Scribe_Values.Look(ref lastGuaranteeAttemptTick, "lastGuaranteeAttemptTick", -1);
+            Scribe_Values.Look(ref bloodMoonActiveUntilTick, "bloodMoonActiveUntilTick", -1);
+            Scribe_Values.Look(ref nextBloodMoonRushTick, "nextBloodMoonRushTick", -1);
             Scribe_Collections.Look(ref lastNightlySpawnDayByMap, "lastNightlySpawnDayByMap", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref zombieBehaviorByPawnId, "zombieBehaviorByPawnId", LookMode.Value, LookMode.Value);
             base.ExposeData();
@@ -91,6 +95,7 @@ namespace CustomizableZombieHorde
             HandleTrickleSpawns(ticksGame);
             HandleGroundBursts(ticksGame);
             HandleGraveEvents(ticksGame);
+            HandleActiveBloodMoon(ticksGame);
             HandleMoonCycle();
         }
 
@@ -299,6 +304,7 @@ namespace CustomizableZombieHorde
 
             if (result)
             {
+                ForceMoonRush(map, bloodMoon);
                 int currentDay = (Find.TickManager?.TicksGame ?? 0) / GenDate.TicksPerDay;
                 lastTriggeredMoonDay = currentDay;
                 ScheduleNextMoon(currentDay);
@@ -435,6 +441,27 @@ namespace CustomizableZombieHorde
         public Pawn GetGrabberTongueTarget(Pawn pawn)
         {
             return ZombieGrabberUtility.GetTongueTarget(pawn);
+        }
+
+        public bool IsBloodMoonVisualActive(Map map = null)
+        {
+            if (Find.TickManager == null)
+            {
+                return false;
+            }
+
+            if (bloodMoonActiveUntilTick < 0 || Find.TickManager.TicksGame >= bloodMoonActiveUntilTick)
+            {
+                return false;
+            }
+
+            map ??= Find.CurrentMap;
+            return map == null || map.IsPlayerHome;
+        }
+
+        public Color GetBloodMoonTintColor()
+        {
+            return new Color(1f, 0.1f, 0.1f, 0.10f);
         }
 
         private Map GetDebugTargetMap()
@@ -732,26 +759,122 @@ namespace CustomizableZombieHorde
                 string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
                 if (nextMoonIsBlood)
                 {
-                    ZombieSpawnHelper.SpawnHorde(
+                    if (ZombieSpawnHelper.SpawnHorde(
                         map,
                         CustomizableZombieHordeMod.Settings.bloodMoonBaseCount,
                         groups: 3,
                         letterLabel: "Blood Moon Rising",
-                        letterText: "A blood moon hangs over the colony. A massive wave of " + prefix.ToLowerInvariant() + "s surges toward your base from every direction. Keep everyone inside your defenses and expect a sustained assault.");
+                        letterText: "A blood moon hangs over the colony. A massive wave of " + prefix.ToLowerInvariant() + "s surges toward your base from every direction. Keep everyone inside your defenses and expect a sustained assault."))
+                    {
+                        ForceMoonRush(map, true);
+                    }
                 }
                 else
                 {
-                    ZombieSpawnHelper.SpawnHorde(
+                    if (ZombieSpawnHelper.SpawnHorde(
                         map,
                         CustomizableZombieHordeMod.Settings.fullMoonBaseCount,
                         groups: 2,
                         letterLabel: "Full Moon Rising",
-                        letterText: "The full moon draws the dead from the dark. A larger horde of " + prefix.ToLowerInvariant() + "s is converging on your colony. Bring wandering workers home and prepare your perimeter.");
+                        letterText: "The full moon draws the dead from the dark. A larger horde of " + prefix.ToLowerInvariant() + "s is converging on your colony. Bring wandering workers home and prepare your perimeter."))
+                    {
+                        ForceMoonRush(map, false);
+                    }
                 }
             }
 
             lastTriggeredMoonDay = nextMoonEventDay;
             ScheduleNextMoon(currentDay);
+        }
+
+        private void ForceMoonRush(Map map, bool bloodMoon)
+        {
+            if (map == null)
+            {
+                return;
+            }
+
+            ForceAllMapZombiesToRush(map);
+            if (bloodMoon)
+            {
+                StartBloodMoon(map);
+            }
+        }
+
+        private void StartBloodMoon(Map map)
+        {
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            int duration = HoursToTicks(Rand.Range(4f, 8f));
+            bloodMoonActiveUntilTick = ticksGame + duration;
+            nextBloodMoonRushTick = ticksGame + HoursToTicks(Rand.Range(0.75f, 1.25f));
+            ForceAllMapZombiesToRush(map);
+        }
+
+        private void HandleActiveBloodMoon(int ticksGame)
+        {
+            if (bloodMoonActiveUntilTick < 0)
+            {
+                return;
+            }
+
+            if (ticksGame >= bloodMoonActiveUntilTick)
+            {
+                bloodMoonActiveUntilTick = -1;
+                nextBloodMoonRushTick = -1;
+                return;
+            }
+
+            foreach (Map map in Find.Maps)
+            {
+                if (map.IsPlayerHome)
+                {
+                    ForceAllMapZombiesToRush(map);
+                }
+            }
+
+            if (nextBloodMoonRushTick >= 0 && ticksGame >= nextBloodMoonRushTick)
+            {
+                foreach (Map map in Find.Maps)
+                {
+                    if (!map.IsPlayerHome)
+                    {
+                        continue;
+                    }
+
+                    int forcedCount = Mathf.Max(3, Mathf.CeilToInt(CustomizableZombieHordeMod.Settings.bloodMoonBaseCount * 0.30f));
+                    ZombieSpawnHelper.SpawnWave(
+                        map,
+                        forcedCount: forcedCount,
+                        sendLetter: false,
+                        applyDifficulty: true,
+                        ignoreCap: true,
+                        ignoreTimeOfDay: true,
+                        behavior: ZombieSpawnEventType.AssaultBase);
+                    ForceAllMapZombiesToRush(map);
+                }
+
+                nextBloodMoonRushTick = ticksGame + HoursToTicks(Rand.Range(0.75f, 1.25f));
+            }
+        }
+
+        private void ForceAllMapZombiesToRush(Map map)
+        {
+            if (map?.mapPawns == null)
+            {
+                return;
+            }
+
+            foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned)
+            {
+                if (!ZombieUtility.IsZombie(pawn) || pawn.Dead || pawn.Downed || ZombieLurkerUtility.IsColonyLurker(pawn))
+                {
+                    continue;
+                }
+
+                RegisterBehavior(pawn, ZombieSpawnEventType.AssaultBase);
+                ZombieUtility.EnsureZombieAggression(pawn);
+                ZombieUtility.AssignInitialShambleJob(pawn, ZombieSpawnEventType.AssaultBase);
+            }
         }
 
         private void ScheduleNextMoon(int currentDay)
@@ -820,6 +943,7 @@ namespace CustomizableZombieHorde
                     ZombieUtility.StripAllUsableItems(pawn);
                     ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: false);
                     ZombieUtility.RefreshDrownedState(pawn);
+                    ZombieUtility.HandleDrownedRegeneration(pawn);
                     ZombieUtility.EnsureZombieAggression(pawn);
                     ZombieSpecialUtility.HandleDrownedBehavior(pawn);
                     ZombieSpecialUtility.HandleSickSpitAttack(pawn);

@@ -206,7 +206,7 @@ namespace CustomizableZombieHorde
 
             if (variant == ZombieVariant.Biter && ShouldLookSkeletal(pawn))
             {
-                return "PawnOverlays/ZombieSkeletonBody";
+                return "PawnOverlays/ZombieBoneBiterBody";
             }
 
             switch (variant)

@@ -10,6 +10,36 @@ using Verse.AI;
 
 namespace CustomizableZombieHorde
 {
+
+    [HarmonyPatch]
+    public static class Patch_BloodMoonScreenTint
+    {
+        public static MethodBase TargetMethod()
+        {
+            return AccessTools.Method(typeof(UIRoot_Play), "UIRootOnGUI")
+                ?? AccessTools.Method(typeof(UIRoot), "UIRootOnGUI");
+        }
+
+        public static void Postfix()
+        {
+            if (Current.ProgramState != ProgramState.Playing || Event.current == null || Event.current.type != EventType.Repaint)
+            {
+                return;
+            }
+
+            ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
+            if (component == null || !component.IsBloodMoonVisualActive(Find.CurrentMap))
+            {
+                return;
+            }
+
+            Color previousColor = GUI.color;
+            GUI.color = component.GetBloodMoonTintColor();
+            GUI.DrawTexture(new Rect(0f, 0f, UI.screenWidth, UI.screenHeight), BaseContent.WhiteTex);
+            GUI.color = previousColor;
+        }
+    }
+
     [StaticConstructorOnStartup]
     [HarmonyPatch(typeof(PawnRenderer), "RenderPawnAt")]
     public static class Patch_PawnRenderer_RenderPawnAt
@@ -305,15 +335,7 @@ namespace CustomizableZombieHorde
 
             if (victimIsZombie && !attackerIsZombie)
             {
-                float zombieDamageMultiplier = 1.60f;
-                if (ZombieUtility.IsVariant(victim, ZombieVariant.Biter))
-                {
-                    zombieDamageMultiplier = 4.80f;
-                }
-                else if (ZombieUtility.IsVariant(victim, ZombieVariant.Boomer))
-                {
-                    zombieDamageMultiplier = 6.40f;
-                }
+                float zombieDamageMultiplier = ZombieUtility.GetZombieIncomingDamageMultiplier(victim);
 
                 float amount = dinfo.Amount * zombieDamageMultiplier;
                 if (ZombieTraitUtility.HasSteadyHands(attacker) && ZombieTraitUtility.IsRangedAttack(attacker, dinfo))
