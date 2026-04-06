@@ -72,10 +72,11 @@ namespace CustomizableZombieHorde
 
         private static readonly Color[] SkeletalBiterSkinPalette =
         {
-            new Color(0.86f, 0.82f, 0.72f),
-            new Color(0.80f, 0.76f, 0.67f),
-            new Color(0.75f, 0.71f, 0.63f),
-            new Color(0.69f, 0.66f, 0.59f)
+            new Color(0.93f, 0.93f, 0.91f),
+            new Color(0.88f, 0.89f, 0.87f),
+            new Color(0.84f, 0.86f, 0.83f),
+            new Color(0.84f, 0.88f, 0.81f),
+            new Color(0.80f, 0.85f, 0.79f)
         };
 
         public static bool ShouldLookSkeletal(Pawn pawn)
@@ -189,7 +190,7 @@ namespace CustomizableZombieHorde
         {
             if (ShouldLookSkeletal(pawn))
             {
-                return new Color(0.93f, 0.90f, 0.83f, 1f);
+                return new Color(0.95f, 0.96f, 0.93f, 1f);
             }
 
             if (ShouldLookDesiccated(pawn))
