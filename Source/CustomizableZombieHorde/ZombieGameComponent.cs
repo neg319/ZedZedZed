@@ -347,6 +347,49 @@ namespace CustomizableZombieHorde
             return true;
         }
 
+        public bool DebugSpawnBoneBiter()
+        {
+            Map map = GetDebugTargetMap();
+            if (map == null)
+            {
+                return false;
+            }
+
+            PawnKindDef kind = DefDatabase<PawnKindDef>.GetNamedSilentFail("CZH_Zombie_Biter");
+            if (kind == null)
+            {
+                return false;
+            }
+
+            IntVec3 spawnCell;
+            if (!CellFinder.TryFindRandomCellNear(map.Center, map, 12, c => c.Walkable(map) && !c.Fogged(map), out spawnCell))
+            {
+                spawnCell = CellFinder.RandomClosewalkCellNear(map.Center, map, 12);
+            }
+
+            if (!spawnCell.IsValid)
+            {
+                spawnCell = map.Center;
+            }
+
+            Pawn boneBiter = ZombiePawnFactory.GenerateZombie(kind, ZombieFactionUtility.GetOrCreateZombieFaction());
+            if (boneBiter == null)
+            {
+                return false;
+            }
+
+            if (boneBiter.health?.hediffSet != null && !boneBiter.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieSkeletonBiter))
+            {
+                boneBiter.health.AddHediff(ZombieDefOf.CZH_ZombieSkeletonBiter);
+            }
+
+            ZombieUtility.SetZombieDisplayName(boneBiter);
+            GenSpawn.Spawn(boneBiter, spawnCell, map);
+            Messages.Message("A debug bone biter has been spawned.", boneBiter, MessageTypeDefOf.NeutralEvent);
+            RefreshCurrentMapCount();
+            return true;
+        }
+
 
         public void RegisterBehavior(Pawn pawn, ZombieSpawnEventType behavior)
         {

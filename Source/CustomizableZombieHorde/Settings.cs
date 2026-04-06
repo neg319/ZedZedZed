@@ -537,6 +537,7 @@ namespace CustomizableZombieHorde
                 DrawDebugActionButton(listing, component, "Force sick grave now", "Forced a sick grave.", "Could not force a sick grave.");
                 DrawDebugActionButton(listing, component, "Force drowned grave now", "Forced a drowned grave.", "Could not force a drowned grave.");
                 DrawDebugActionButton(listing, component, "Force heavy grave now", "Forced a heavy grave.", "Could not force a heavy grave.");
+                DrawDebugActionButton(listing, component, "Spawn bone biter now", "Spawned a bone biter.", "Could not spawn a bone biter.");
                 DrawDebugActionButton(listing, component, "Spawn lurker now", "Spawned a lurker.", "Could not spawn a lurker.");
                 DrawDebugActionButton(listing, component, "Force grabber grave now", "Forced a grabber grave.", "Could not force a grabber grave.");
                 DrawDebugActionButton(listing, component, "Force full moon horde now", "Forced a full moon horde.", "Could not force a full moon horde.");
@@ -733,6 +734,8 @@ namespace CustomizableZombieHorde
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Drowned);
                 case "Force heavy grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Tank);
+                case "Spawn bone biter now":
+                    return component.DebugSpawnBoneBiter();
                 case "Force grabber grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Grabber);
                 case "Spawn lurker now":
