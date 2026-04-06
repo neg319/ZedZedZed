@@ -693,6 +693,17 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            if (IsVariant(pawn, ZombieVariant.Drowned) && ZombieSpecialUtility.ShouldDrownedHoldWater(pawn))
+            {
+                PrepareSpawnedZombie(pawn);
+                if (pawn.CurJob != null && (pawn.CurJob.def == JobDefOf.AttackMelee || pawn.CurJob.def == JobDefOf.Goto))
+                {
+                    pawn.jobs.StopAll();
+                }
+
+                return;
+            }
+
             PrepareSpawnedZombie(pawn);
             if (pawn.Downed)
             {

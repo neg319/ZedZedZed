@@ -61,7 +61,7 @@ namespace CustomizableZombieHorde
             AddIfAllowed(kinds, weights, "CZH_Zombie_Crawler", CustomizableZombieHordeMod.Settings.allowCrawlers, 8f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Boomer", CustomizableZombieHordeMod.Settings.allowBoomers, 6f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Sick", CustomizableZombieHordeMod.Settings.allowSick, 5f);
-            AddIfAllowed(kinds, weights, "CZH_Zombie_Drowned", CustomizableZombieHordeMod.Settings.allowDrowned && ZombieSpecialUtility.MapHasWater(map), 4f);
+            AddIfAllowed(kinds, weights, "CZH_Zombie_Drowned", CustomizableZombieHordeMod.Settings.allowDrowned && ZombieSpecialUtility.MapHasWater(map), GetDrownedWeight(map));
             AddIfAllowed(kinds, weights, "CZH_Zombie_Tank", CustomizableZombieHordeMod.Settings.allowHeavies, 2f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Grabber", CustomizableZombieHordeMod.Settings.allowGrabbers, 3f);
 
@@ -71,6 +71,17 @@ namespace CustomizableZombieHorde
             }
 
             return kinds.RandomElementByWeight(kind => weights[kinds.IndexOf(kind)]);
+        }
+
+
+        private static float GetDrownedWeight(Map map)
+        {
+            if (map != null && ZombieSpecialUtility.IsRainActive(map))
+            {
+                return 12f;
+            }
+
+            return 4f;
         }
 
         private static PawnKindDef GetNamedIfAllowed(string defName, bool enabled)

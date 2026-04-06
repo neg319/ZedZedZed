@@ -790,26 +790,109 @@ namespace CustomizableZombieHorde
             }
         }
 
+        public static bool IsRainActive(Map map)
+        {
+            if (map?.weatherManager == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                if (map.weatherManager.RainRate > 0.02f)
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                WeatherDef weather = map.weatherManager.curWeather;
+                return weather != null && weather.rainRate > 0.02f;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static bool ShouldDrownedRoamFreely(Pawn pawn)
+        {
+            return pawn?.MapHeld != null && IsRainActive(pawn.MapHeld);
+        }
+
+        public static bool ShouldDrownedHoldWater(Pawn pawn)
+        {
+            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || ShouldDrownedRoamFreely(pawn))
+            {
+                return false;
+            }
+
+            Pawn prey = FindClosestLivingPrey(pawn, 18f);
+            return prey == null;
+        }
+
         public static void HandleDrownedBehavior(Pawn pawn)
         {
-            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null)
+            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || pawn.jobs == null)
             {
                 return;
             }
 
-            if (ZombieUtility.IsWaterCell(pawn.PositionHeld, pawn.MapHeld))
+            if (ShouldDrownedRoamFreely(pawn))
             {
                 return;
             }
 
-            Pawn prey = FindClosestLivingPrey(pawn, 8f);
-            if (prey == null)
+            bool inWater = ZombieUtility.IsWaterCell(pawn.PositionHeld, pawn.MapHeld);
+            Pawn prey = FindClosestLivingPrey(pawn, 18f);
+            Pawn currentTarget = pawn.CurJob?.targetA.Thing as Pawn;
+
+            if (currentTarget != null)
             {
-                IntVec3 waterCell = FindNearestWaterCell(pawn.PositionHeld, pawn.MapHeld, 20f);
-                if (waterCell.IsValid && pawn.CurJobDef != JobDefOf.Goto)
+                bool validTarget = !currentTarget.Dead && !currentTarget.Destroyed && !ZombieUtility.ShouldZombiesIgnore(currentTarget);
+                if (!validTarget || pawn.PositionHeld.DistanceToSquared(currentTarget.PositionHeld) > 24f * 24f)
+                {
+                    currentTarget = null;
+                }
+            }
+
+            if (prey == null && currentTarget == null)
+            {
+                if (inWater)
+                {
+                    if (pawn.CurJob != null && (pawn.CurJob.def == JobDefOf.AttackMelee || pawn.CurJob.def == JobDefOf.Goto))
+                    {
+                        pawn.jobs.StopAll();
+                    }
+
+                    return;
+                }
+
+                IntVec3 waterCell = FindNearestWaterCell(pawn.PositionHeld, pawn.MapHeld, 35f);
+                if (waterCell.IsValid && (pawn.CurJob == null || pawn.CurJob.def != JobDefOf.Goto || pawn.CurJob.targetA.Cell != waterCell))
                 {
                     Job returnToWater = JobMaker.MakeJob(JobDefOf.Goto, waterCell);
-                    returnToWater.expiryInterval = 700;
+                    returnToWater.expiryInterval = 900;
+                    returnToWater.checkOverrideOnExpire = true;
+                    returnToWater.locomotionUrgency = ZombieUtility.GetZombieUrgency(pawn);
+                    pawn.jobs.TryTakeOrderedJob(returnToWater, JobTag.Misc);
+                }
+
+                return;
+            }
+
+            if (!inWater && prey != null && pawn.PositionHeld.DistanceToSquared(prey.PositionHeld) > 24f * 24f)
+            {
+                IntVec3 waterCell = FindNearestWaterCell(pawn.PositionHeld, pawn.MapHeld, 35f);
+                if (waterCell.IsValid)
+                {
+                    Job returnToWater = JobMaker.MakeJob(JobDefOf.Goto, waterCell);
+                    returnToWater.expiryInterval = 900;
+                    returnToWater.checkOverrideOnExpire = true;
                     returnToWater.locomotionUrgency = ZombieUtility.GetZombieUrgency(pawn);
                     pawn.jobs.TryTakeOrderedJob(returnToWater, JobTag.Misc);
                 }

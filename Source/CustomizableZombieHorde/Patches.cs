@@ -562,6 +562,10 @@ namespace CustomizableZombieHorde
             {
                 if (!pawn.CanReach(lurker, Verse.AI.PathEndMode.Touch, Danger.Some))
                 {
+                    if (pawn.Drafted)
+                    {
+                        opts.Add(new FloatMenuOption("Cannot capture lurker: no path to target", null));
+                    }
                     opts.Add(new FloatMenuOption("Cannot recruit lurker: no path to target", null));
                     opts.Add(new FloatMenuOption("Cannot tame lurker: no path to target", null));
                     continue;
@@ -569,9 +573,23 @@ namespace CustomizableZombieHorde
 
                 if (!pawn.CanReserve(lurker))
                 {
+                    if (pawn.Drafted)
+                    {
+                        opts.Add(new FloatMenuOption("Cannot capture lurker: reserved", null));
+                    }
                     opts.Add(new FloatMenuOption("Cannot recruit lurker: reserved", null));
                     opts.Add(new FloatMenuOption("Cannot tame lurker: reserved", null));
                     continue;
+                }
+
+                if (pawn.Drafted)
+                {
+                    Action startCapture = delegate
+                    {
+                        Job arrestJob = JobMaker.MakeJob(JobDefOf.Arrest, lurker);
+                        pawn.jobs.TryTakeOrderedJob(arrestJob, JobTag.Misc);
+                    };
+                    opts.Add(new FloatMenuOption("Capture lurker", startCapture));
                 }
 
                 Thing food = ZombieLurkerUtility.FindAvailableTameFood(pawn, pawn.Map);
