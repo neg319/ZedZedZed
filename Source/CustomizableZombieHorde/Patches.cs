@@ -242,6 +242,158 @@ namespace CustomizableZombieHorde
         }
     }
 
+    [HarmonyPatch]
+    public static class Patch_FoodUtility_WillEat_Thing
+    {
+        private static MethodBase cachedTarget;
+
+        public static bool Prepare()
+        {
+            cachedTarget = ResolveTargetMethod();
+            return cachedTarget != null;
+        }
+
+        public static MethodBase TargetMethod()
+        {
+            return cachedTarget ?? ResolveTargetMethod();
+        }
+
+        private static MethodBase ResolveTargetMethod()
+        {
+            foreach (MethodInfo method in typeof(FoodUtility).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                if (method.Name != "WillEat")
+                {
+                    continue;
+                }
+
+                ParameterInfo[] parameters = method.GetParameters();
+                if (parameters.Length >= 2 && parameters[0].ParameterType == typeof(Pawn) && parameters[1].ParameterType == typeof(Thing))
+                {
+                    return method;
+                }
+            }
+
+            return null;
+        }
+
+        public static void Postfix(Pawn p, Thing t, ref bool __result)
+        {
+            ThingDef def = t?.def;
+            if (ZombieLurkerUtility.ShouldBlockRottenFleshFor(p, def))
+            {
+                __result = false;
+                return;
+            }
+
+            if (!__result && ZombieLurkerUtility.IsLurker(p) && ZombieLurkerUtility.IsPreferredLurkerFood(def))
+            {
+                __result = true;
+            }
+        }
+    }
+
+    [HarmonyPatch]
+    public static class Patch_FoodUtility_WillEat_ThingDef
+    {
+        private static MethodBase cachedTarget;
+
+        public static bool Prepare()
+        {
+            cachedTarget = ResolveTargetMethod();
+            return cachedTarget != null;
+        }
+
+        public static MethodBase TargetMethod()
+        {
+            return cachedTarget ?? ResolveTargetMethod();
+        }
+
+        private static MethodBase ResolveTargetMethod()
+        {
+            foreach (MethodInfo method in typeof(FoodUtility).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                if (method.Name != "WillEat")
+                {
+                    continue;
+                }
+
+                ParameterInfo[] parameters = method.GetParameters();
+                if (parameters.Length >= 2 && parameters[0].ParameterType == typeof(Pawn) && parameters[1].ParameterType == typeof(ThingDef))
+                {
+                    return method;
+                }
+            }
+
+            return null;
+        }
+
+        public static void Postfix(Pawn p, ThingDef foodDef, ref bool __result)
+        {
+            if (ZombieLurkerUtility.ShouldBlockRottenFleshFor(p, foodDef))
+            {
+                __result = false;
+                return;
+            }
+
+            if (!__result && ZombieLurkerUtility.IsLurker(p) && ZombieLurkerUtility.IsPreferredLurkerFood(foodDef))
+            {
+                __result = true;
+            }
+        }
+    }
+
+    [HarmonyPatch]
+    public static class Patch_FoodUtility_FoodOptimality
+    {
+        private static MethodBase cachedTarget;
+
+        public static bool Prepare()
+        {
+            cachedTarget = ResolveTargetMethod();
+            return cachedTarget != null;
+        }
+
+        public static MethodBase TargetMethod()
+        {
+            return cachedTarget ?? ResolveTargetMethod();
+        }
+
+        private static MethodBase ResolveTargetMethod()
+        {
+            foreach (MethodInfo method in typeof(FoodUtility).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                if (method.Name != "FoodOptimality")
+                {
+                    continue;
+                }
+
+                ParameterInfo[] parameters = method.GetParameters();
+                if (parameters.Length >= 3 && parameters[0].ParameterType == typeof(Pawn) && parameters[1].ParameterType == typeof(Thing) && parameters[2].ParameterType == typeof(ThingDef))
+                {
+                    return method;
+                }
+            }
+
+            return null;
+        }
+
+        public static void Postfix(Pawn eater, Thing foodSource, ThingDef foodDef, ref float __result)
+        {
+            ThingDef def = foodSource?.def ?? foodDef;
+            if (ZombieLurkerUtility.ShouldBlockRottenFleshFor(eater, def))
+            {
+                __result = -1000f;
+                return;
+            }
+
+            if (ZombieLurkerUtility.IsLurker(eater))
+            {
+                __result += ZombieLurkerUtility.GetLurkerFoodPreferenceOffset(def);
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.Kill))]
     public static class Patch_Pawn_Kill
     {
@@ -311,11 +463,13 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Rect rect = new Rect(UI.screenWidth - 238f, 6f, 228f, 34f);
+            int currentCount = component.GetCurrentMapZombieCount();
+            int cap = ZombieSpawnHelper.GetDynamicZombieCap(Find.CurrentMap);
+            Rect rect = new Rect(UI.screenWidth - 252f, 6f, 242f, 34f);
             Text.Anchor = TextAnchor.MiddleCenter;
             Text.Font = GameFont.Small;
             Widgets.DrawWindowBackground(rect);
-            Widgets.Label(rect.ContractedBy(4f), "Zombies: " + component.GetCurrentMapZombieCount());
+            Widgets.Label(rect.ContractedBy(4f), "Zombies: " + currentCount + " / " + cap);
             Text.Anchor = TextAnchor.UpperLeft;
             Text.Font = GameFont.Small;
         }
@@ -394,6 +548,11 @@ namespace CustomizableZombieHorde
             }
 
             Pawn attacker = ZombieTraitUtility.ResolveDamageInstigatorPawn(dinfo.Instigator);
+
+            if (victim.Dead && ZombieInfectionUtility.HasZombieInfection(victim) && ZombieInfectionUtility.IsHeadOrChildPart(dinfo.HitPart, victim))
+            {
+                Current.Game?.GetComponent<ZombieGameComponent>()?.MarkInfectionHeadFatal(victim);
+            }
 
             if (ZombieUtility.IsVariant(attacker, ZombieVariant.Boomer) && victim.IsColonist && !victim.Dead)
             {

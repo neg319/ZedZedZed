@@ -263,8 +263,8 @@
   <HediffDef>
     <defName>CZH_ZombieSickness</defName>
     <hediffClass>HediffWithComps</hediffClass>
-    <label>zombie sickness</label>
-    <description>Contact with sick zombie blood has left this pawn feverish and weak. Zombie sickness reduces movement and consciousness until treated with a bile med kit.</description>
+    <label>zombie infection</label>
+    <description>Contact with sick zombie blood has left this pawn infected. The infection worsens day by day, continues progressing after death, and will turn the corpse unless a bile med kit cures it or the skull is destroyed first. The total time to turn can be adjusted in settings.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>true</tendable>
@@ -273,15 +273,99 @@
     <maxSeverity>1.0</maxSeverity>
     <stages>
       <li>
-        <label>infected</label>
+        <label>fresh infection</label>
         <capMods>
           <li>
             <capacity>Consciousness</capacity>
-            <offset>-0.05</offset>
+            <offset>-0.03</offset>
           </li>
           <li>
             <capacity>Moving</capacity>
+            <offset>-0.06</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.3143</minSeverity>
+        <label>worsening</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.06</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.10</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.4286</minSeverity>
+        <label>advancing</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.09</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.14</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.5429</minSeverity>
+        <label>serious</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
             <offset>-0.12</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.18</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.6572</minSeverity>
+        <label>grave</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.16</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.24</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.7715</minSeverity>
+        <label>critical</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.21</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.31</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.8858</minSeverity>
+        <label>terminal</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.28</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.40</offset>
           </li>
         </capMods>
       </li>

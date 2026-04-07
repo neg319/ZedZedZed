@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
   <RecipeDef>
-    <defName>CZH_RenderRottenFleshToLeather</defName>
-    <label>render rotten flesh into rotten leather</label>
-    <jobString>Rendering rotten flesh into leather.</jobString>
-    <workAmount>900</workAmount>
-    <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
+    <defName>CZH_CookZombieJerky</defName>
+    <label>cook zombie jerky</label>
+    <description>Dry rotten flesh into preserved zombie jerky.</description>
+    <jobString>Cooking zombie jerky.</jobString>
+    <workAmount>1000</workAmount>
+    <workSpeedStat>CookingSpeed</workSpeedStat>
     <recipeUsers>
-      <li>ButcherSpot</li>
-      <li>TableButcher</li>
-      <li>CraftingSpot</li>
+      <li>FueledStove</li>
+      <li>ElectricStove</li>
+      <li>Campfire</li>
     </recipeUsers>
     <ingredients>
       <li>
@@ -18,70 +19,70 @@
             <li>CZH_RottenFlesh</li>
           </thingDefs>
         </filter>
-        <count>40</count>
+        <count>10</count>
       </li>
     </ingredients>
     <products>
-      <CZH_RottenLeather>25</CZH_RottenLeather>
+      <CZH_ZombieJerky>8</CZH_ZombieJerky>
     </products>
     <defaultIngredientFilter>
       <thingDefs>
         <li>CZH_RottenFlesh</li>
       </thingDefs>
     </defaultIngredientFilter>
-    <workSkill>Crafting</workSkill>
+    <workSkill>Cooking</workSkill>
     <workSkillLearnFactor>0.25</workSkillLearnFactor>
   </RecipeDef>
 
-<RecipeDef>
-  <defName>CZH_CraftBileTreatmentKit</defName>
-  <label>craft bile med kit</label>
-  <description>Refine zombie bile and basic supplies into a field kit that cures zombie sickness.</description>
-  <jobString>assembling a bile med kit.</jobString>
-  <workAmount>1200</workAmount>
-  <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
-  <recipeUsers>
-    <li>CraftingSpot</li>
-    <li>DrugLab</li>
-  </recipeUsers>
-  <ingredients>
-    <li>
-      <filter>
-        <thingDefs>
-          <li>CZH_ZombieBile</li>
-        </thingDefs>
-      </filter>
-      <count>2</count>
-    </li>
-    <li>
-      <filter>
-        <thingDefs>
-          <li>MedicineHerbal</li>
-        </thingDefs>
-      </filter>
-      <count>1</count>
-    </li>
-    <li>
-      <filter>
-        <thingDefs>
-          <li>Cloth</li>
-        </thingDefs>
-      </filter>
-      <count>3</count>
-    </li>
-  </ingredients>
-  <products>
-    <CZH_BileTreatmentKit>1</CZH_BileTreatmentKit>
-  </products>
-  <defaultIngredientFilter>
-    <thingDefs>
-      <li>CZH_ZombieBile</li>
-      <li>MedicineHerbal</li>
-      <li>Cloth</li>
-    </thingDefs>
-  </defaultIngredientFilter>
-  <workSkill>Crafting</workSkill>
-  <workSkillLearnFactor>0.30</workSkillLearnFactor>
-</RecipeDef>
+  <RecipeDef>
+    <defName>CZH_CraftBileTreatmentKit</defName>
+    <label>craft bile med kit</label>
+    <description>Refine zombie bile and basic supplies into a field kit that cures zombie sickness.</description>
+    <jobString>assembling a bile med kit.</jobString>
+    <workAmount>1200</workAmount>
+    <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
+    <recipeUsers>
+      <li>CraftingSpot</li>
+      <li>DrugLab</li>
+    </recipeUsers>
+    <ingredients>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>CZH_ZombieBile</li>
+          </thingDefs>
+        </filter>
+        <count>2</count>
+      </li>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>MedicineHerbal</li>
+          </thingDefs>
+        </filter>
+        <count>1</count>
+      </li>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>Cloth</li>
+          </thingDefs>
+        </filter>
+        <count>3</count>
+      </li>
+    </ingredients>
+    <products>
+      <CZH_BileTreatmentKit>1</CZH_BileTreatmentKit>
+    </products>
+    <defaultIngredientFilter>
+      <thingDefs>
+        <li>CZH_ZombieBile</li>
+        <li>MedicineHerbal</li>
+        <li>Cloth</li>
+      </thingDefs>
+    </defaultIngredientFilter>
+    <workSkill>Crafting</workSkill>
+    <workSkillLearnFactor>0.30</workSkillLearnFactor>
+  </RecipeDef>
 
 </Defs>

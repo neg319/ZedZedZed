@@ -47,7 +47,21 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness. It reduces movement and consciousness until treated. Administer a bile med kit to cure it.", pawn, MessageTypeDefOf.NegativeHealthEvent);
+            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness. It worsens over time, continues after death, and will turn the pawn unless a bile med kit cures it or the skull is destroyed.", pawn, MessageTypeDefOf.NegativeHealthEvent);
+        }
+
+
+        public static void SendZombieTurnMessage(Pawn pawn, bool becameLurker)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            string text = becameLurker
+                ? pawn.LabelShortCap + " dies from zombie infection and rises again as a lurker."
+                : pawn.LabelShortCap + " dies from zombie infection and rises again as part of the horde.";
+            Messages.Message(text, pawn, MessageTypeDefOf.NegativeEvent);
         }
 
         public static void TrySendGrabberPullWarning(Pawn prey, Pawn grabber)
@@ -114,7 +128,7 @@ namespace CustomizableZombieHorde
 
             if (ZombieBileUtility.NeedsBileTreatment(pawn))
             {
-                lines.Add("Zombie sickness: this can be cured with a bile med kit.");
+                lines.Add("Zombie sickness: this worsens over time, continues after death, and can be cured with a bile med kit.");
             }
 
             return lines.Count == 0 ? null : string.Join("\n", lines);
@@ -132,6 +146,11 @@ namespace CustomizableZombieHorde
             if (ZombieRulesUtility.CanReanimate(innerPawn))
             {
                 lines.Add("This corpse may rise again unless the head is ruined.");
+            }
+
+            if (ZombieInfectionUtility.HasZombieInfection(innerPawn))
+            {
+                lines.Add("Zombie infection continues after death. Destroy the skull before it reaches 100 percent if you want it to stay dead.");
             }
 
             if (ZombieRulesUtility.IsZombie(innerPawn))

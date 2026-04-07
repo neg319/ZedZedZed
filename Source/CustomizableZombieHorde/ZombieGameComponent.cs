@@ -25,6 +25,7 @@ namespace CustomizableZombieHorde
         private int nextBloodMoonRushTick = -1;
         private Dictionary<int, int> lastNightlySpawnDayByMap = new Dictionary<int, int>();
         private Dictionary<int, int> zombieBehaviorByPawnId = new Dictionary<int, int>();
+        private List<int> infectionHeadFatalPawnIds = new List<int>();
 
         public ZombieGameComponent(Game game)
         {
@@ -48,6 +49,7 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref nextBloodMoonRushTick, "nextBloodMoonRushTick", -1);
             Scribe_Collections.Look(ref lastNightlySpawnDayByMap, "lastNightlySpawnDayByMap", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref zombieBehaviorByPawnId, "zombieBehaviorByPawnId", LookMode.Value, LookMode.Value);
+            Scribe_Collections.Look(ref infectionHeadFatalPawnIds, "infectionHeadFatalPawnIds", LookMode.Value);
             base.ExposeData();
         }
 
@@ -65,6 +67,7 @@ namespace CustomizableZombieHorde
                 SanitizeLivingZombies();
                 HandleSickBloodContact();
                 HandleZombieFeeding();
+                HandleZombieInfectionProgression();
             }
 
             if (ticksGame % 12 == 0)
@@ -113,6 +116,15 @@ namespace CustomizableZombieHorde
             }
 
             return cachedCurrentMapZombieCount;
+        }
+
+        public bool IsBloodMoonActive
+        {
+            get
+            {
+                int ticksGame = Find.TickManager?.TicksGame ?? 0;
+                return bloodMoonActiveUntilTick >= 0 && ticksGame < bloodMoonActiveUntilTick;
+            }
         }
 
         public bool HasUsableDebugMap()
@@ -284,23 +296,32 @@ namespace CustomizableZombieHorde
             }
 
             string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
+            ZombiePopulationState populationState = bloodMoon ? ZombiePopulationState.BloodMoon : ZombiePopulationState.FullMoon;
+            int targetCount = ZombieSpawnHelper.GetRemainingCapacity(map, populationState);
+            if (targetCount < 1)
+            {
+                targetCount = ZombieSpawnHelper.GetDynamicZombieCap(map, populationState);
+            }
+
             bool result = bloodMoon
                 ? ZombieSpawnHelper.SpawnHorde(
                     map,
-                    CustomizableZombieHordeMod.Settings.bloodMoonBaseCount,
+                    targetCount,
                     groups: 3,
                     letterLabel: "Debug Blood Moon",
                     letterText: "A debug blood moon has been forced. A massive wave of " + prefix.ToLowerInvariant() + "s is descending on your colony.",
-                    ignoreCap: true,
-                    ignoreTimeOfDay: true)
+                    ignoreCap: false,
+                    ignoreTimeOfDay: true,
+                    populationState: ZombiePopulationState.BloodMoon)
                 : ZombieSpawnHelper.SpawnHorde(
                     map,
-                    CustomizableZombieHordeMod.Settings.fullMoonBaseCount,
+                    targetCount,
                     groups: 2,
                     letterLabel: "Debug Full Moon",
                     letterText: "A debug full moon horde has been forced. The dead are closing in on your colony.",
-                    ignoreCap: true,
-                    ignoreTimeOfDay: true);
+                    ignoreCap: false,
+                    ignoreTimeOfDay: true,
+                    populationState: ZombiePopulationState.FullMoon);
 
             if (result)
             {
@@ -759,24 +780,40 @@ namespace CustomizableZombieHorde
                 string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
                 if (nextMoonIsBlood)
                 {
+                    int targetCount = ZombieSpawnHelper.GetRemainingCapacity(map, ZombiePopulationState.BloodMoon);
+                    if (targetCount < 1)
+                    {
+                        targetCount = ZombieSpawnHelper.GetDynamicZombieCap(map, ZombiePopulationState.BloodMoon);
+                    }
+
                     if (ZombieSpawnHelper.SpawnHorde(
                         map,
-                        CustomizableZombieHordeMod.Settings.bloodMoonBaseCount,
+                        targetCount,
                         groups: 3,
                         letterLabel: "Blood Moon Rising",
-                        letterText: "A blood moon hangs over the colony. A massive wave of " + prefix.ToLowerInvariant() + "s surges toward your base from every direction. Keep everyone inside your defenses and expect a sustained assault."))
+                        letterText: "A blood moon hangs over the colony. A massive wave of " + prefix.ToLowerInvariant() + "s surges toward your base from every direction. Keep everyone inside your defenses and expect a sustained assault.",
+                        ignoreTimeOfDay: true,
+                        populationState: ZombiePopulationState.BloodMoon))
                     {
                         ForceMoonRush(map, true);
                     }
                 }
                 else
                 {
+                    int targetCount = ZombieSpawnHelper.GetRemainingCapacity(map, ZombiePopulationState.FullMoon);
+                    if (targetCount < 1)
+                    {
+                        targetCount = ZombieSpawnHelper.GetDynamicZombieCap(map, ZombiePopulationState.FullMoon);
+                    }
+
                     if (ZombieSpawnHelper.SpawnHorde(
                         map,
-                        CustomizableZombieHordeMod.Settings.fullMoonBaseCount,
+                        targetCount,
                         groups: 2,
                         letterLabel: "Full Moon Rising",
-                        letterText: "The full moon draws the dead from the dark. A larger horde of " + prefix.ToLowerInvariant() + "s is converging on your colony. Bring wandering workers home and prepare your perimeter."))
+                        letterText: "The full moon draws the dead from the dark. A larger horde of " + prefix.ToLowerInvariant() + "s is converging on your colony. Bring wandering workers home and prepare your perimeter.",
+                        ignoreTimeOfDay: true,
+                        populationState: ZombiePopulationState.FullMoon))
                     {
                         ForceMoonRush(map, false);
                     }
@@ -841,15 +878,21 @@ namespace CustomizableZombieHorde
                         continue;
                     }
 
-                    int forcedCount = Mathf.Max(3, Mathf.CeilToInt(CustomizableZombieHordeMod.Settings.bloodMoonBaseCount * 0.30f));
-                    ZombieSpawnHelper.SpawnWave(
-                        map,
-                        forcedCount: forcedCount,
-                        sendLetter: false,
-                        applyDifficulty: true,
-                        ignoreCap: true,
-                        ignoreTimeOfDay: true,
-                        behavior: ZombieSpawnEventType.AssaultBase);
+                    int remainingCapacity = ZombieSpawnHelper.GetRemainingCapacity(map, ZombiePopulationState.BloodMoon);
+                    if (remainingCapacity > 0)
+                    {
+                        int forcedCount = Mathf.Clamp(Mathf.CeilToInt(remainingCapacity * 0.35f), 1, remainingCapacity);
+                        ZombieSpawnHelper.SpawnWave(
+                            map,
+                            forcedCount: forcedCount,
+                            sendLetter: false,
+                            applyDifficulty: true,
+                            ignoreCap: false,
+                            ignoreTimeOfDay: true,
+                            behavior: ZombieSpawnEventType.AssaultBase,
+                            populationState: ZombiePopulationState.BloodMoon);
+                    }
+
                     ForceAllMapZombiesToRush(map);
                 }
 
@@ -1031,6 +1074,78 @@ namespace CustomizableZombieHorde
             {
                 corpseWakeTicks.Remove(staleId);
             }
+        }
+
+        public void MarkInfectionHeadFatal(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            infectionHeadFatalPawnIds ??= new List<int>();
+            if (!infectionHeadFatalPawnIds.Contains(pawn.thingIDNumber))
+            {
+                infectionHeadFatalPawnIds.Add(pawn.thingIDNumber);
+            }
+        }
+
+        public bool IsInfectionHeadFatal(Pawn pawn)
+        {
+            return pawn != null && infectionHeadFatalPawnIds != null && infectionHeadFatalPawnIds.Contains(pawn.thingIDNumber);
+        }
+
+        public void ClearInfectionHeadFatal(Pawn pawn)
+        {
+            if (pawn == null || infectionHeadFatalPawnIds == null)
+            {
+                return;
+            }
+
+            infectionHeadFatalPawnIds.Remove(pawn.thingIDNumber);
+        }
+
+        private void HandleZombieInfectionProgression()
+        {
+            if (Current.Game == null)
+            {
+                return;
+            }
+
+            HashSet<int> seen = new HashSet<int>();
+            foreach (Map map in Find.Maps)
+            {
+                foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned.ToList())
+                {
+                    if (!ZombieInfectionUtility.HasZombieInfection(pawn))
+                    {
+                        continue;
+                    }
+
+                    seen.Add(pawn.thingIDNumber);
+                    ZombieInfectionUtility.ProgressLivingInfection(pawn, this);
+                }
+
+                List<Corpse> corpses = map.listerThings.ThingsInGroup(ThingRequestGroup.Corpse).OfType<Corpse>().ToList();
+                foreach (Corpse corpse in corpses)
+                {
+                    Pawn innerPawn = corpse?.InnerPawn;
+                    if (!ZombieInfectionUtility.HasZombieInfection(innerPawn))
+                    {
+                        continue;
+                    }
+
+                    seen.Add(innerPawn.thingIDNumber);
+                    ZombieInfectionUtility.ProgressDeadInfection(innerPawn, this);
+                }
+            }
+
+            if (infectionHeadFatalPawnIds == null)
+            {
+                return;
+            }
+
+            infectionHeadFatalPawnIds.RemoveAll(id => !seen.Contains(id));
         }
 
         private static int DaysToTicks(float days)

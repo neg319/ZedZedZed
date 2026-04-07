@@ -65,8 +65,8 @@ namespace CustomizableZombieHorde
         {
             { ZombieVariant.Biter, new ZombieButcherProfile(9, 7, 0f, 0, 0) },
             { ZombieVariant.Crawler, new ZombieButcherProfile(5, 4, 0.22f, 1, 1) },
-            { ZombieVariant.Boomer, new ZombieButcherProfile(9, 7, 0.48f, 1, 2) },
-            { ZombieVariant.Sick, new ZombieButcherProfile(9, 7, 0.58f, 1, 2) },
+            { ZombieVariant.Boomer, new ZombieButcherProfile(9, 7, 1f, 1, 2) },
+            { ZombieVariant.Sick, new ZombieButcherProfile(9, 7, 1f, 1, 2) },
             { ZombieVariant.Drowned, new ZombieButcherProfile(9, 7, 0.34f, 1, 1) },
             { ZombieVariant.Tank, new ZombieButcherProfile(18, 14, 0.40f, 1, 2) },
             { ZombieVariant.Grabber, new ZombieButcherProfile(9, 7, 0.44f, 1, 1) },

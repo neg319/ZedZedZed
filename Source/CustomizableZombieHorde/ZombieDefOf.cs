@@ -20,6 +20,8 @@ namespace CustomizableZombieHorde
 
         public static ThingDef CZH_RottenFlesh;
         public static ThingDef CZH_RottenLeather;
+        public static ThingDef CZH_ZombieJerky;
+        public static ThingDef CZH_GoldTooth;
         public static ThingDef CZH_ZombieBile;
         public static ThingDef CZH_BileTreatmentKit;
         public static ThingDef CZH_Filth_ZombieBlood;

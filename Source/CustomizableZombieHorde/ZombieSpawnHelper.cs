@@ -7,6 +7,15 @@ using Verse;
 
 namespace CustomizableZombieHorde
 {
+    public enum ZombiePopulationState
+    {
+        Auto,
+        Day,
+        Night,
+        FullMoon,
+        BloodMoon
+    }
+
     public static class ZombieSpawnHelper
     {
         public static int ApplyDifficultyMultiplier(int baseCount)
@@ -41,11 +50,71 @@ namespace CustomizableZombieHorde
             return baseCount;
         }
 
-        public static int GetDynamicZombieCap(Map map)
+        public static bool IsNight(Map map)
+        {
+            return map?.skyManager != null && map.skyManager.CurSkyGlow <= 0.40f;
+        }
+
+        public static int GetCurrentZombieCount(Map map)
+        {
+            return map?.mapPawns?.AllPawnsSpawned?.Count(ZombieUtility.IsZombie) ?? 0;
+        }
+
+        public static int GetRemainingCapacity(Map map, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             if (map == null)
             {
                 return 0;
+            }
+
+            int remaining = GetDynamicZombieCap(map, populationState) - GetCurrentZombieCount(map);
+            return remaining > 0 ? remaining : 0;
+        }
+
+        public static int GetDynamicZombieCap(Map map, ZombiePopulationState populationState = ZombiePopulationState.Auto)
+        {
+            if (map == null)
+            {
+                return 0;
+            }
+
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            if (settings == null)
+            {
+                return 0;
+            }
+
+            if (!settings.useColonistScaledPopulation)
+            {
+                return GetLegacyDynamicZombieCap(map, populationState);
+            }
+
+            int colonists = map.mapPawns?.FreeColonistsSpawnedCount ?? 0;
+            colonists = colonists < 1 ? 1 : colonists;
+            ZombiePopulationState resolvedState = ResolvePopulationState(map, populationState);
+            GetMultiplierRange(settings, resolvedState, out int minMultiplier, out int maxMultiplier);
+
+            int currentDay = (Find.TickManager?.TicksGame ?? 0) / GenDate.TicksPerDay;
+            int seed = (map.uniqueID * 397) ^ currentDay ^ (((int)resolvedState + 1) * 92821);
+            System.Random random = new System.Random(seed);
+            int multiplier = random.Next(minMultiplier, maxMultiplier + 1);
+            int cap = colonists * multiplier;
+            int hardCap = colonists * 20;
+            return cap > hardCap ? hardCap : cap;
+        }
+
+        private static int GetLegacyDynamicZombieCap(Map map, ZombiePopulationState populationState)
+        {
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            ZombiePopulationState resolvedState = ResolvePopulationState(map, populationState);
+            if (resolvedState == ZombiePopulationState.FullMoon)
+            {
+                return settings?.fullMoonBaseCount ?? 12;
+            }
+
+            if (resolvedState == ZombiePopulationState.BloodMoon)
+            {
+                return settings?.bloodMoonBaseCount ?? 24;
             }
 
             int colonists = map.mapPawns?.FreeColonistsSpawnedCount ?? 0;
@@ -53,36 +122,59 @@ namespace CustomizableZombieHorde
             int currentDay = (Find.TickManager?.TicksGame ?? 0) / GenDate.TicksPerDay;
             int seed = (map.uniqueID * 397) ^ currentDay;
             System.Random random = new System.Random(seed);
-            int multiplier;
-
-            float skyGlow = map.skyManager?.CurSkyGlow ?? 0.5f;
-            if (skyGlow >= 0.60f)
-            {
-                multiplier = random.Next(1, 4);
-            }
-            else if (skyGlow <= 0.25f)
-            {
-                multiplier = random.Next(3, 7);
-            }
-            else
-            {
-                multiplier = random.Next(2, 5);
-            }
-
-            int maxAllowed = colonists * multiplier;
+            int multiplier = resolvedState == ZombiePopulationState.Night ? random.Next(3, 7) : random.Next(1, 4);
+            int cap = colonists * multiplier;
             int hardCap = colonists * 10;
-            return maxAllowed > hardCap ? hardCap : maxAllowed;
+            return cap > hardCap ? hardCap : cap;
         }
 
-        private static int ClampSpawnCountToMapCap(Map map, int desiredCount)
+        private static ZombiePopulationState ResolvePopulationState(Map map, ZombiePopulationState populationState)
+        {
+            if (populationState != ZombiePopulationState.Auto)
+            {
+                return populationState;
+            }
+
+            ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
+            if (component != null && component.IsBloodMoonActive)
+            {
+                return ZombiePopulationState.BloodMoon;
+            }
+
+            return IsNight(map) ? ZombiePopulationState.Night : ZombiePopulationState.Day;
+        }
+
+        private static void GetMultiplierRange(CustomizableZombieHordeSettings settings, ZombiePopulationState populationState, out int minMultiplier, out int maxMultiplier)
+        {
+            switch (populationState)
+            {
+                case ZombiePopulationState.BloodMoon:
+                    minMultiplier = Mathf.Max(1, settings.bloodMoonColonistMultiplierMin);
+                    maxMultiplier = Mathf.Max(minMultiplier, settings.bloodMoonColonistMultiplierMax);
+                    break;
+                case ZombiePopulationState.FullMoon:
+                    minMultiplier = Mathf.Max(1, settings.fullMoonColonistMultiplierMin);
+                    maxMultiplier = Mathf.Max(minMultiplier, settings.fullMoonColonistMultiplierMax);
+                    break;
+                case ZombiePopulationState.Night:
+                    minMultiplier = Mathf.Max(1, settings.nightColonistMultiplierMin);
+                    maxMultiplier = Mathf.Max(minMultiplier, settings.nightColonistMultiplierMax);
+                    break;
+                default:
+                    minMultiplier = Mathf.Max(1, settings.dayColonistMultiplierMin);
+                    maxMultiplier = Mathf.Max(minMultiplier, settings.dayColonistMultiplierMax);
+                    break;
+            }
+        }
+
+        private static int ClampSpawnCountToMapCap(Map map, int desiredCount, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             if (map == null)
             {
                 return 0;
             }
 
-            int currentZombies = map.mapPawns?.AllPawnsSpawned?.Count(ZombieUtility.IsZombie) ?? 0;
-            int remaining = GetDynamicZombieCap(map) - currentZombies;
+            int remaining = GetRemainingCapacity(map, populationState);
             if (remaining <= 0)
             {
                 return 0;
@@ -91,7 +183,7 @@ namespace CustomizableZombieHorde
             return desiredCount > remaining ? remaining : desiredCount;
         }
 
-        private static int FinalizeSpawnCount(Map map, int count, bool applyDifficulty, bool applyTimeOfDay, bool ignoreCap)
+        private static int FinalizeSpawnCount(Map map, int count, bool applyDifficulty, bool applyTimeOfDay, bool ignoreCap, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             if (count < 1)
             {
@@ -110,28 +202,28 @@ namespace CustomizableZombieHorde
 
             if (!ignoreCap)
             {
-                count = ClampSpawnCountToMapCap(map, count);
+                count = ClampSpawnCountToMapCap(map, count, populationState);
             }
 
             return count;
         }
 
-        public static bool SpawnByBehavior(Map map, ZombieSpawnEventType behavior, int? forcedCount = null, bool sendLetter = true, bool applyDifficulty = true, bool ignoreCap = false, bool ignoreTimeOfDay = false)
+        public static bool SpawnByBehavior(Map map, ZombieSpawnEventType behavior, int? forcedCount = null, bool sendLetter = true, bool applyDifficulty = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             switch (behavior)
             {
                 case ZombieSpawnEventType.HuddledPack:
-                    return SpawnHuddledPack(map, forcedCount, sendLetter, ignoreCap, ignoreTimeOfDay, applyDifficulty);
+                    return SpawnHuddledPack(map, forcedCount, sendLetter, ignoreCap, ignoreTimeOfDay, applyDifficulty, populationState);
                 case ZombieSpawnEventType.EdgeWander:
-                    return SpawnEdgeWanderers(map, forcedCount, sendLetter, ignoreCap, ignoreTimeOfDay, applyDifficulty);
+                    return SpawnEdgeWanderers(map, forcedCount, sendLetter, ignoreCap, ignoreTimeOfDay, applyDifficulty, populationState);
                 case ZombieSpawnEventType.GroundBurst:
-                    return SpawnGroundBurst(map, forcedCount, sendLetter, ignoreCap, ignoreTimeOfDay, allowCenterFallback: true);
+                    return SpawnGroundBurst(map, forcedCount, sendLetter, ignoreCap, ignoreTimeOfDay, allowCenterFallback: true, populationState: populationState);
                 default:
-                    return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.AssaultBase);
+                    return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.AssaultBase, populationState: populationState);
             }
         }
 
-        public static bool SpawnWave(Map map, Faction faction = null, int? forcedCount = null, bool sendLetter = true, string customLetterLabel = null, string customLetterText = null, bool applyDifficulty = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, ZombieSpawnEventType behavior = ZombieSpawnEventType.AssaultBase)
+        public static bool SpawnWave(Map map, Faction faction = null, int? forcedCount = null, bool sendLetter = true, string customLetterLabel = null, string customLetterText = null, bool applyDifficulty = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, ZombieSpawnEventType behavior = ZombieSpawnEventType.AssaultBase, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             if (map == null)
             {
@@ -151,7 +243,7 @@ namespace CustomizableZombieHorde
             }
 
             int count = forcedCount ?? Rand.RangeInclusive(CustomizableZombieHordeMod.Settings.minGroupSize, CustomizableZombieHordeMod.Settings.maxGroupSize);
-            count = FinalizeSpawnCount(map, count, applyDifficulty, !ignoreTimeOfDay, ignoreCap);
+            count = FinalizeSpawnCount(map, count, applyDifficulty, !ignoreTimeOfDay, ignoreCap, populationState);
             if (count < 1)
             {
                 return false;
@@ -160,7 +252,7 @@ namespace CustomizableZombieHorde
             List<Pawn> pawns = SpawnPack(map, faction, count, behavior, edgeCell, canUseWater: true);
             if (pawns.Count == 0)
             {
-                return SpawnEmergencyPack(map, count, sendLetter, customLetterLabel, customLetterText, ignoreCap: ignoreCap, behavior: behavior);
+                return SpawnEmergencyPack(map, count, sendLetter, customLetterLabel, customLetterText, ignoreCap: ignoreCap, behavior: behavior, populationState: populationState);
             }
 
             if (sendLetter)
@@ -174,26 +266,26 @@ namespace CustomizableZombieHorde
             return true;
         }
 
-        public static bool SpawnHuddledPack(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool applyDifficulty = true)
+        public static bool SpawnHuddledPack(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool applyDifficulty = true, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
-            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Huddle", customLetterText: "A knot of " + prefix.ToLowerInvariant() + "s has gathered in a restless huddle just inside the map. They may stay put until something disturbs them, so watch exposed workers and animals.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.HuddledPack);
+            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Huddle", customLetterText: "A knot of " + prefix.ToLowerInvariant() + "s has gathered in a restless huddle just inside the map. They may stay put until something disturbs them, so watch exposed workers and animals.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.HuddledPack, populationState: populationState);
         }
 
-        public static bool SpawnEdgeWanderers(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool applyDifficulty = true)
+        public static bool SpawnEdgeWanderers(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool applyDifficulty = true, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
-            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Edge Wanderers", customLetterText: "A band of " + prefix.ToLowerInvariant() + "s is slowly drifting along the edge of the map, probing the colony perimeter for an opening.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.EdgeWander);
+            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Edge Wanderers", customLetterText: "A band of " + prefix.ToLowerInvariant() + "s is slowly drifting along the edge of the map, probing the colony perimeter for an opening.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.EdgeWander, populationState: populationState);
         }
 
-        public static bool SpawnHorde(Map map, int totalCount, int groups, string letterLabel, string letterText, bool ignoreCap = false, bool ignoreTimeOfDay = false)
+        public static bool SpawnHorde(Map map, int totalCount, int groups, string letterLabel, string letterText, bool ignoreCap = false, bool ignoreTimeOfDay = false, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             if (map == null)
             {
                 return false;
             }
 
-            int adjustedCount = FinalizeSpawnCount(map, totalCount, applyDifficulty: true, applyTimeOfDay: !ignoreTimeOfDay, ignoreCap: ignoreCap);
+            int adjustedCount = FinalizeSpawnCount(map, totalCount, applyDifficulty: true, applyTimeOfDay: !ignoreTimeOfDay, ignoreCap: ignoreCap, populationState: populationState);
             groups = groups < 1 ? 1 : groups;
             int basePerGroup = adjustedCount / groups;
             int remainder = adjustedCount % groups;
@@ -207,7 +299,7 @@ namespace CustomizableZombieHorde
                     thisGroup = 1;
                 }
 
-                if (SpawnWave(map, forcedCount: thisGroup, sendLetter: false, applyDifficulty: false, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.AssaultBase))
+                if (SpawnWave(map, forcedCount: thisGroup, sendLetter: false, applyDifficulty: false, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.AssaultBase, populationState: populationState))
                 {
                     anySpawned = true;
                 }
@@ -221,7 +313,7 @@ namespace CustomizableZombieHorde
             return anySpawned;
         }
 
-        public static bool SpawnGroundBurst(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool allowCenterFallback = true)
+        public static bool SpawnGroundBurst(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool allowCenterFallback = true, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             if (map == null)
             {
@@ -243,7 +335,7 @@ namespace CustomizableZombieHorde
             }
 
             int count = forcedCount ?? Rand.RangeInclusive(CustomizableZombieHordeMod.Settings.groundBurstMinGroupSize, CustomizableZombieHordeMod.Settings.groundBurstMaxGroupSize);
-            count = FinalizeSpawnCount(map, count, applyDifficulty: true, applyTimeOfDay: !ignoreTimeOfDay, ignoreCap: ignoreCap);
+            count = FinalizeSpawnCount(map, count, applyDifficulty: true, applyTimeOfDay: !ignoreTimeOfDay, ignoreCap: ignoreCap, populationState: populationState);
             if (count < 1)
             {
                 return false;
@@ -405,7 +497,7 @@ namespace CustomizableZombieHorde
             return true;
         }
 
-        public static bool SpawnVariantPackAround(Map map, IntVec3 center, ZombieVariant variant, int count, ZombieSpawnEventType behavior = ZombieSpawnEventType.HuddledPack, bool ignoreCap = true)
+        public static bool SpawnVariantPackAround(Map map, IntVec3 center, ZombieVariant variant, int count, ZombieSpawnEventType behavior = ZombieSpawnEventType.HuddledPack, bool ignoreCap = true, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             if (map == null || !center.IsValid)
             {
@@ -414,7 +506,7 @@ namespace CustomizableZombieHorde
 
             if (!ignoreCap)
             {
-                count = ClampSpawnCountToMapCap(map, count);
+                count = ClampSpawnCountToMapCap(map, count, populationState);
             }
 
             if (count < 1)
@@ -556,7 +648,7 @@ namespace CustomizableZombieHorde
             return CellFinder.RandomClosewalkCellNear(center, map, Mathf.Max(1, maxRadius));
         }
 
-        public static bool SpawnEmergencyPack(Map map, int forcedCount, bool sendLetter = false, string customLetterLabel = null, string customLetterText = null, bool ignoreCap = false, ZombieSpawnEventType behavior = ZombieSpawnEventType.AssaultBase)
+        public static bool SpawnEmergencyPack(Map map, int forcedCount, bool sendLetter = false, string customLetterLabel = null, string customLetterText = null, bool ignoreCap = false, ZombieSpawnEventType behavior = ZombieSpawnEventType.AssaultBase, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             if (map == null)
             {
@@ -565,7 +657,7 @@ namespace CustomizableZombieHorde
 
             if (!ignoreCap)
             {
-                forcedCount = ClampSpawnCountToMapCap(map, forcedCount);
+                forcedCount = ClampSpawnCountToMapCap(map, forcedCount, populationState);
             }
 
             if (forcedCount < 1)

@@ -375,6 +375,88 @@ namespace CustomizableZombieHorde
             return null;
         }
 
+        public static bool IsRottenFlesh(ThingDef def)
+        {
+            return def == ZombieDefOf.CZH_RottenFlesh || def?.defName == "CZH_RottenFlesh";
+        }
+
+        public static bool IsZombieJerky(ThingDef def)
+        {
+            return def == ZombieDefOf.CZH_ZombieJerky || def?.defName == "CZH_ZombieJerky";
+        }
+
+        public static bool IsHumanMeat(ThingDef def)
+        {
+            return def?.defName == HumanMeatDefName;
+        }
+
+        public static bool IsAnyRawMeat(ThingDef def)
+        {
+            if (def?.ingestible == null)
+            {
+                return false;
+            }
+
+            if ((def.ingestible.foodType & FoodTypeFlags.Meat) == 0)
+            {
+                return false;
+            }
+
+            FoodPreferability preferability = def.ingestible.preferability;
+            return preferability == FoodPreferability.RawBad || preferability == FoodPreferability.RawTasty;
+        }
+
+        public static bool IsPreferredLurkerFood(ThingDef def)
+        {
+            return IsZombieJerky(def) || IsRottenFlesh(def) || IsHumanMeat(def) || IsAnyRawMeat(def);
+        }
+
+        public static float GetLurkerFoodPreferenceOffset(ThingDef def)
+        {
+            if (def == null)
+            {
+                return 0f;
+            }
+
+            if (IsZombieJerky(def))
+            {
+                return 18f;
+            }
+
+            if (IsRottenFlesh(def))
+            {
+                return 14f;
+            }
+
+            if (IsHumanMeat(def))
+            {
+                return 12f;
+            }
+
+            if (IsAnyRawMeat(def))
+            {
+                return 7f;
+            }
+
+            return 0f;
+        }
+
+        public static bool ShouldBlockRottenFleshFor(Pawn pawn, ThingDef def)
+        {
+            if (!IsRottenFlesh(def) || pawn == null)
+            {
+                return false;
+            }
+
+            if (IsLurker(pawn) || pawn.RaceProps?.Animal == true || pawn.RaceProps?.Humanlike != true)
+            {
+                return false;
+            }
+
+            TraitDef cannibal = DefDatabase<TraitDef>.GetNamedSilentFail("Cannibal");
+            return cannibal == null || pawn.story?.traits?.HasTrait(cannibal) != true;
+        }
+
         public static bool IsValidTameFood(Thing thing)
         {
             if (thing == null || thing.stackCount < 1)
@@ -382,8 +464,7 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            string defName = thing.def?.defName ?? string.Empty;
-            return thing.def == ZombieDefOf.CZH_RottenFlesh || defName == HumanMeatDefName;
+            return IsRottenFlesh(thing.def) || IsHumanMeat(thing.def);
         }
 
         public static float GetTameChance(Pawn tamer, Thing food)

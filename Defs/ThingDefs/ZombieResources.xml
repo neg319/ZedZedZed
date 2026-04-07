@@ -20,7 +20,8 @@
   <ThingDef ParentName="CZH_ResourceBase">
     <defName>CZH_RottenFlesh</defName>
     <label>rotten flesh</label>
-    <description>Foul strips of zombie meat. It is not fit to eat, but a skilled crafter can still render it into rough leather.</description>
+    <description>Foul strips of zombie meat. Animals can stomach it, cannibals can force it down, and lurkers crave it. It never spoils.</description>
+    <useHitPoints>false</useHitPoints>
     <graphicData>
       <texPath>Things/Item/Resource/RottenFlesh</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -34,13 +35,19 @@
       <MarketValue>0.55</MarketValue>
       <Mass>0.02</Mass>
       <Flammability>0.35</Flammability>
+      <Nutrition>0.05</Nutrition>
     </statBases>
+    <ingestible>
+      <foodType>Meat</foodType>
+      <preferability>RawBad</preferability>
+    </ingestible>
   </ThingDef>
 
-  <ThingDef ParentName="CZH_ResourceBase">
+  <ThingDef ParentName="LeatherBase">
     <defName>CZH_RottenLeather</defName>
     <label>rotten leather</label>
-    <description>Rendered hide salvaged from zombie remains. It is crude and foul smelling, but still useful as a crafting material.</description>
+    <description>Rendered hide salvaged from zombie remains. It is crude and foul smelling, but still useful as a crafting material for rough clothing and other leathery goods.</description>
+    <stuffAdjective>rotten leather</stuffAdjective>
     <graphicData>
       <texPath>Things/Item/Resource/RottenLeather</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -69,6 +76,69 @@
         <MaxHitPoints>0.75</MaxHitPoints>
         <MarketValue>0.85</MarketValue>
         <Beauty>-1.0</Beauty>
+      </statFactors>
+    </stuffProps>
+  </ThingDef>
+
+  <ThingDef ParentName="CZH_ResourceBase">
+    <defName>CZH_ZombieJerky</defName>
+    <label>zombie jerky</label>
+    <description>Cooked strips of preserved zombie flesh. It is edible for humans, loved by lurkers, and lasts indefinitely, but it is not very nutritious.</description>
+    <useHitPoints>false</useHitPoints>
+    <graphicData>
+      <texPath>Things/Item/Resource/ZombieJerky</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+    </graphicData>
+    <tradeability>Sellable</tradeability>
+    <stackLimit>75</stackLimit>
+    <thingCategories>
+      <li>Items</li>
+    </thingCategories>
+    <statBases>
+      <MarketValue>1.25</MarketValue>
+      <Mass>0.02</Mass>
+      <Flammability>0.20</Flammability>
+      <Nutrition>0.04</Nutrition>
+    </statBases>
+    <ingestible>
+      <foodType>Meat, Processed</foodType>
+      <preferability>MealAwful</preferability>
+    </ingestible>
+  </ThingDef>
+
+
+  <ThingDef ParentName="CZH_ResourceBase">
+    <defName>CZH_GoldTooth</defName>
+    <label>gold tooth</label>
+    <description>A salvaged gold tooth pried from zombie remains. It has the same practical value and metallic utility as gold.</description>
+    <graphicData>
+      <texPath>Things/Item/Resource/GoldTooth</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+    </graphicData>
+    <tradeability>Sellable</tradeability>
+    <stackLimit>75</stackLimit>
+    <thingCategories>
+      <li>ResourcesRaw</li>
+      <li>Items</li>
+    </thingCategories>
+    <statBases>
+      <MarketValue>10</MarketValue>
+      <Mass>0.03</Mass>
+      <Beauty>4</Beauty>
+      <Flammability>0.00</Flammability>
+    </statBases>
+    <stuffProps>
+      <categories>
+        <li>Metallic</li>
+      </categories>
+      <commonality>0.00</commonality>
+      <color>(1.0,0.84,0.22)</color>
+      <statFactors>
+        <WorkToMake>1.00</WorkToMake>
+        <MarketValue>1.00</MarketValue>
+        <MaxHitPoints>1.00</MaxHitPoints>
+        <Mass>1.00</Mass>
+        <Beauty>1.00</Beauty>
       </statFactors>
     </stuffProps>
   </ThingDef>

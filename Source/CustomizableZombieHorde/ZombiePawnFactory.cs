@@ -45,9 +45,19 @@ namespace CustomizableZombieHorde
 
         public static void FinalizeZombie(Pawn pawn, bool initialSpawn, Faction desiredFaction = null)
         {
+            ConvertExistingPawnToZombie(pawn, pawn?.kindDef, desiredFaction, preserveName: false, preserveSkills: false, preserveRelations: false, initialSpawn: initialSpawn);
+        }
+
+        public static void ConvertExistingPawnToZombie(Pawn pawn, PawnKindDef newKind, Faction desiredFaction, bool preserveName, bool preserveSkills, bool preserveRelations, bool initialSpawn)
+        {
             if (pawn == null)
             {
                 return;
+            }
+
+            if (newKind != null)
+            {
+                TrySetKindDef(pawn, newKind);
             }
 
             if (!pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieRot))
@@ -59,7 +69,7 @@ namespace CustomizableZombieHorde
             {
                 ZombieVariant variant = ZombieUtility.GetVariant(pawn);
                 ZombieVariant visualVariant = ZombieLurkerUtility.GetEffectiveVisualVariant(pawn, variant);
-                ApplyZombieBackstories(pawn, variant);
+                ApplyZombieBackstories(pawn, variant, preserveSkills);
                 pawn.story.skinColorOverride = ZombieVisualUtility.GetSkinColor(pawn, variant);
                 TrySetHairColor(pawn, ZombieVisualUtility.GetHairColor(Color.gray, visualVariant));
                 pawn.story.bodyType = ZombieVisualUtility.GetBodyType(variant, pawn, pawn.story.bodyType);
@@ -83,15 +93,22 @@ namespace CustomizableZombieHorde
                 ZombieLurkerUtility.ClearFaction(pawn);
             }
 
-            try
+            if (!preserveRelations)
             {
-                pawn.relations?.ClearAllRelations();
-            }
-            catch
-            {
+                try
+                {
+                    pawn.relations?.ClearAllRelations();
+                }
+                catch
+                {
+                }
             }
 
-            ZombieUtility.SetZombieDisplayName(pawn);
+            if (!preserveName)
+            {
+                ZombieUtility.SetZombieDisplayName(pawn);
+            }
+
             ZombieUtility.StripAllUsableItems(pawn);
             ZombieUtility.TrimZombieApparel(pawn);
             ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: initialSpawn);
@@ -112,9 +129,59 @@ namespace CustomizableZombieHorde
                 pawn.needs.mood.CurLevel = 0.05f;
             }
 
+            ZombieLurkerUtility.EnsureEmotionlessLurker(pawn);
             ZombieUtility.MarkPawnGraphicsDirty(pawn);
         }
 
+
+        public static void TrySetPawnName(Pawn pawn, Name name)
+        {
+            if (pawn == null || name == null)
+            {
+                return;
+            }
+
+            try
+            {
+                Traverse.Create(pawn).Property("Name").SetValue(name);
+                return;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                Traverse.Create(pawn).Field("nameInt").SetValue(name);
+            }
+            catch
+            {
+            }
+        }
+
+        private static void TrySetKindDef(Pawn pawn, PawnKindDef kindDef)
+        {
+            if (pawn == null || kindDef == null)
+            {
+                return;
+            }
+
+            try
+            {
+                Traverse.Create(pawn).Field("kindDef").SetValue(kindDef);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                Traverse.Create(pawn).Field("kindDefInt").SetValue(kindDef);
+            }
+            catch
+            {
+            }
+        }
 
         private static void ApplyZombieXenotype(Pawn pawn)
         {
@@ -203,7 +270,7 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private static void ApplyZombieBackstories(Pawn pawn, ZombieVariant variant)
+        private static void ApplyZombieBackstories(Pawn pawn, ZombieVariant variant, bool preserveSkills)
         {
             if (pawn?.story == null)
             {
@@ -216,7 +283,10 @@ namespace CustomizableZombieHorde
             TrySetBackstory(pawn.story, "Childhood", childhood);
             TrySetBackstory(pawn.story, "Adulthood", adulthood);
             ForceBackstoryFields(pawn.story, childhood, adulthood);
-            ZombieBackstoryUtility.ApplySkillProfile(pawn, variant);
+            if (!preserveSkills)
+            {
+                ZombieBackstoryUtility.ApplySkillProfile(pawn, variant);
+            }
         }
 
         private static void TrySetBackstory(Pawn_StoryTracker story, string propertyName, BackstoryDef backstory)

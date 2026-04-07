@@ -24,9 +24,9 @@ namespace CustomizableZombieHorde
         private Vector2 debugScrollPosition;
 
         private float overviewViewHeight = 1100f;
-        private float eventsViewHeight = 1500f;
+        private float eventsViewHeight = 2200f;
         private float variantsViewHeight = 1500f;
-        private float advancedViewHeight = 1200f;
+        private float advancedViewHeight = 1350f;
         private float debugViewHeight = 1400f;
 
         public string zombiePrefix = "Zombie";
@@ -34,6 +34,7 @@ namespace CustomizableZombieHorde
         public int maxGroupSize = 7;
         public float fastZombieChance = 0.02f;
         public float resurrectionDelayHours = 5f;
+        public int infectionDaysToTurn = 7;
 
         public bool enableEdgeTrickle = true;
         public float trickleIntervalHours = 2.75f;
@@ -56,6 +57,16 @@ namespace CustomizableZombieHorde
         public float bloodMoonChance = 0.10f;
         public int fullMoonBaseCount = 12;
         public int bloodMoonBaseCount = 24;
+
+        public bool useColonistScaledPopulation = true;
+        public int dayColonistMultiplierMin = 2;
+        public int dayColonistMultiplierMax = 4;
+        public int nightColonistMultiplierMin = 3;
+        public int nightColonistMultiplierMax = 6;
+        public int fullMoonColonistMultiplierMin = 5;
+        public int fullMoonColonistMultiplierMax = 8;
+        public int bloodMoonColonistMultiplierMin = 7;
+        public int bloodMoonColonistMultiplierMax = 10;
 
         public bool showZombieCounter = true;
         public bool enableDebugControls = false;
@@ -84,6 +95,7 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref maxGroupSize, "maxGroupSize", 7);
             Scribe_Values.Look(ref fastZombieChance, "fastZombieChance", 0.02f);
             Scribe_Values.Look(ref resurrectionDelayHours, "resurrectionDelayHours", 5f);
+            Scribe_Values.Look(ref infectionDaysToTurn, "infectionDaysToTurn", 7);
 
             Scribe_Values.Look(ref enableEdgeTrickle, "enableEdgeTrickle", true);
             Scribe_Values.Look(ref trickleIntervalHours, "trickleIntervalHours", 2.75f);
@@ -106,6 +118,16 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref bloodMoonChance, "bloodMoonChance", 0.10f);
             Scribe_Values.Look(ref fullMoonBaseCount, "fullMoonBaseCount", 12);
             Scribe_Values.Look(ref bloodMoonBaseCount, "bloodMoonBaseCount", 24);
+
+            Scribe_Values.Look(ref useColonistScaledPopulation, "useColonistScaledPopulation", true);
+            Scribe_Values.Look(ref dayColonistMultiplierMin, "dayColonistMultiplierMin", 2);
+            Scribe_Values.Look(ref dayColonistMultiplierMax, "dayColonistMultiplierMax", 4);
+            Scribe_Values.Look(ref nightColonistMultiplierMin, "nightColonistMultiplierMin", 3);
+            Scribe_Values.Look(ref nightColonistMultiplierMax, "nightColonistMultiplierMax", 6);
+            Scribe_Values.Look(ref fullMoonColonistMultiplierMin, "fullMoonColonistMultiplierMin", 5);
+            Scribe_Values.Look(ref fullMoonColonistMultiplierMax, "fullMoonColonistMultiplierMax", 8);
+            Scribe_Values.Look(ref bloodMoonColonistMultiplierMin, "bloodMoonColonistMultiplierMin", 7);
+            Scribe_Values.Look(ref bloodMoonColonistMultiplierMax, "bloodMoonColonistMultiplierMax", 10);
 
             Scribe_Values.Look(ref showZombieCounter, "showZombieCounter", true);
             Scribe_Values.Look(ref enableDebugControls, "enableDebugControls", false);
@@ -184,6 +206,7 @@ namespace CustomizableZombieHorde
             maxGroupSize = 7;
             fastZombieChance = 0.02f;
             resurrectionDelayHours = 5f;
+            infectionDaysToTurn = 7;
 
             enableEdgeTrickle = true;
             trickleIntervalHours = 2.75f;
@@ -206,6 +229,16 @@ namespace CustomizableZombieHorde
             bloodMoonChance = 0.10f;
             fullMoonBaseCount = 12;
             bloodMoonBaseCount = 24;
+
+            useColonistScaledPopulation = true;
+            dayColonistMultiplierMin = 2;
+            dayColonistMultiplierMax = 4;
+            nightColonistMultiplierMin = 3;
+            nightColonistMultiplierMax = 6;
+            fullMoonColonistMultiplierMin = 5;
+            fullMoonColonistMultiplierMax = 8;
+            bloodMoonColonistMultiplierMin = 7;
+            bloodMoonColonistMultiplierMax = 10;
 
             showZombieCounter = true;
             enableDebugControls = false;
@@ -297,9 +330,19 @@ namespace CustomizableZombieHorde
                 bloodMoonBaseCount = fullMoonBaseCount;
             }
 
+            dayColonistMultiplierMin = Mathf.Clamp(dayColonistMultiplierMin, 1, 20);
+            dayColonistMultiplierMax = Mathf.Clamp(dayColonistMultiplierMax, dayColonistMultiplierMin, 20);
+            nightColonistMultiplierMin = Mathf.Clamp(nightColonistMultiplierMin, 1, 24);
+            nightColonistMultiplierMax = Mathf.Clamp(nightColonistMultiplierMax, nightColonistMultiplierMin, 24);
+            fullMoonColonistMultiplierMin = Mathf.Clamp(fullMoonColonistMultiplierMin, 1, 30);
+            fullMoonColonistMultiplierMax = Mathf.Clamp(fullMoonColonistMultiplierMax, fullMoonColonistMultiplierMin, 30);
+            bloodMoonColonistMultiplierMin = Mathf.Clamp(bloodMoonColonistMultiplierMin, 1, 40);
+            bloodMoonColonistMultiplierMax = Mathf.Clamp(bloodMoonColonistMultiplierMax, bloodMoonColonistMultiplierMin, 40);
+
             bloodMoonChance = Mathf.Clamp(bloodMoonChance, 0.01f, 0.50f);
             fastZombieChance = Mathf.Clamp(fastZombieChance, 0f, 0.20f);
             resurrectionDelayHours = Mathf.Clamp(resurrectionDelayHours, 0.5f, 24f);
+            infectionDaysToTurn = Mathf.Clamp(infectionDaysToTurn, 1, 30);
 
             groundBurstMinDays = Mathf.Clamp(groundBurstMinDays, 1f, 20f);
             groundBurstMaxDays = Mathf.Clamp(groundBurstMaxDays, groundBurstMinDays, 30f);
@@ -406,10 +449,24 @@ namespace CustomizableZombieHorde
             DrawIntStepperCard(listing, "Trickle minimum group size", "Smallest group the edge trickle can send.", ref trickleMinGroupSize, 1, 12, 1);
             DrawIntStepperCard(listing, "Trickle maximum group size", "Largest group the edge trickle can send.", ref trickleMaxGroupSize, trickleMinGroupSize, 24, 1);
 
+            DrawSectionLabel(listing, "Colony scaled population", "Scale overall undead pressure to your current number of free colonists instead of relying on fixed caps.");
+            DrawToggleCard(listing, "Scale zombie population to colonists", "When enabled, the mod uses colonist based multipliers for daytime pressure, nighttime pressure, full moons, and blood moons.", ref useColonistScaledPopulation);
+            DrawIntStepperCard(listing, "Daytime minimum multiplier", "Minimum daytime map cap as a multiple of your current free colonists.", ref dayColonistMultiplierMin, 1, 20, 1);
+            DrawIntStepperCard(listing, "Daytime maximum multiplier", "Maximum daytime map cap as a multiple of your current free colonists.", ref dayColonistMultiplierMax, dayColonistMultiplierMin, 20, 1);
+            DrawIntStepperCard(listing, "Night minimum multiplier", "Minimum nighttime map cap as a multiple of your current free colonists.", ref nightColonistMultiplierMin, 1, 24, 1);
+            DrawIntStepperCard(listing, "Night maximum multiplier", "Maximum nighttime map cap as a multiple of your current free colonists.", ref nightColonistMultiplierMax, nightColonistMultiplierMin, 24, 1);
+            DrawIntStepperCard(listing, "Full moon minimum multiplier", "Minimum full moon target as a multiple of your current free colonists.", ref fullMoonColonistMultiplierMin, 1, 30, 1);
+            DrawIntStepperCard(listing, "Full moon maximum multiplier", "Maximum full moon target as a multiple of your current free colonists.", ref fullMoonColonistMultiplierMax, fullMoonColonistMultiplierMin, 30, 1);
+            DrawIntStepperCard(listing, "Blood moon minimum multiplier", "Minimum blood moon target as a multiple of your current free colonists.", ref bloodMoonColonistMultiplierMin, 1, 40, 1);
+            DrawIntStepperCard(listing, "Blood moon maximum multiplier", "Maximum blood moon target as a multiple of your current free colonists.", ref bloodMoonColonistMultiplierMax, bloodMoonColonistMultiplierMin, 40, 1);
+
             DrawSectionLabel(listing, "Moon events", "Large attacks tied to the lunar cycle. Blood moons are rarer but much more dangerous.");
             DrawToggleCard(listing, "Enable full moon and blood moon events", "Roughly every 30 days, a larger horde attacks. Rare blood moons send a much larger horde.", ref enableMoonEvents);
-            DrawIntStepperCard(listing, "Full moon base horde size", "Base group count before other scaling is applied.", ref fullMoonBaseCount, 6, 80, 2);
-            DrawIntStepperCard(listing, "Blood moon base horde size", "Base group count before other scaling is applied.", ref bloodMoonBaseCount, fullMoonBaseCount, 140, 2);
+            if (!useColonistScaledPopulation)
+            {
+                DrawIntStepperCard(listing, "Full moon base horde size", "Base group count before other scaling is applied when colonist scaling is off.", ref fullMoonBaseCount, 6, 80, 2);
+                DrawIntStepperCard(listing, "Blood moon base horde size", "Base group count before other scaling is applied when colonist scaling is off.", ref bloodMoonBaseCount, fullMoonBaseCount, 140, 2);
+            }
             DrawPercentStepperCard(listing, "Blood moon chance", "Chance that a full moon escalates into a blood moon.", ref bloodMoonChance, 0.01f, 0.50f, 0.01f);
 
             DrawSectionLabel(listing, "Ground bursts", "Infestation-style eruptions that can surface inside your base.");
@@ -425,7 +482,7 @@ namespace CustomizableZombieHorde
             DrawFloatStepperCard(listing, "Maximum days between grave events", "Longest possible gap between grave events.", ref graveEventMaxDays, graveEventMinDays, 40f, 0.5f, "days");
 
             listing.End();
-            eventsViewHeight = Mathf.Max(1500f, listing.CurHeight + 24f);
+            eventsViewHeight = Mathf.Max(2200f, listing.CurHeight + 24f);
             Widgets.EndScrollView();
         }
 
@@ -486,6 +543,9 @@ namespace CustomizableZombieHorde
             DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a newly created corpse to roll the fast strain.", ref fastZombieChance, 0f, 0.20f, 0.01f);
             DrawFloatStepperCard(listing, "Reanimation delay", "How long an intact corpse stays down before it can rise again.", ref resurrectionDelayHours, 0.5f, 24f, 0.5f, "hours");
 
+            DrawSectionLabel(listing, "Zombie infection", "Controls how long infected humanlikes have before the infection reaches full conversion.");
+            DrawIntStepperCard(listing, "Days until infection reaches 100%", "How many in game days it takes a fresh zombie infection to go from its starting severity to a full turn if nobody cures it. The infection worsens in daily steps.", ref infectionDaysToTurn, 1, 30, 1);
+
             DrawSectionLabel(listing, "Manual controls and safety", "These values matter most when you are forcing events, testing balance, or comparing settings.");
             DrawIntStepperCard(listing, "Manual horde minimum size", "Used by manual horde and force-spawn actions.", ref minGroupSize, 1, 60, 1);
             DrawIntStepperCard(listing, "Manual horde maximum size", "Used by manual horde and force-spawn actions.", ref maxGroupSize, minGroupSize, 120, 1);
@@ -498,7 +558,7 @@ namespace CustomizableZombieHorde
             }
 
             listing.End();
-            advancedViewHeight = Mathf.Max(1200f, listing.CurHeight + 24f);
+            advancedViewHeight = Mathf.Max(1350f, listing.CurHeight + 24f);
             Widgets.EndScrollView();
         }
 
@@ -871,6 +931,7 @@ namespace CustomizableZombieHorde
             listing.CheckboxLabeled("Show zombie counter", ref showZombieCounter, "Show the current undead count on player home maps.");
             listing.CheckboxLabeled("Enable edge trickle", ref enableEdgeTrickle, "Allow small groups to keep wandering in from the map edge.");
             listing.CheckboxLabeled("Enable moon events", ref enableMoonEvents, "Enable full moon and blood moon attacks.");
+            listing.CheckboxLabeled("Scale zombie population to colonists", ref useColonistScaledPopulation, "Use colonist based population multipliers for day, night, full moon, and blood moon pressure.");
             listing.CheckboxLabeled("Enable ground bursts", ref enableGroundBursts, "Allow buried groups to erupt from the ground.");
             listing.CheckboxLabeled("Enable grave events", ref enableGraveEvents, "Allow special grave structures to spawn as incidents.");
             listing.CheckboxLabeled("Enable debug controls", ref enableDebugControls, "Show manual debug spawn tools in this settings window.");
@@ -904,6 +965,8 @@ namespace CustomizableZombieHorde
             fastZombieChance = listing.Slider(fastZombieChance, 0f, 0.20f);
             listing.Label($"Reanimation delay (hours): {resurrectionDelayHours:0.0}");
             resurrectionDelayHours = listing.Slider(resurrectionDelayHours, 0.5f, 24f);
+            listing.Label($"Days until infection reaches 100%: {infectionDaysToTurn}");
+            infectionDaysToTurn = (int)listing.Slider(infectionDaysToTurn, 1, 30);
 
             listing.GapLine();
             if (listing.ButtonText("Reset to recommended defaults"))

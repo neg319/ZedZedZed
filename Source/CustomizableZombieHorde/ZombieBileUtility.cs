@@ -114,7 +114,7 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            patient.health.RemoveHediff(sickness);
+            ZombieInfectionUtility.RemoveZombieInfection(patient, Current.Game?.GetComponent<ZombieGameComponent>());
 
             if (doctor?.skills != null)
             {

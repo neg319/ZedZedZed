@@ -68,6 +68,7 @@ namespace CustomizableZombieHorde
                 && !pawn.Dead
                 && !pawn.Destroyed
                 && pawn.health != null
+                && pawn.RaceProps?.Humanlike == true
                 && !ZombieUtility.IsZombie(pawn)
                 && !HasSickImmunity(pawn)
                 && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieSickness);
@@ -90,6 +91,7 @@ namespace CustomizableZombieHorde
             try
             {
                 Hediff hediff = HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieSickness, pawn);
+                hediff.Severity = Mathf.Max(hediff.Severity, 0.20f);
                 pawn.health.AddHediff(hediff);
                 ZombieFeedbackUtility.SendZombieSicknessMessage(pawn);
                 return true;

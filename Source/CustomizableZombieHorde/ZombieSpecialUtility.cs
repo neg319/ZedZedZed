@@ -38,7 +38,29 @@ namespace CustomizableZombieHorde
             int bileCount = ZombieBileUtility.GetButcheredBileCount(pawn);
             TryAddStackedThing(result, ZombieDefOf.CZH_ZombieBile, bileCount, "zombie bile");
 
+            int goldToothCount = GetGoldToothCount(pawn);
+            TryAddStackedThing(result, ZombieDefOf.CZH_GoldTooth, goldToothCount, "gold tooth");
+
             return result;
+        }
+
+        public static int GetGoldToothCount(Pawn pawn)
+        {
+            if (pawn == null || !ZombieRulesUtility.IsZombie(pawn))
+            {
+                return 0;
+            }
+
+            int seed = Gen.HashCombineInt(pawn.thingIDNumber, 19031);
+            Rand.PushState(seed);
+            try
+            {
+                return Rand.Chance(0.03f) ? 1 : 0;
+            }
+            finally
+            {
+                Rand.PopState();
+            }
         }
 
 
@@ -536,14 +558,20 @@ namespace CustomizableZombieHorde
             }
 
             ThingDef rottenFlesh = ZombieDefOf.CZH_RottenFlesh;
-            if (rottenFlesh == null)
+            if (rottenFlesh != null)
             {
-                return;
+                Thing flesh = ThingMaker.MakeThing(rottenFlesh);
+                flesh.stackCount = Rand.RangeInclusive(1, 4);
+                GenPlace.TryPlaceThing(flesh, pos, map, ThingPlaceMode.Near);
             }
 
-            Thing flesh = ThingMaker.MakeThing(rottenFlesh);
-            flesh.stackCount = Rand.RangeInclusive(1, 10);
-            GenPlace.TryPlaceThing(flesh, pos, map, ThingPlaceMode.Near);
+            ThingDef zombieBile = ZombieDefOf.CZH_ZombieBile;
+            if (zombieBile != null)
+            {
+                Thing bile = ThingMaker.MakeThing(zombieBile);
+                bile.stackCount = Rand.RangeInclusive(1, 2);
+                GenPlace.TryPlaceThing(bile, pos, map, ThingPlaceMode.Near);
+            }
         }
 
         public static void DoAcidBurst(Pawn pawn)
