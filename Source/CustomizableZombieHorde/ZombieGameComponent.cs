@@ -936,6 +936,7 @@ namespace CustomizableZombieHorde
 
                     if (ZombieLurkerUtility.IsColonyLurker(pawn))
                     {
+                        ZombieLurkerUtility.EnsureColonyLurkerState(pawn);
                         ZombieUtility.RefreshDrownedState(pawn);
                         continue;
                     }

@@ -206,8 +206,8 @@
       <max>0</max>
     </initialResistanceRange>
     <initialWillRange>
-      <min>0</min>
-      <max>0</max>
+      <min>3</min>
+      <max>9</max>
     </initialWillRange>
   </PawnKindDef>
 </Defs>

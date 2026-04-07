@@ -79,14 +79,7 @@ namespace CustomizableZombieHorde
             EnsureLurkerZombiePassiveTrait(lurker);
             EnsureEmotionlessLurker(lurker);
             TrySetFaction(lurker, Faction.OfPlayer);
-
-            try
-            {
-                lurker.jobs?.StopAll();
-            }
-            catch
-            {
-            }
+            EnsureColonyLurkerState(lurker, emergencyStabilize: true, stopCurrentJobs: true);
 
             ZombieUtility.MarkPawnGraphicsDirty(lurker);
             ZombieFeedbackUtility.SendLurkerTamedMessage(lurker, tamer);
@@ -159,19 +152,160 @@ namespace CustomizableZombieHorde
             pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);
         }
 
+        public static void EnsureColonyLurkerState(Pawn pawn, bool emergencyStabilize = false, bool stopCurrentJobs = false)
+        {
+            if (!IsColonyLurker(pawn) || pawn.Dead || pawn.Destroyed)
+            {
+                return;
+            }
+
+            EnsureLurkerZombiePassiveTrait(pawn);
+            EnsureEmotionlessLurker(pawn);
+            EndLurkerMentalState(pawn);
+
+            if (stopCurrentJobs || HasSuppressedHostileTarget(pawn))
+            {
+                try
+                {
+                    pawn.jobs?.StopAll();
+                }
+                catch
+                {
+                }
+            }
+
+            if (emergencyStabilize || NeedsEmergencyStabilization(pawn))
+            {
+                StabilizeColonyLurker(pawn);
+            }
+        }
+
+        private static bool HasSuppressedHostileTarget(Pawn pawn)
+        {
+            if (pawn?.CurJob == null)
+            {
+                return false;
+            }
+
+            Pawn primaryTarget = pawn.CurJob.targetA.Thing as Pawn;
+            Pawn secondaryTarget = pawn.CurJob.targetB.Thing as Pawn;
+            return ShouldSuppressLurkerHostility(pawn, primaryTarget) || ShouldSuppressLurkerHostility(pawn, secondaryTarget);
+        }
+
+        private static bool NeedsEmergencyStabilization(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet == null)
+            {
+                return false;
+            }
+
+            return pawn.Downed || pawn.health.hediffSet.HasHediff(HediffDefOf.BloodLoss);
+        }
+
+        private static void StabilizeColonyLurker(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet == null)
+            {
+                return;
+            }
+
+            var hediffs = pawn.health.hediffSet.hediffs.ToList();
+            for (int i = hediffs.Count - 1; i >= 0; i--)
+            {
+                Hediff hediff = hediffs[i];
+                if (hediff?.def == HediffDefOf.BloodLoss)
+                {
+                    try
+                    {
+                        pawn.health.RemoveHediff(hediff);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            var injuries = pawn.health.hediffSet.hediffs
+                .OfType<Hediff_Injury>()
+                .Where(injury => injury != null && !injury.IsPermanent() && injury.Part != null && !pawn.health.hediffSet.PartIsMissing(injury.Part))
+                .OrderByDescending(injury => injury.Severity)
+                .Take(6)
+                .ToList();
+
+            for (int i = 0; i < injuries.Count; i++)
+            {
+                Hediff_Injury injury = injuries[i];
+                try
+                {
+                    injury.Severity *= 0.65f;
+                    if (injury.Severity < 0.20f)
+                    {
+                        pawn.health.RemoveHediff(injury);
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            if (pawn.Downed)
+            {
+                try
+                {
+                    Traverse.Create(pawn.health).Field("forceIncap").SetValue(false);
+                }
+                catch
+                {
+                }
+
+                try
+                {
+                    Traverse.Create(pawn.health).Field("forceDowned").SetValue(false);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static void EndLurkerMentalState(Pawn pawn)
+        {
+            object handler = pawn?.mindState?.mentalStateHandler;
+            if (handler == null)
+            {
+                return;
+            }
+
+            try
+            {
+                if ((bool)(AccessTools.Property(handler.GetType(), "InMentalState")?.GetValue(handler, null) ?? false))
+                {
+                    AccessTools.Method(handler.GetType(), "Reset")?.Invoke(handler, null);
+                }
+            }
+            catch
+            {
+            }
+        }
+
         public static bool ShouldSuppressLurkerHostility(Pawn a, Pawn b)
         {
-            if (IsPassiveLurker(a) && (b == null || ZombieUtility.IsZombie(b) || b.Faction == Faction.OfPlayer))
+            if (IsFriendlyLurker(a) && (b == null || ZombieUtility.IsZombie(b) || b.Faction == Faction.OfPlayer))
             {
                 return true;
             }
 
-            if (IsPassiveLurker(b) && (a == null || ZombieUtility.IsZombie(a) || a.Faction == Faction.OfPlayer))
+            if (IsFriendlyLurker(b) && (a == null || ZombieUtility.IsZombie(a) || a.Faction == Faction.OfPlayer))
             {
                 return true;
             }
 
             return false;
+        }
+
+        private static bool IsFriendlyLurker(Pawn pawn)
+        {
+            return IsPassiveLurker(pawn) || IsColonyLurker(pawn);
         }
 
 

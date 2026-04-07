@@ -224,6 +224,24 @@ namespace CustomizableZombieHorde
         }
     }
 
+    [HarmonyPatch(typeof(Pawn_ApparelTracker), "PsychologicallyNude", MethodType.Getter)]
+    public static class Patch_Pawn_ApparelTracker_PsychologicallyNude
+    {
+        public static void Postfix(Pawn_ApparelTracker __instance, ref bool __result)
+        {
+            if (!__result)
+            {
+                return;
+            }
+
+            Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            if (ZombieLurkerUtility.IsLurker(pawn))
+            {
+                __result = false;
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.Kill))]
     public static class Patch_Pawn_Kill
     {
