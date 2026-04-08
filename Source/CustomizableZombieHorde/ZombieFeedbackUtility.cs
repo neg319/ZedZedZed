@@ -169,8 +169,8 @@ namespace CustomizableZombieHorde
                 else
                 {
                     infectionLine = ZombieInfectionUtility.IsTerminal(innerPawn)
-                        ? "Zombie infection is terminal at " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete and can no longer be cured. After death it keeps progressing upward from its current percentage until it reaches Reanimated at 100%. "
-                        : "Zombie infection is " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete and will keep climbing from this exact percentage after death until it reaches Reanimated at 100%. ";
+                        ? "Zombie infection is terminal at " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete and can no longer be cured. After death the corpse keeps progressing upward from its current percentage until it reaches Reanimated at 100%. "
+                        : "Zombie infection is " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete and its corpse will keep climbing from this exact percentage after death until it reaches Reanimated at 100%. ";
                 }
 
                 ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();

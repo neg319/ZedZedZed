@@ -341,6 +341,31 @@ namespace CustomizableZombieHorde
             component?.ClearInfectionShouldBecomeLurker(pawn);
         }
 
+        public static Hediff EnsureZombieInfection(Pawn pawn, float severity)
+        {
+            if (pawn?.health == null)
+            {
+                return null;
+            }
+
+            Hediff infection = GetZombieInfection(pawn);
+            if (infection == null)
+            {
+                try
+                {
+                    infection = HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieSickness, pawn);
+                    pawn.health.AddHediff(infection);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            infection.Severity = Mathf.Clamp(severity, InitialInfectionSeverity, 1f);
+            return infection;
+        }
+
         public static float GetInfectionCompletion(Hediff infection)
         {
             if (infection == null)

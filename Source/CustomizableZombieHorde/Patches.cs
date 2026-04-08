@@ -419,13 +419,21 @@ namespace CustomizableZombieHorde
 
         public static void Postfix(Pawn __instance)
         {
+            if (__instance == null || !__instance.Dead)
+            {
+                return;
+            }
+
+            ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
+            if (ZombieInfectionUtility.HasZombieInfection(__instance))
+            {
+                component?.RegisterDeadPawnForPostMortemInfection(__instance);
+            }
+
             if (ZombieUtility.IsZombie(__instance))
             {
                 ZombieSpecialUtility.HandleZombieDeathEffects(__instance);
-                if (__instance.Dead)
-                {
-                    Current.Game?.GetComponent<ZombieGameComponent>()?.RegisterDeadPawnForRecurringReanimation(__instance);
-                }
+                component?.RegisterDeadPawnForRecurringReanimation(__instance);
             }
         }
     }
