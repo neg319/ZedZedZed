@@ -21,7 +21,6 @@
     <defName>CZH_RottenFlesh</defName>
     <label>rotten flesh</label>
     <description>Foul strips of zombie meat. Animals can stomach it, cannibals can force it down, and lurkers crave it. It never spoils.</description>
-    <useHitPoints>false</useHitPoints>
     <graphicData>
       <texPath>Things/Item/Resource/RottenFlesh</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -34,12 +33,14 @@
     <statBases>
       <MarketValue>0.55</MarketValue>
       <Mass>0.02</Mass>
+      <MaxHitPoints>40</MaxHitPoints>
       <Flammability>0.35</Flammability>
       <Nutrition>0.05</Nutrition>
     </statBases>
     <ingestible>
       <foodType>Meat</foodType>
       <preferability>RawBad</preferability>
+      <socialPropernessMatters>true</socialPropernessMatters>
     </ingestible>
   </ThingDef>
 
@@ -47,17 +48,12 @@
     <defName>CZH_RottenLeather</defName>
     <label>rotten leather</label>
     <description>Rendered hide salvaged from zombie remains. It is crude and foul smelling, but still useful as a crafting material for rough clothing and other leathery goods.</description>
-    <stuffAdjective>rotten leather</stuffAdjective>
     <graphicData>
       <texPath>Things/Item/Resource/RottenLeather</texPath>
       <graphicClass>Graphic_Single</graphicClass>
     </graphicData>
     <tradeability>Sellable</tradeability>
     <stackLimit>75</stackLimit>
-    <thingCategories>
-      <li>Leathers</li>
-      <li>Items</li>
-    </thingCategories>
     <statBases>
       <MarketValue>1.05</MarketValue>
       <Mass>0.03</Mass>
@@ -65,6 +61,7 @@
       <Beauty>-2</Beauty>
     </statBases>
     <stuffProps>
+      <stuffAdjective>rotten leather</stuffAdjective>
       <categories>
         <li>Leathery</li>
       </categories>
@@ -84,7 +81,6 @@
     <defName>CZH_ZombieJerky</defName>
     <label>zombie jerky</label>
     <description>Cooked strips of preserved zombie flesh. It is edible for humans, loved by lurkers, and lasts indefinitely, but it is not very nutritious.</description>
-    <useHitPoints>false</useHitPoints>
     <graphicData>
       <texPath>Things/Item/Resource/ZombieJerky</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -97,12 +93,14 @@
     <statBases>
       <MarketValue>1.25</MarketValue>
       <Mass>0.02</Mass>
+      <MaxHitPoints>35</MaxHitPoints>
       <Flammability>0.20</Flammability>
       <Nutrition>0.04</Nutrition>
     </statBases>
     <ingestible>
       <foodType>Meat, Processed</foodType>
       <preferability>MealAwful</preferability>
+      <socialPropernessMatters>true</socialPropernessMatters>
     </ingestible>
   </ThingDef>
 

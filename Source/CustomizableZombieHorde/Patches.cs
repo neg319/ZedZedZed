@@ -277,9 +277,10 @@ namespace CustomizableZombieHorde
             return null;
         }
 
-        public static void Postfix(Pawn p, Thing t, ref bool __result)
+        public static void Postfix(Pawn __0, Thing __1, ref bool __result)
         {
-            ThingDef def = t?.def;
+            Pawn p = __0;
+            ThingDef def = __1?.def;
             if (ZombieLurkerUtility.ShouldBlockRottenFleshFor(p, def))
             {
                 __result = false;
@@ -328,8 +329,10 @@ namespace CustomizableZombieHorde
             return null;
         }
 
-        public static void Postfix(Pawn p, ThingDef foodDef, ref bool __result)
+        public static void Postfix(Pawn __0, ThingDef __1, ref bool __result)
         {
+            Pawn p = __0;
+            ThingDef foodDef = __1;
             if (ZombieLurkerUtility.ShouldBlockRottenFleshFor(p, foodDef))
             {
                 __result = false;
@@ -378,8 +381,11 @@ namespace CustomizableZombieHorde
             return null;
         }
 
-        public static void Postfix(Pawn eater, Thing foodSource, ThingDef foodDef, ref float __result)
+        public static void Postfix(Pawn __0, Thing __1, ThingDef __2, ref float __result)
         {
+            Pawn eater = __0;
+            Thing foodSource = __1;
+            ThingDef foodDef = __2;
             ThingDef def = foodSource?.def ?? foodDef;
             if (ZombieLurkerUtility.ShouldBlockRottenFleshFor(eater, def))
             {

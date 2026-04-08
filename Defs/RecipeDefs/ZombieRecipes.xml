@@ -6,7 +6,7 @@
     <description>Dry rotten flesh into preserved zombie jerky.</description>
     <jobString>Cooking zombie jerky.</jobString>
     <workAmount>1000</workAmount>
-    <workSpeedStat>CookingSpeed</workSpeedStat>
+    <workSpeedStat>CookSpeed</workSpeedStat>
     <recipeUsers>
       <li>FueledStove</li>
       <li>ElectricStove</li>
