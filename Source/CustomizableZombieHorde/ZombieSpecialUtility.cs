@@ -12,7 +12,10 @@ namespace CustomizableZombieHorde
     {
         private static readonly HashSet<int> TriggeredBoomerBursts = new HashSet<int>();
         private static readonly Dictionary<int, int> LastSickSpitTickByPawn = new Dictionary<int, int>();
+        private static readonly Dictionary<int, PendingSickSpewState> PendingSickSpewsByPawn = new Dictionary<int, PendingSickSpewState>();
         private const int SickSpitCooldownTicks = 360;
+        private const int SickSpewWarmupTicks = 60;
+        private const int SickSpewPreviewIntervalTicks = 12;
         private const float SickSpitMinRange = 1.9f;
         private const float SickSpitMaxRange = 7.9f;
         private const float SickSpitChancePerCheck = 0.85f;
@@ -21,6 +24,15 @@ namespace CustomizableZombieHorde
         private const float SickSpewBaseSeverity = 0.10f;
         private const float SickSpewTargetSeverity = 0.22f;
         private static bool suppressBoomerKillBurst;
+
+        private sealed class PendingSickSpewState
+        {
+            public int SpewerPawnId;
+            public int TargetPawnId;
+            public int ExecuteTick;
+            public int NextPreviewTick;
+            public IntVec3 LastTargetCell;
+        }
 
 
         public static IEnumerable<Thing> BuildZombieButcherProducts(Pawn pawn)
@@ -669,6 +681,11 @@ namespace CustomizableZombieHorde
 
             int ticksGame = Find.TickManager?.TicksGame ?? 0;
             int pawnId = pawn.thingIDNumber;
+            if (PendingSickSpewsByPawn.ContainsKey(pawnId))
+            {
+                return;
+            }
+
             if (LastSickSpitTickByPawn.TryGetValue(pawnId, out int lastSpitTick) && ticksGame - lastSpitTick < SickSpitCooldownTicks)
             {
                 return;
@@ -701,15 +718,92 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (TryDoSickSpew(pawn, prey))
+            BeginSickSpewWarmup(pawn, prey, ticksGame);
+        }
+
+        public static void TickPendingSickSpewWarmups()
+        {
+            if (PendingSickSpewsByPawn.Count == 0)
             {
-                LastSickSpitTickByPawn[pawnId] = ticksGame;
+                return;
+            }
+
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            List<int> pawnIds = PendingSickSpewsByPawn.Keys.ToList();
+            foreach (int pawnId in pawnIds)
+            {
+                if (!PendingSickSpewsByPawn.TryGetValue(pawnId, out PendingSickSpewState state))
+                {
+                    continue;
+                }
+
+                Pawn spewer = FindSpewPawnById(state.SpewerPawnId);
+                if (spewer == null || spewer.Dead || spewer.Destroyed || spewer.MapHeld == null || !spewer.Spawned || spewer.Downed || spewer.stances?.stunner?.Stunned == true)
+                {
+                    PendingSickSpewsByPawn.Remove(pawnId);
+                    continue;
+                }
+
+                Pawn target = FindSpewTargetById(spewer.MapHeld, state.TargetPawnId);
+                if (target != null && !target.Dead && !target.Destroyed)
+                {
+                    state.LastTargetCell = target.PositionHeld;
+                }
+
+                if (!state.LastTargetCell.IsValid || !state.LastTargetCell.InBounds(spewer.MapHeld))
+                {
+                    PendingSickSpewsByPawn.Remove(pawnId);
+                    continue;
+                }
+
+                spewer.pather?.StopDead();
+                spewer.rotationTracker?.FaceTarget(new LocalTargetInfo(state.LastTargetCell));
+
+                if (ticksGame >= state.NextPreviewTick)
+                {
+                    ShowSickSpewPreview(spewer, state.LastTargetCell);
+                }
+
+                if (ticksGame >= state.ExecuteTick)
+                {
+                    if (TryDoSickSpew(spewer, target, state.LastTargetCell))
+                    {
+                        LastSickSpitTickByPawn[pawnId] = ticksGame;
+                    }
+
+                    PendingSickSpewsByPawn.Remove(pawnId);
+                    continue;
+                }
+
+                state.NextPreviewTick = ticksGame + SickSpewPreviewIntervalTicks;
+                PendingSickSpewsByPawn[pawnId] = state;
             }
         }
 
-        private static bool TryDoSickSpew(Pawn spewer, Pawn target)
+        private static void BeginSickSpewWarmup(Pawn spewer, Pawn target, int ticksGame)
         {
-            if (spewer == null || target == null || spewer.MapHeld == null || !spewer.Spawned)
+            if (spewer == null || target == null)
+            {
+                return;
+            }
+
+            PendingSickSpewsByPawn[spewer.thingIDNumber] = new PendingSickSpewState
+            {
+                SpewerPawnId = spewer.thingIDNumber,
+                TargetPawnId = target.thingIDNumber,
+                ExecuteTick = ticksGame + SickSpewWarmupTicks,
+                NextPreviewTick = ticksGame,
+                LastTargetCell = target.PositionHeld
+            };
+
+            spewer.pather?.StopDead();
+            spewer.rotationTracker?.FaceTarget(new LocalTargetInfo(target));
+            ShowSickSpewPreview(spewer, target.PositionHeld, playSound: true);
+        }
+
+        private static bool TryDoSickSpew(Pawn spewer, Pawn target, IntVec3 fallbackTargetCell)
+        {
+            if (spewer == null || spewer.MapHeld == null || !spewer.Spawned)
             {
                 return false;
             }
@@ -717,15 +811,22 @@ namespace CustomizableZombieHorde
             try
             {
                 Map map = spewer.MapHeld;
+                IntVec3 targetCell = target != null && !target.Dead && !target.Destroyed ? target.PositionHeld : fallbackTargetCell;
+                if (!targetCell.IsValid || !targetCell.InBounds(map))
+                {
+                    return false;
+                }
+
                 ThingDef sickFilth = ZombieDefOf.CZH_Filth_SickZombieBlood ?? ThingDefOf.Filth_Blood;
-                HashSet<IntVec3> affectedCells = GetSickSpewCells(spewer, target, map);
+                HashSet<IntVec3> affectedCells = GetSickSpewCells(spewer, targetCell, map);
                 if (affectedCells.Count == 0)
                 {
                     return false;
                 }
 
+                ShowSickSpewPreview(spewer, targetCell, playSound: true);
+
                 Dictionary<int, float> severityByPawnId = new Dictionary<int, float>();
-                IntVec3 targetCell = target.PositionHeld;
 
                 foreach (IntVec3 cell in affectedCells)
                 {
@@ -776,16 +877,16 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private static HashSet<IntVec3> GetSickSpewCells(Pawn spewer, Pawn target, Map map)
+        private static HashSet<IntVec3> GetSickSpewCells(Pawn spewer, IntVec3 targetCell, Map map)
         {
             HashSet<IntVec3> cells = new HashSet<IntVec3>();
-            if (spewer == null || target == null || map == null)
+            if (spewer == null || !targetCell.IsValid || map == null)
             {
                 return cells;
             }
 
             Vector3 start = spewer.DrawPos;
-            Vector3 end = target.DrawPos;
+            Vector3 end = targetCell.ToVector3Shifted();
             float distance = Mathf.Min(SickSpitMaxRange, Mathf.Max(1f, Vector3.Distance(start, end)));
             int steps = Mathf.Max(4, Mathf.CeilToInt(distance * 1.75f));
 
@@ -805,7 +906,7 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            foreach (IntVec3 cell in GenRadial.RadialCellsAround(target.PositionHeld, SickSpewEndWidth * 0.5f, true))
+            foreach (IntVec3 cell in GenRadial.RadialCellsAround(targetCell, SickSpewEndWidth * 0.5f, true))
             {
                 if (cell.InBounds(map) && cell != spewer.PositionHeld)
                 {
@@ -814,6 +915,61 @@ namespace CustomizableZombieHorde
             }
 
             return cells;
+        }
+
+        private static Pawn FindSpewPawnById(int pawnId)
+        {
+            foreach (Map map in Find.Maps)
+            {
+                Pawn pawn = map.mapPawns?.AllPawnsSpawned?.FirstOrDefault(p => p.thingIDNumber == pawnId);
+                if (pawn != null)
+                {
+                    return pawn;
+                }
+            }
+
+            return null;
+        }
+
+        private static Pawn FindSpewTargetById(Map map, int pawnId)
+        {
+            return map?.mapPawns?.AllPawnsSpawned?.FirstOrDefault(p => p.thingIDNumber == pawnId);
+        }
+
+        private static void ShowSickSpewPreview(Pawn spewer, IntVec3 targetCell, bool playSound = false)
+        {
+            if (spewer?.MapHeld == null || !targetCell.IsValid || !targetCell.InBounds(spewer.MapHeld))
+            {
+                return;
+            }
+
+            try
+            {
+                EffecterDef fireSpewEffecter = DefDatabase<EffecterDef>.GetNamedSilentFail("Fire_Spew");
+                if (fireSpewEffecter != null)
+                {
+                    Effecter effecter = fireSpewEffecter.Spawn();
+                    effecter?.Trigger(new TargetInfo(spewer.PositionHeld, spewer.MapHeld), new TargetInfo(targetCell, spewer.MapHeld));
+                    effecter?.Cleanup();
+                }
+            }
+            catch
+            {
+            }
+
+            if (!playSound)
+            {
+                return;
+            }
+
+            try
+            {
+                SoundDef spewSound = DefDatabase<SoundDef>.GetNamedSilentFail("Pawn_Impid_FireSpew");
+                spewSound?.PlayOneShot(new TargetInfo(spewer.PositionHeld, spewer.MapHeld));
+            }
+            catch
+            {
+            }
         }
 
         public static void HandleSickBloodContact(Map map)

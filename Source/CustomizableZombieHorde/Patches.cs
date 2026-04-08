@@ -422,6 +422,10 @@ namespace CustomizableZombieHorde
             if (ZombieUtility.IsZombie(__instance))
             {
                 ZombieSpecialUtility.HandleZombieDeathEffects(__instance);
+                if (__instance.Dead)
+                {
+                    Current.Game?.GetComponent<ZombieGameComponent>()?.RegisterDeadPawnForRecurringReanimation(__instance);
+                }
             }
         }
     }

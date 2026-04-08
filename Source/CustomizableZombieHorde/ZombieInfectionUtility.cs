@@ -10,7 +10,7 @@ namespace CustomizableZombieHorde
     public static class ZombieInfectionUtility
     {
         public const float InitialInfectionSeverity = 0.20f;
-        public const float TerminalSeverityThreshold = 0.8858f;
+        public const float TerminalSeverityThreshold = 0.90f;
         private const int InfectionTickInterval = 180;
 
         public static bool HasZombieInfection(Pawn pawn)
@@ -64,6 +64,11 @@ namespace CustomizableZombieHorde
                 && !IsSkullMissing(pawn);
         }
 
+        public static bool IsFullyReanimated(Pawn pawn)
+        {
+            return HasReanimatedState(pawn);
+        }
+
         public static bool IsZombieInfectionBlocked(Pawn pawn, ZombieGameComponent component)
         {
             if (pawn?.health?.hediffSet == null)
@@ -109,10 +114,12 @@ namespace CustomizableZombieHorde
             }
 
             infection.Severity = Math.Min(1f, infection.Severity + GetInfectionSeverityPerTickStep());
-            if (infection.Severity < 0.999f)
+            if (infection.Severity < TerminalSeverityThreshold)
             {
                 return;
             }
+
+            infection.Severity = Mathf.Clamp(infection.Severity, TerminalSeverityThreshold, 0.999f);
 
             if (ShouldBecomeLurkerAfterInfection(pawn, component))
             {
@@ -125,7 +132,10 @@ namespace CustomizableZombieHorde
 
             try
             {
-                pawn.Kill(null);
+                if (!pawn.Dead)
+                {
+                    pawn.Kill(null);
+                }
             }
             catch
             {
@@ -148,24 +158,68 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (!pawn.RaceProps.Humanlike || IsZombieInfectionBlocked(pawn, component))
+            if (!pawn.RaceProps.Humanlike)
             {
-                component?.ClearInfectionReanimation(pawn?.Corpse);
-                RemoveZombieInfection(pawn, component);
                 return;
             }
+
+            Corpse corpse = pawn.Corpse;
+            if (corpse == null)
+            {
+                return;
+            }
+
+            component?.ScheduleInfectionReanimation(corpse);
 
             if (advanceSeverity)
             {
-                infection.Severity = Math.Min(1f, infection.Severity + GetInfectionSeverityPerTickStep());
+                if (component != null
+                    && component.TryGetInfectionReanimationWindow(corpse, out int startTick, out int wakeTick)
+                    && Find.TickManager != null
+                    && wakeTick > startTick)
+                {
+                    float progress = Mathf.InverseLerp(startTick, wakeTick, Find.TickManager.TicksGame);
+                    infection.Severity = Mathf.Max(infection.Severity, Mathf.Lerp(TerminalSeverityThreshold, 1f, progress));
+                }
+                else
+                {
+                    infection.Severity = Math.Min(1f, infection.Severity + GetDeadInfectionSeverityPerTickStep());
+                }
             }
 
-            if (infection.Severity < 0.999f)
+            infection.Severity = Mathf.Clamp(infection.Severity, TerminalSeverityThreshold, 1f);
+        }
+
+        public static bool PromoteDeadInfectionToReanimated(Pawn pawn, ZombieGameComponent component)
+        {
+            if (pawn == null || !pawn.Dead || pawn.Destroyed)
             {
-                return;
+                return false;
             }
 
-            component?.ScheduleInfectionReanimation(pawn?.Corpse);
+            Hediff infection = GetZombieInfection(pawn);
+            if (infection == null || infection.Severity < 0.999f)
+            {
+                return false;
+            }
+
+            Corpse corpse = pawn.Corpse;
+            if (corpse == null || corpse.Destroyed)
+            {
+                return false;
+            }
+
+            try
+            {
+                pawn.health.RemoveHediff(infection);
+            }
+            catch
+            {
+            }
+
+            ApplyReanimatedState(pawn);
+            component?.ScheduleInfectionReanimation(corpse, forceReschedule: true, fixedDelayTicks: GenDate.TicksPerHour);
+            return true;
         }
 
         public static bool TryTurnDeadInfectedPawn(Pawn pawn, ZombieGameComponent component)
@@ -175,15 +229,8 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            if (pawn.Corpse == null)
+            if (pawn.Corpse == null || !HasReanimatedState(pawn))
             {
-                return false;
-            }
-
-            if (IsZombieInfectionBlocked(pawn, component))
-            {
-                component?.ClearInfectionReanimation(pawn.Corpse);
-                RemoveZombieInfection(pawn, component);
                 return false;
             }
 
@@ -194,6 +241,7 @@ namespace CustomizableZombieHorde
 
             if (!ZombieUtility.TryResurrectZombie(pawn))
             {
+                component?.ScheduleInfectionReanimation(corpse, forceReschedule: true, fixedDelayTicks: GenDate.TicksPerHour);
                 return false;
             }
 
@@ -229,6 +277,13 @@ namespace CustomizableZombieHorde
 
             float severityToGain = Mathf.Max(0.01f, 1f - InitialInfectionSeverity);
             float totalSteps = (configuredDays * GenDate.TicksPerDay) / (float)InfectionTickInterval;
+            return severityToGain / Mathf.Max(1f, totalSteps);
+        }
+
+        private static float GetDeadInfectionSeverityPerTickStep()
+        {
+            float severityToGain = Mathf.Max(0.001f, 1f - TerminalSeverityThreshold);
+            float totalSteps = (3f * GenDate.TicksPerHour) / InfectionTickInterval;
             return severityToGain / Mathf.Max(1f, totalSteps);
         }
 

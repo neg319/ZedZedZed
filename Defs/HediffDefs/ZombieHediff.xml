@@ -264,7 +264,7 @@
     <defName>CZH_ZombieSickness</defName>
     <hediffClass>CustomizableZombieHorde.Hediff_ZombieInfection</hediffClass>
     <label>zombie infection</label>
-    <description>Contact with sick zombie blood has left this pawn infected. The infection worsens day by day, reaches a terminal point where treatment no longer works, then continues after death until the corpse rises again unless the skull is destroyed first. Once the pawn fully turns, the infection becomes the permanent Reanimated state.</description>
+    <description>Contact with sick zombie blood has left this pawn infected. The infection worsens day by day, reaches a terminal point at 90% where treatment no longer works and the pawn dies, then continues after death from 90% to 99%. At 100%, the infection becomes the permanent Reanimated state. Once reanimated, the corpse checks every in game hour and has a 50% chance to rise whenever the head and skull are still intact.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>true</tendable>
@@ -356,7 +356,7 @@
         </capMods>
       </li>
       <li>
-        <minSeverity>0.8858</minSeverity>
+        <minSeverity>0.90</minSeverity>
         <label>terminal</label>
         <capMods>
           <li>
@@ -375,7 +375,7 @@
     <defName>CZH_ZombieReanimated</defName>
     <hediffClass>CustomizableZombieHorde.Hediff_ZombieInfection</hediffClass>
     <label>reanimated</label>
-    <description>This pawn completed the zombie infection and rose again as undead. This final state is permanent, cannot be cured, and will keep bringing the corpse back every 1 to 3 hours unless the head is ruined.</description>
+    <description>This pawn completed the zombie infection and entered the permanent Reanimated state. This final state cannot be cured. Once dead, it keeps checking every in game hour and has a 50% chance to rise whenever the head and skull are still intact.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>

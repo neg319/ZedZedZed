@@ -47,7 +47,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness. It worsens over time, reaches a terminal point where treatment stops working, then continues after death until the corpse rises unless the skull is destroyed.", pawn, MessageTypeDefOf.NegativeHealthEvent);
+            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness. It worsens over time, becomes terminal at 90%, kills the pawn, then continues through the corpse until it reaches 100% and rises unless the skull is destroyed.", pawn, MessageTypeDefOf.NegativeHealthEvent);
         }
 
 
@@ -128,17 +128,17 @@ namespace CustomizableZombieHorde
 
             if (ZombieInfectionUtility.HasReanimatedState(pawn))
             {
-                lines.Add("Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn has fully turned and can no longer be cured.");
+                lines.Add("Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn has fully turned, can no longer be cured, and if killed will keep making hourly resurrection checks forever unless the head or skull is ruined.");
             }
             else if (ZombieInfectionUtility.HasZombieInfection(pawn))
             {
                 if (ZombieBileUtility.NeedsBileTreatment(pawn))
                 {
-                    lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It worsens over time and can be cured with a bile med kit before it reaches terminal.");
+                    lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It worsens over time and can be cured with a bile med kit before it reaches terminal at 90%.");
                 }
                 else if (ZombieInfectionUtility.IsTerminal(pawn))
                 {
-                    lines.Add("Zombie sickness: terminal, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It has passed the point where it can be cured.");
+                    lines.Add("Zombie sickness: terminal, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. Terminal runs from 90% to 99%, can no longer be cured, and keeps progressing after death until it reaches Reanimated at 100%.");
                 }
             }
 
@@ -164,12 +164,12 @@ namespace CustomizableZombieHorde
                 string infectionLine;
                 if (ZombieInfectionUtility.HasReanimatedState(innerPawn))
                 {
-                    infectionLine = "Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. This corpse will keep rising every 1 to 3 hours unless the skull is destroyed first. ";
+                    infectionLine = "Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. Every in game hour this corpse checks whether the head and skull are intact. If they are, it has a 50% chance to rise. This never stops once the pawn has died. ";
                 }
                 else
                 {
                     infectionLine = ZombieInfectionUtility.IsTerminal(innerPawn)
-                        ? "Zombie infection is terminal and can no longer be cured. "
+                        ? "Zombie infection is terminal at " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete and can no longer be cured. After death it keeps progressing until it reaches Reanimated at 100%. "
                         : "Zombie infection is " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. ";
                 }
 
@@ -179,16 +179,16 @@ namespace CustomizableZombieHorde
                     int ticksLeft = wakeTick - Find.TickManager.TicksGame;
                     if (ticksLeft > 0)
                     {
-                        infectionLine += "It will reanimate in about " + ticksLeft.ToStringTicksToPeriod() + " unless the skull is destroyed first.";
+                        infectionLine += "The next hourly resurrection check is in about " + ticksLeft.ToStringTicksToPeriod() + ".";
                     }
                     else
                     {
-                        infectionLine += "It is about to reanimate unless the skull is destroyed first.";
+                        infectionLine += "The next hourly resurrection check is about to happen.";
                     }
                 }
                 else
                 {
-                    infectionLine += "Destroy the skull before it rises if you want it to stay dead.";
+                    infectionLine += "It will keep checking every hour unless the corpse is destroyed or prevented from rising.";
                 }
 
                 lines.Add(infectionLine);
