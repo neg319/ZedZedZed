@@ -5,6 +5,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
+using Verse.Sound;
 
 namespace CustomizableZombieHorde
 {
@@ -965,7 +966,10 @@ namespace CustomizableZombieHorde
             try
             {
                 SoundDef spewSound = DefDatabase<SoundDef>.GetNamedSilentFail("Pawn_Impid_FireSpew");
-                spewSound?.PlayOneShot(new TargetInfo(spewer.PositionHeld, spewer.MapHeld));
+                if (spewSound != null)
+                {
+                    SoundStarter.PlayOneShot(spewSound, SoundInfo.InMap(new TargetInfo(spewer.PositionHeld, spewer.MapHeld), MaintenanceType.None));
+                }
             }
             catch
             {
