@@ -10,6 +10,7 @@ namespace CustomizableZombieHorde
     public static class ZombieInfectionUtility
     {
         public const float InitialInfectionSeverity = 0.20f;
+        public const float TerminalSeverityThreshold = 0.8858f;
         private const int InfectionTickInterval = 180;
 
         public static bool HasZombieInfection(Pawn pawn)
@@ -20,6 +21,47 @@ namespace CustomizableZombieHorde
         public static Hediff GetZombieInfection(Pawn pawn)
         {
             return pawn?.health?.hediffSet?.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieSickness);
+        }
+
+        public static bool HasReanimatedState(Pawn pawn)
+        {
+            return GetReanimatedState(pawn) != null;
+        }
+
+        public static Hediff GetReanimatedState(Pawn pawn)
+        {
+            return pawn?.health?.hediffSet?.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieReanimated);
+        }
+
+        public static Hediff GetVisibleInfectionState(Pawn pawn)
+        {
+            return GetZombieInfection(pawn) ?? GetReanimatedState(pawn);
+        }
+
+        public static bool IsTerminal(Pawn pawn)
+        {
+            return IsTerminal(GetZombieInfection(pawn));
+        }
+
+        public static bool IsTerminal(Hediff infection)
+        {
+            return infection != null
+                && infection.def == ZombieDefOf.CZH_ZombieSickness
+                && infection.Severity >= TerminalSeverityThreshold;
+        }
+
+        public static bool CanCureZombieInfection(Pawn pawn)
+        {
+            Hediff infection = GetZombieInfection(pawn);
+            return infection != null && !IsTerminal(infection) && !HasReanimatedState(pawn);
+        }
+
+        public static bool CanReanimateFromReanimatedState(Pawn pawn)
+        {
+            return pawn != null
+                && HasReanimatedState(pawn)
+                && !ZombieRulesUtility.HasHeadDamageOrDestruction(pawn)
+                && !IsSkullMissing(pawn);
         }
 
         public static bool IsZombieInfectionBlocked(Pawn pawn, ZombieGameComponent component)
@@ -102,11 +144,13 @@ namespace CustomizableZombieHorde
             {
                 component?.ClearInfectionHeadFatal(pawn);
                 component?.ClearInfectionShouldBecomeLurker(pawn);
+                component?.ClearInfectionReanimation(pawn?.Corpse);
                 return;
             }
 
             if (!pawn.RaceProps.Humanlike || IsZombieInfectionBlocked(pawn, component))
             {
+                component?.ClearInfectionReanimation(pawn?.Corpse);
                 RemoveZombieInfection(pawn, component);
                 return;
             }
@@ -121,7 +165,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            TryTurnDeadInfectedPawn(pawn, component);
+            component?.ScheduleInfectionReanimation(pawn?.Corpse);
         }
 
         public static bool TryTurnDeadInfectedPawn(Pawn pawn, ZombieGameComponent component)
@@ -138,12 +182,15 @@ namespace CustomizableZombieHorde
 
             if (IsZombieInfectionBlocked(pawn, component))
             {
+                component?.ClearInfectionReanimation(pawn.Corpse);
                 RemoveZombieInfection(pawn, component);
                 return false;
             }
 
             bool wasColonist = ShouldBecomeLurkerAfterInfection(pawn, component);
             Name preservedName = wasColonist ? pawn.Name : null;
+            Corpse corpse = pawn.Corpse;
+            component?.ClearInfectionReanimation(corpse);
 
             if (!ZombieUtility.TryResurrectZombie(pawn))
             {
@@ -161,6 +208,7 @@ namespace CustomizableZombieHorde
                     ZombiePawnFactory.TrySetPawnName(pawn, preservedName);
                 }
 
+                ApplyReanimatedState(pawn);
                 ZombieLurkerUtility.EnsureColonyLurkerState(pawn, emergencyStabilize: true, stopCurrentJobs: true);
                 ZombieFeedbackUtility.SendZombieTurnMessage(pawn, becameLurker: true);
                 return true;
@@ -168,6 +216,7 @@ namespace CustomizableZombieHorde
 
             PawnKindDef randomKind = ZombieKindSelector.GetRandomKind(pawn.MapHeld);
             ZombiePawnFactory.ConvertExistingPawnToZombie(pawn, randomKind, ZombieFactionUtility.GetOrCreateZombieFaction(), preserveName: false, preserveSkills: false, preserveRelations: false, initialSpawn: false);
+            ApplyReanimatedState(pawn);
             ZombieUtility.EnsureZombieAggression(pawn);
             ZombieFeedbackUtility.SendZombieTurnMessage(pawn, becameLurker: false);
             return true;
@@ -181,6 +230,31 @@ namespace CustomizableZombieHorde
             float severityToGain = Mathf.Max(0.01f, 1f - InitialInfectionSeverity);
             float totalSteps = (configuredDays * GenDate.TicksPerDay) / (float)InfectionTickInterval;
             return severityToGain / Mathf.Max(1f, totalSteps);
+        }
+
+        public static void ApplyReanimatedState(Pawn pawn)
+        {
+            if (pawn?.health == null)
+            {
+                return;
+            }
+
+            Hediff existing = GetReanimatedState(pawn);
+            if (existing != null)
+            {
+                existing.Severity = 1f;
+                return;
+            }
+
+            try
+            {
+                Hediff hediff = HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieReanimated, pawn);
+                hediff.Severity = 1f;
+                pawn.health.AddHediff(hediff);
+            }
+            catch
+            {
+            }
         }
 
         public static void RemoveZombieInfection(Pawn pawn, ZombieGameComponent component = null)
@@ -208,13 +282,18 @@ namespace CustomizableZombieHorde
                 return 0f;
             }
 
+            if (infection.def == ZombieDefOf.CZH_ZombieReanimated)
+            {
+                return 1f;
+            }
+
             float severityToGain = Mathf.Max(0.01f, 1f - InitialInfectionSeverity);
             return Mathf.Clamp01((infection.Severity - InitialInfectionSeverity) / severityToGain);
         }
 
         public static float GetInfectionCompletion(Pawn pawn)
         {
-            return GetInfectionCompletion(GetZombieInfection(pawn));
+            return GetInfectionCompletion(GetVisibleInfectionState(pawn));
         }
 
         public static string GetInfectionCompletionLabel(Pawn pawn)

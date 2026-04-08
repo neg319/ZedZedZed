@@ -65,6 +65,8 @@ namespace CustomizableZombieHorde
                 pawn.health.AddHediff(ZombieDefOf.CZH_ZombieRot);
             }
 
+            ZombieInfectionUtility.ApplyReanimatedState(pawn);
+
             if (pawn.story != null)
             {
                 ZombieVariant variant = ZombieUtility.GetVariant(pawn);

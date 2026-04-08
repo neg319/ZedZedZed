@@ -38,7 +38,7 @@ namespace CustomizableZombieHorde
 
         public static bool NeedsBileTreatment(Pawn pawn)
         {
-            return pawn?.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_ZombieSickness) == true;
+            return ZombieInfectionUtility.CanCureZombieInfection(pawn);
         }
 
         public static Thing FindCarriedBileTreatmentKit(Pawn pawn)
@@ -109,7 +109,7 @@ namespace CustomizableZombieHorde
             }
 
             Hediff sickness = patient.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieSickness);
-            if (sickness == null)
+            if (sickness == null || !ZombieInfectionUtility.CanCureZombieInfection(patient))
             {
                 return false;
             }

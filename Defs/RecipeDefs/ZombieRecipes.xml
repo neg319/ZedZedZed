@@ -37,7 +37,7 @@
   <RecipeDef>
     <defName>CZH_CraftBileTreatmentKit</defName>
     <label>craft bile med kit</label>
-    <description>Refine zombie bile and basic supplies into a field kit that cures zombie sickness.</description>
+    <description>Refine zombie bile and basic supplies into a field kit that cures zombie sickness before it reaches terminal.</description>
     <jobString>assembling a bile med kit.</jobString>
     <workAmount>1200</workAmount>
     <workSpeedStat>GeneralLaborSpeed</workSpeedStat>

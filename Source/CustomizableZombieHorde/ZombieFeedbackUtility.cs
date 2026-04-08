@@ -47,7 +47,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness. It worsens over time, continues after death, and will turn the pawn unless a bile med kit cures it or the skull is destroyed.", pawn, MessageTypeDefOf.NegativeHealthEvent);
+            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness. It worsens over time, reaches a terminal point where treatment stops working, then continues after death until the corpse rises unless the skull is destroyed.", pawn, MessageTypeDefOf.NegativeHealthEvent);
         }
 
 
@@ -126,9 +126,20 @@ namespace CustomizableZombieHorde
                 lines.Add("Tamed lurker. Other undead should ignore this colony member.");
             }
 
-            if (ZombieBileUtility.NeedsBileTreatment(pawn))
+            if (ZombieInfectionUtility.HasReanimatedState(pawn))
             {
-                lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It worsens over time, continues after death, and can be cured with a bile med kit.");
+                lines.Add("Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn has fully turned and can no longer be cured.");
+            }
+            else if (ZombieInfectionUtility.HasZombieInfection(pawn))
+            {
+                if (ZombieBileUtility.NeedsBileTreatment(pawn))
+                {
+                    lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It worsens over time and can be cured with a bile med kit before it reaches terminal.");
+                }
+                else if (ZombieInfectionUtility.IsTerminal(pawn))
+                {
+                    lines.Add("Zombie sickness: terminal, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It has passed the point where it can be cured.");
+                }
             }
 
             return lines.Count == 0 ? null : string.Join("\n", lines);
@@ -148,9 +159,39 @@ namespace CustomizableZombieHorde
                 lines.Add("This corpse may rise again unless the head is ruined.");
             }
 
-            if (ZombieInfectionUtility.HasZombieInfection(innerPawn))
+            if (ZombieInfectionUtility.HasReanimatedState(innerPawn) || ZombieInfectionUtility.HasZombieInfection(innerPawn))
             {
-                lines.Add("Zombie infection is " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. Destroy the skull before it reaches 100 percent if you want it to stay dead.");
+                string infectionLine;
+                if (ZombieInfectionUtility.HasReanimatedState(innerPawn))
+                {
+                    infectionLine = "Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. This corpse will keep rising every 1 to 3 hours unless the skull is destroyed first. ";
+                }
+                else
+                {
+                    infectionLine = ZombieInfectionUtility.IsTerminal(innerPawn)
+                        ? "Zombie infection is terminal and can no longer be cured. "
+                        : "Zombie infection is " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. ";
+                }
+
+                ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
+                if (component != null && component.TryGetInfectionReanimationTick(corpse, out int wakeTick) && Find.TickManager != null)
+                {
+                    int ticksLeft = wakeTick - Find.TickManager.TicksGame;
+                    if (ticksLeft > 0)
+                    {
+                        infectionLine += "It will reanimate in about " + ticksLeft.ToStringTicksToPeriod() + " unless the skull is destroyed first.";
+                    }
+                    else
+                    {
+                        infectionLine += "It is about to reanimate unless the skull is destroyed first.";
+                    }
+                }
+                else
+                {
+                    infectionLine += "Destroy the skull before it rises if you want it to stay dead.";
+                }
+
+                lines.Add(infectionLine);
             }
 
             if (ZombieRulesUtility.IsZombie(innerPawn))

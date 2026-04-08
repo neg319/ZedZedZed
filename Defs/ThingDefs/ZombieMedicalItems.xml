@@ -23,7 +23,7 @@
   <ThingDef ParentName="CZH_ResourceBase">
     <defName>CZH_BileTreatmentKit</defName>
     <label>bile med kit</label>
-    <description>A field treatment kit built around stabilized bile extract. Right click an infected pawn with a colonist carrying one to administer it and cure zombie sickness.</description>
+    <description>A field treatment kit built around stabilized bile extract. Right click an infected pawn with a colonist carrying one to administer it and cure zombie sickness before it reaches terminal.</description>
     <graphicData>
       <texPath>Things/Item/Resource/BileTreatmentKit</texPath>
       <graphicClass>Graphic_Single</graphicClass>
