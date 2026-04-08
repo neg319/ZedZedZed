@@ -15,6 +15,7 @@ namespace CustomizableZombieHorde
         private Dictionary<int, int> corpseWakeTicks = new Dictionary<int, int>();
         private Dictionary<int, int> infectionReanimationTicks = new Dictionary<int, int>();
         private Dictionary<int, int> infectionReanimationStartTicks = new Dictionary<int, int>();
+        private Dictionary<int, float> infectionReanimationStartSeverity = new Dictionary<int, float>();
         private int nextMoonEventDay = -1;
         private bool nextMoonIsBlood;
         private int lastSevenDayWarningForMoon = -1;
@@ -42,6 +43,7 @@ namespace CustomizableZombieHorde
             Scribe_Collections.Look(ref corpseWakeTicks, "corpseWakeTicks", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref infectionReanimationTicks, "infectionReanimationTicks", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref infectionReanimationStartTicks, "infectionReanimationStartTicks", LookMode.Value, LookMode.Value);
+            Scribe_Collections.Look(ref infectionReanimationStartSeverity, "infectionReanimationStartSeverity", LookMode.Value, LookMode.Value);
             Scribe_Values.Look(ref nextMoonEventDay, "nextMoonEventDay", -1);
             Scribe_Values.Look(ref nextMoonIsBlood, "nextMoonIsBlood", false);
             Scribe_Values.Look(ref lastSevenDayWarningForMoon, "lastSevenDayWarningForMoon", -1);
@@ -61,6 +63,7 @@ namespace CustomizableZombieHorde
             corpseWakeTicks ??= new Dictionary<int, int>();
             infectionReanimationTicks ??= new Dictionary<int, int>();
             infectionReanimationStartTicks ??= new Dictionary<int, int>();
+            infectionReanimationStartSeverity ??= new Dictionary<int, float>();
             lastNightlySpawnDayByMap ??= new Dictionary<int, int>();
             zombieBehaviorByPawnId ??= new Dictionary<int, int>();
             infectionHeadFatalPawnIds ??= new List<int>();
@@ -1090,6 +1093,7 @@ namespace CustomizableZombieHorde
                         {
                             infectionReanimationTicks.Remove(corpseId);
                             infectionReanimationStartTicks?.Remove(corpseId);
+                            infectionReanimationStartSeverity?.Remove(corpseId);
 
                             if (isZombie)
                             {
@@ -1172,6 +1176,7 @@ namespace CustomizableZombieHorde
 
                     infectionReanimationTicks.Remove(corpseId);
                     infectionReanimationStartTicks?.Remove(corpseId);
+                    infectionReanimationStartSeverity?.Remove(corpseId);
                     ZombieInfectionUtility.PromoteDeadInfectionToReanimated(pawn, this);
                 }
             }
@@ -1187,6 +1192,7 @@ namespace CustomizableZombieHorde
             {
                 infectionReanimationTicks.Remove(staleId);
                 infectionReanimationStartTicks?.Remove(staleId);
+                infectionReanimationStartSeverity?.Remove(staleId);
             }
         }
 
@@ -1303,6 +1309,7 @@ namespace CustomizableZombieHorde
 
             infectionReanimationTicks ??= new Dictionary<int, int>();
             infectionReanimationStartTicks ??= new Dictionary<int, int>();
+            infectionReanimationStartSeverity ??= new Dictionary<int, float>();
             int corpseId = corpse.thingIDNumber;
             if (!forceReschedule && infectionReanimationTicks.ContainsKey(corpseId))
             {
@@ -1311,6 +1318,16 @@ namespace CustomizableZombieHorde
 
             int startTick = Find.TickManager.TicksGame;
             infectionReanimationStartTicks[corpseId] = startTick;
+            Hediff infection = ZombieInfectionUtility.GetZombieInfection(corpse.InnerPawn);
+            if (infection != null && !ZombieInfectionUtility.HasReanimatedState(corpse.InnerPawn))
+            {
+                infectionReanimationStartSeverity[corpseId] = Mathf.Clamp01(infection.Severity);
+            }
+            else
+            {
+                infectionReanimationStartSeverity.Remove(corpseId);
+            }
+
             int delayTicks = fixedDelayTicks ?? Rand.RangeInclusive(GenDate.TicksPerHour, GenDate.TicksPerHour * 3);
             infectionReanimationTicks[corpseId] = startTick + delayTicks;
         }
@@ -1324,6 +1341,7 @@ namespace CustomizableZombieHorde
 
             infectionReanimationTicks.Remove(corpse.thingIDNumber);
             infectionReanimationStartTicks?.Remove(corpse.thingIDNumber);
+            infectionReanimationStartSeverity?.Remove(corpse.thingIDNumber);
         }
 
         public bool TryGetInfectionReanimationTick(Corpse corpse, out int wakeTick)
@@ -1350,6 +1368,14 @@ namespace CustomizableZombieHorde
 
             startTick = wakeTick - GenDate.TicksPerHour;
             return true;
+        }
+
+        public bool TryGetInfectionReanimationStartSeverity(Corpse corpse, out float startSeverity)
+        {
+            startSeverity = 0f;
+            return corpse != null
+                && infectionReanimationStartSeverity != null
+                && infectionReanimationStartSeverity.TryGetValue(corpse.thingIDNumber, out startSeverity);
         }
 
         private void HandleZombieInfectionProgression()

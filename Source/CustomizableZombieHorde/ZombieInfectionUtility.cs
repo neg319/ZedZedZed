@@ -35,7 +35,7 @@ namespace CustomizableZombieHorde
 
         public static Hediff GetVisibleInfectionState(Pawn pawn)
         {
-            return GetZombieInfection(pawn) ?? GetReanimatedState(pawn);
+            return GetReanimatedState(pawn) ?? GetZombieInfection(pawn);
         }
 
         public static bool IsTerminal(Pawn pawn)
@@ -154,7 +154,7 @@ namespace CustomizableZombieHorde
             {
                 component?.ClearInfectionHeadFatal(pawn);
                 component?.ClearInfectionShouldBecomeLurker(pawn);
-                component?.ClearInfectionReanimation(pawn?.Corpse);
+                component?.ClearInfectionReanimation(ResolveCorpse(pawn));
                 return;
             }
 
@@ -163,9 +163,16 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Corpse corpse = pawn.Corpse;
+            Corpse corpse = ResolveCorpse(pawn);
             if (corpse == null)
             {
+                return;
+            }
+
+            if (HasReanimatedState(pawn))
+            {
+                component?.ScheduleInfectionReanimation(corpse, fixedDelayTicks: GenDate.TicksPerHour);
+                infection.Severity = 1f;
                 return;
             }
 
@@ -178,16 +185,22 @@ namespace CustomizableZombieHorde
                     && Find.TickManager != null
                     && wakeTick > startTick)
                 {
+                    float startSeverity = Mathf.Clamp01(infection.Severity);
+                    if (component.TryGetInfectionReanimationStartSeverity(corpse, out float storedStartSeverity))
+                    {
+                        startSeverity = Mathf.Clamp01(storedStartSeverity);
+                    }
+
                     float progress = Mathf.InverseLerp(startTick, wakeTick, Find.TickManager.TicksGame);
-                    infection.Severity = Mathf.Max(infection.Severity, Mathf.Lerp(TerminalSeverityThreshold, 1f, progress));
+                    infection.Severity = Mathf.Max(infection.Severity, Mathf.Lerp(startSeverity, 1f, progress));
                 }
                 else
                 {
-                    infection.Severity = Math.Min(1f, infection.Severity + GetDeadInfectionSeverityPerTickStep());
+                    infection.Severity = Math.Min(1f, infection.Severity + GetDeadInfectionSeverityPerTickStep(infection.Severity));
                 }
             }
 
-            infection.Severity = Mathf.Clamp(infection.Severity, TerminalSeverityThreshold, 1f);
+            infection.Severity = Mathf.Clamp(infection.Severity, InitialInfectionSeverity, 1f);
         }
 
         public static bool PromoteDeadInfectionToReanimated(Pawn pawn, ZombieGameComponent component)
@@ -203,20 +216,13 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            Corpse corpse = pawn.Corpse;
+            Corpse corpse = ResolveCorpse(pawn);
             if (corpse == null || corpse.Destroyed)
             {
                 return false;
             }
 
-            try
-            {
-                pawn.health.RemoveHediff(infection);
-            }
-            catch
-            {
-            }
-
+            infection.Severity = 1f;
             ApplyReanimatedState(pawn);
             component?.ScheduleInfectionReanimation(corpse, forceReschedule: true, fixedDelayTicks: GenDate.TicksPerHour);
             return true;
@@ -229,14 +235,14 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            if (pawn.Corpse == null || !HasReanimatedState(pawn))
+            Corpse corpse = ResolveCorpse(pawn);
+            if (corpse == null || !HasReanimatedState(pawn))
             {
                 return false;
             }
 
             bool wasColonist = ShouldBecomeLurkerAfterInfection(pawn, component);
             Name preservedName = wasColonist ? pawn.Name : null;
-            Corpse corpse = pawn.Corpse;
             component?.ClearInfectionReanimation(corpse);
 
             if (!ZombieUtility.TryResurrectZombie(pawn))
@@ -245,7 +251,11 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            RemoveZombieInfection(pawn, component);
+            Hediff lingeringInfection = GetZombieInfection(pawn);
+            if (lingeringInfection != null)
+            {
+                lingeringInfection.Severity = 1f;
+            }
 
             if (wasColonist)
             {
@@ -280,9 +290,10 @@ namespace CustomizableZombieHorde
             return severityToGain / Mathf.Max(1f, totalSteps);
         }
 
-        private static float GetDeadInfectionSeverityPerTickStep()
+        private static float GetDeadInfectionSeverityPerTickStep(float currentSeverity)
         {
-            float severityToGain = Mathf.Max(0.001f, 1f - TerminalSeverityThreshold);
+            float clampedSeverity = Mathf.Clamp01(currentSeverity);
+            float severityToGain = Mathf.Max(0.001f, 1f - clampedSeverity);
             float totalSteps = (3f * GenDate.TicksPerHour) / InfectionTickInterval;
             return severityToGain / Mathf.Max(1f, totalSteps);
         }
@@ -386,6 +397,35 @@ namespace CustomizableZombieHorde
             return pawn.health.hediffSet.hediffs
                 .OfType<Hediff_MissingPart>()
                 .Any(hediff => IsSkullOrHeadPart(hediff.Part));
+        }
+
+        private static Corpse ResolveCorpse(Pawn pawn)
+        {
+            if (pawn?.Corpse != null && !pawn.Corpse.Destroyed)
+            {
+                return pawn.Corpse;
+            }
+
+            Map map = pawn?.MapHeld;
+            if (map != null && pawn.PositionHeld.IsValid && pawn.PositionHeld.InBounds(map))
+            {
+                Corpse localCorpse = map.thingGrid?.ThingsAt(pawn.PositionHeld)?.OfType<Corpse>()?.FirstOrDefault(c => c.InnerPawn == pawn);
+                if (localCorpse != null && !localCorpse.Destroyed)
+                {
+                    return localCorpse;
+                }
+            }
+
+            foreach (Map searchMap in Find.Maps)
+            {
+                Corpse found = searchMap.listerThings.ThingsInGroup(ThingRequestGroup.Corpse).OfType<Corpse>().FirstOrDefault(c => c.InnerPawn == pawn);
+                if (found != null && !found.Destroyed)
+                {
+                    return found;
+                }
+            }
+
+            return null;
         }
 
         public static bool IsHeadOrChildPart(BodyPartRecord part, Pawn pawn)

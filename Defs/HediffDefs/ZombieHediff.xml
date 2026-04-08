@@ -264,7 +264,7 @@
     <defName>CZH_ZombieSickness</defName>
     <hediffClass>CustomizableZombieHorde.Hediff_ZombieInfection</hediffClass>
     <label>zombie infection</label>
-    <description>Contact with sick zombie blood has left this pawn infected. The infection worsens day by day, reaches a terminal point at 90% where treatment no longer works and the pawn dies, then continues after death from 90% to 99%. At 100%, the infection becomes the permanent Reanimated state. Once reanimated, the corpse checks every in game hour and has a 50% chance to rise whenever the head and skull are still intact.</description>
+    <description>Contact with sick zombie blood has left this pawn infected. The infection worsens day by day, reaches a terminal point at 90% where treatment no longer works and the pawn dies, and if the pawn dies earlier from other injuries the infection still keeps climbing from that exact percentage after death. At 100%, the infection becomes the permanent Reanimated state. Once reanimated, the corpse checks every in game hour and has a 50% chance to rise whenever the head and skull are still intact.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>true</tendable>

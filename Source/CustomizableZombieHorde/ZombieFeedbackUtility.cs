@@ -138,7 +138,7 @@ namespace CustomizableZombieHorde
                 }
                 else if (ZombieInfectionUtility.IsTerminal(pawn))
                 {
-                    lines.Add("Zombie sickness: terminal, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. Terminal runs from 90% to 99%, can no longer be cured, and keeps progressing after death until it reaches Reanimated at 100%.");
+                    lines.Add("Zombie sickness: terminal, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. Terminal runs from 90% to 99%, can no longer be cured, and if the pawn dies at any earlier stage the infection keeps climbing from that exact percentage after death until it reaches Reanimated at 100%.");
                 }
             }
 
@@ -169,8 +169,8 @@ namespace CustomizableZombieHorde
                 else
                 {
                     infectionLine = ZombieInfectionUtility.IsTerminal(innerPawn)
-                        ? "Zombie infection is terminal at " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete and can no longer be cured. After death it keeps progressing until it reaches Reanimated at 100%. "
-                        : "Zombie infection is " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. ";
+                        ? "Zombie infection is terminal at " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete and can no longer be cured. After death it keeps progressing upward from its current percentage until it reaches Reanimated at 100%. "
+                        : "Zombie infection is " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete and will keep climbing from this exact percentage after death until it reaches Reanimated at 100%. ";
                 }
 
                 ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();

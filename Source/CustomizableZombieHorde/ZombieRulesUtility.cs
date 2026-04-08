@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using RimWorld;
 using Verse;
@@ -33,7 +34,9 @@ namespace CustomizableZombieHorde
 
         public static bool CanReanimate(Pawn pawn)
         {
-            return IsZombie(pawn) && !HasHeadDamageOrDestruction(pawn);
+            return IsZombie(pawn)
+                && !HasHeadDamageOrDestruction(pawn)
+                && !ZombieInfectionUtility.IsSkullMissing(pawn);
         }
 
         public static bool HasHeadDamageOrDestruction(Pawn pawn)
@@ -49,25 +52,30 @@ namespace CustomizableZombieHorde
             }
 
             BodyPartRecord head = pawn.RaceProps?.body?.AllParts?.FirstOrDefault(part => part.def == BodyPartDefOf.Head);
-            if (head == null)
+            if (head == null || pawn.health.hediffSet.PartIsMissing(head))
             {
                 return true;
             }
 
-            return pawn.health.hediffSet.hediffs.Any(hediff => IsHeadPartOrChild(hediff.Part, head) && (hediff is Hediff_Injury || hediff is Hediff_MissingPart));
-        }
-
-        private static bool IsHeadPartOrChild(BodyPartRecord part, BodyPartRecord head)
-        {
-            for (BodyPartRecord current = part; current != null; current = current.parent)
+            if (pawn.health.hediffSet.hediffs.OfType<Hediff_MissingPart>().Any(hediff => IsHeadOrSkullPart(hediff.Part)))
             {
-                if (current == head)
-                {
-                    return true;
-                }
+                return true;
             }
 
-            return false;
+            return pawn.health.hediffSet.hediffs
+                .OfType<Hediff_Injury>()
+                .Any(injury => injury.Part == head && injury.Severity > 0.01f);
+        }
+
+        private static bool IsHeadOrSkullPart(BodyPartRecord part)
+        {
+            if (part?.def == BodyPartDefOf.Head)
+            {
+                return true;
+            }
+
+            string defName = part?.def?.defName ?? string.Empty;
+            return string.Equals(defName, "Skull", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
