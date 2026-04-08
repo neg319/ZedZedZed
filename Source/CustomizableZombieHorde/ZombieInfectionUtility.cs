@@ -9,7 +9,7 @@ namespace CustomizableZombieHorde
 {
     public static class ZombieInfectionUtility
     {
-        private const float InitialInfectionSeverity = 0.20f;
+        public const float InitialInfectionSeverity = 0.20f;
         private const int InfectionTickInterval = 180;
 
         public static bool HasZombieInfection(Pawn pawn)
@@ -72,18 +72,21 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            if (ShouldBecomeLurkerAfterInfection(pawn, component))
+            {
+                component?.MarkInfectionShouldBecomeLurker(pawn);
+            }
+            else
+            {
+                component?.ClearInfectionShouldBecomeLurker(pawn);
+            }
+
             try
             {
                 pawn.Kill(null);
             }
             catch
             {
-                return;
-            }
-
-            if (pawn.Dead)
-            {
-                ProgressDeadInfection(pawn, component, advanceSeverity: false);
             }
         }
 
@@ -98,6 +101,7 @@ namespace CustomizableZombieHorde
             if (infection == null)
             {
                 component?.ClearInfectionHeadFatal(pawn);
+                component?.ClearInfectionShouldBecomeLurker(pawn);
                 return;
             }
 
@@ -127,14 +131,19 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
+            if (pawn.Corpse == null)
+            {
+                return false;
+            }
+
             if (IsZombieInfectionBlocked(pawn, component))
             {
                 RemoveZombieInfection(pawn, component);
                 return false;
             }
 
-            bool wasColonist = pawn.IsColonist || pawn.Faction == Faction.OfPlayer;
-            Name preservedName = pawn.Name;
+            bool wasColonist = ShouldBecomeLurkerAfterInfection(pawn, component);
+            Name preservedName = wasColonist ? pawn.Name : null;
 
             if (!ZombieUtility.TryResurrectZombie(pawn))
             {
@@ -189,6 +198,48 @@ namespace CustomizableZombieHorde
             }
 
             component?.ClearInfectionHeadFatal(pawn);
+            component?.ClearInfectionShouldBecomeLurker(pawn);
+        }
+
+        public static float GetInfectionCompletion(Hediff infection)
+        {
+            if (infection == null)
+            {
+                return 0f;
+            }
+
+            float severityToGain = Mathf.Max(0.01f, 1f - InitialInfectionSeverity);
+            return Mathf.Clamp01((infection.Severity - InitialInfectionSeverity) / severityToGain);
+        }
+
+        public static float GetInfectionCompletion(Pawn pawn)
+        {
+            return GetInfectionCompletion(GetZombieInfection(pawn));
+        }
+
+        public static string GetInfectionCompletionLabel(Pawn pawn)
+        {
+            return GetInfectionCompletion(pawn).ToStringPercent();
+        }
+
+        public static bool ShouldBecomeLurkerAfterInfection(Pawn pawn, ZombieGameComponent component)
+        {
+            if (pawn == null)
+            {
+                return false;
+            }
+
+            if (component?.ShouldBecomeLurkerAfterInfection(pawn) == true)
+            {
+                return true;
+            }
+
+            if (pawn.Faction == Faction.OfPlayer || pawn.HostFaction == Faction.OfPlayer)
+            {
+                return true;
+            }
+
+            return pawn.IsColonist || pawn.IsPrisonerOfColony;
         }
 
         public static bool IsSkullMissing(Pawn pawn)

@@ -128,7 +128,7 @@ namespace CustomizableZombieHorde
 
             if (ZombieBileUtility.NeedsBileTreatment(pawn))
             {
-                lines.Add("Zombie sickness: this worsens over time, continues after death, and can be cured with a bile med kit.");
+                lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It worsens over time, continues after death, and can be cured with a bile med kit.");
             }
 
             return lines.Count == 0 ? null : string.Join("\n", lines);
@@ -150,7 +150,7 @@ namespace CustomizableZombieHorde
 
             if (ZombieInfectionUtility.HasZombieInfection(innerPawn))
             {
-                lines.Add("Zombie infection continues after death. Destroy the skull before it reaches 100 percent if you want it to stay dead.");
+                lines.Add("Zombie infection is " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. Destroy the skull before it reaches 100 percent if you want it to stay dead.");
             }
 
             if (ZombieRulesUtility.IsZombie(innerPawn))

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -13,10 +12,14 @@ namespace CustomizableZombieHorde
     {
         private static readonly HashSet<int> TriggeredBoomerBursts = new HashSet<int>();
         private static readonly Dictionary<int, int> LastSickSpitTickByPawn = new Dictionary<int, int>();
-        private const int SickSpitCooldownTicks = 780;
-        private const float SickSpitMinRange = 2.9f;
-        private const float SickSpitMaxRange = 12.9f;
-        private const float SickSpitChancePerCheck = 0.34f;
+        private const int SickSpitCooldownTicks = 360;
+        private const float SickSpitMinRange = 1.9f;
+        private const float SickSpitMaxRange = 7.9f;
+        private const float SickSpitChancePerCheck = 0.85f;
+        private const float SickSpewEndWidth = 3.0f;
+        private const float SickSpewMinCellRadius = 0.42f;
+        private const float SickSpewBaseSeverity = 0.10f;
+        private const float SickSpewTargetSeverity = 0.22f;
         private static bool suppressBoomerKillBurst;
 
 
@@ -698,102 +701,119 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (TryLaunchProjectile(pawn, prey, ZombieDefOf.CZH_SickSpitProjectile))
+            if (TryDoSickSpew(pawn, prey))
             {
                 LastSickSpitTickByPawn[pawnId] = ticksGame;
             }
         }
 
-        private static bool TryLaunchProjectile(Pawn launcher, Pawn target, ThingDef projectileDef)
+        private static bool TryDoSickSpew(Pawn spewer, Pawn target)
         {
-            if (launcher == null || target == null || projectileDef == null || launcher.MapHeld == null || !launcher.Spawned)
+            if (spewer == null || target == null || spewer.MapHeld == null || !spewer.Spawned)
             {
                 return false;
             }
 
             try
             {
-                Thing thing = ThingMaker.MakeThing(projectileDef);
-                if (!(thing is Projectile projectile))
+                Map map = spewer.MapHeld;
+                ThingDef sickFilth = ZombieDefOf.CZH_Filth_SickZombieBlood ?? ThingDefOf.Filth_Blood;
+                HashSet<IntVec3> affectedCells = GetSickSpewCells(spewer, target, map);
+                if (affectedCells.Count == 0)
                 {
                     return false;
                 }
 
-                GenSpawn.Spawn(projectile, launcher.PositionHeld, launcher.MapHeld);
-                Vector3 origin = launcher.DrawPos;
-                LocalTargetInfo usedTarget = new LocalTargetInfo(target);
-                LocalTargetInfo intendedTarget = new LocalTargetInfo(target);
+                Dictionary<int, float> severityByPawnId = new Dictionary<int, float>();
+                IntVec3 targetCell = target.PositionHeld;
 
-                MethodInfo launchMethod = typeof(Projectile)
-                    .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    .Where(method => method.Name == "Launch")
-                    .OrderByDescending(method => method.GetParameters().Length)
-                    .FirstOrDefault();
-
-                if (launchMethod == null)
+                foreach (IntVec3 cell in affectedCells)
                 {
-                    projectile.Destroy(DestroyMode.Vanish);
-                    return false;
-                }
+                    FilthMaker.TryMakeFilth(cell, map, sickFilth);
 
-                ParameterInfo[] parameters = launchMethod.GetParameters();
-                object[] args = new object[parameters.Length];
-                int localTargetCount = 0;
+                    float severity = cell.DistanceToSquared(targetCell) <= 2.25f
+                        ? SickSpewTargetSeverity
+                        : SickSpewBaseSeverity;
 
-                for (int i = 0; i < parameters.Length; i++)
-                {
-                    ParameterInfo parameter = parameters[i];
-                    Type parameterType = parameter.ParameterType;
-
-                    if (typeof(Thing).IsAssignableFrom(parameterType))
+                    List<Thing> things = cell.GetThingList(map);
+                    for (int i = 0; i < things.Count; i++)
                     {
-                        if (parameter.Name != null && parameter.Name.ToLowerInvariant().Contains("equipment"))
+                        if (!(things[i] is Pawn victim) || victim == spewer || victim.Dead || ZombieUtility.ShouldZombiesIgnore(victim))
                         {
-                            args[i] = null;
+                            continue;
+                        }
+
+                        int victimId = victim.thingIDNumber;
+                        if (severityByPawnId.TryGetValue(victimId, out float existingSeverity))
+                        {
+                            if (severity > existingSeverity)
+                            {
+                                severityByPawnId[victimId] = severity;
+                            }
                         }
                         else
                         {
-                            args[i] = launcher;
+                            severityByPawnId[victimId] = severity;
                         }
-                    }
-                    else if (parameterType == typeof(Vector3))
-                    {
-                        args[i] = origin;
-                    }
-                    else if (parameterType == typeof(LocalTargetInfo))
-                    {
-                        args[i] = localTargetCount++ == 0 ? usedTarget : intendedTarget;
-                    }
-                    else if (parameterType == typeof(ProjectileHitFlags))
-                    {
-                        args[i] = ProjectileHitFlags.IntendedTarget;
-                    }
-                    else if (parameterType == typeof(bool))
-                    {
-                        args[i] = false;
-                    }
-                    else if (parameter.HasDefaultValue)
-                    {
-                        args[i] = parameter.DefaultValue;
-                    }
-                    else if (parameterType.IsValueType)
-                    {
-                        args[i] = Activator.CreateInstance(parameterType);
-                    }
-                    else
-                    {
-                        args[i] = null;
                     }
                 }
 
-                launchMethod.Invoke(projectile, args);
+                foreach (KeyValuePair<int, float> entry in severityByPawnId)
+                {
+                    Pawn victim = map.mapPawns?.AllPawnsSpawned?.FirstOrDefault(p => p.thingIDNumber == entry.Key);
+                    if (victim != null && !victim.Dead)
+                    {
+                        ZombieTraitUtility.TryApplyZombieSickness(victim, entry.Value);
+                    }
+                }
+
                 return true;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                Log.Error($"[ZedZedZed] Failed to launch sick spit projectile: {ex}");
+                Log.Error($"[ZedZedZed] Failed to apply sick spew: {ex}");
                 return false;
             }
+        }
+
+        private static HashSet<IntVec3> GetSickSpewCells(Pawn spewer, Pawn target, Map map)
+        {
+            HashSet<IntVec3> cells = new HashSet<IntVec3>();
+            if (spewer == null || target == null || map == null)
+            {
+                return cells;
+            }
+
+            Vector3 start = spewer.DrawPos;
+            Vector3 end = target.DrawPos;
+            float distance = Mathf.Min(SickSpitMaxRange, Mathf.Max(1f, Vector3.Distance(start, end)));
+            int steps = Mathf.Max(4, Mathf.CeilToInt(distance * 1.75f));
+
+            for (int i = 1; i <= steps; i++)
+            {
+                float t = i / (float)steps;
+                Vector3 point = Vector3.Lerp(start, end, t);
+                IntVec3 centerCell = new IntVec3(Mathf.RoundToInt(point.x), 0, Mathf.RoundToInt(point.z));
+                float radius = Mathf.Max(SickSpewMinCellRadius, Mathf.Lerp(0.18f, SickSpewEndWidth * 0.5f, t));
+
+                foreach (IntVec3 cell in GenRadial.RadialCellsAround(centerCell, radius, true))
+                {
+                    if (cell.InBounds(map) && cell != spewer.PositionHeld)
+                    {
+                        cells.Add(cell);
+                    }
+                }
+            }
+
+            foreach (IntVec3 cell in GenRadial.RadialCellsAround(target.PositionHeld, SickSpewEndWidth * 0.5f, true))
+            {
+                if (cell.InBounds(map) && cell != spewer.PositionHeld)
+                {
+                    cells.Add(cell);
+                }
+            }
+
+            return cells;
         }
 
         public static void HandleSickBloodContact(Map map)

@@ -262,7 +262,7 @@
 
   <HediffDef>
     <defName>CZH_ZombieSickness</defName>
-    <hediffClass>HediffWithComps</hediffClass>
+    <hediffClass>CustomizableZombieHorde.Hediff_ZombieInfection</hediffClass>
     <label>zombie infection</label>
     <description>Contact with sick zombie blood has left this pawn infected. The infection worsens day by day, continues progressing after death, and will turn the corpse unless a bile med kit cures it or the skull is destroyed first. The total time to turn can be adjusted in settings.</description>
     <isBad>true</isBad>

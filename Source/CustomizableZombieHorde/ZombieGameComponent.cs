@@ -26,6 +26,7 @@ namespace CustomizableZombieHorde
         private Dictionary<int, int> lastNightlySpawnDayByMap = new Dictionary<int, int>();
         private Dictionary<int, int> zombieBehaviorByPawnId = new Dictionary<int, int>();
         private List<int> infectionHeadFatalPawnIds = new List<int>();
+        private List<int> infectionLurkerPawnIds = new List<int>();
 
         public ZombieGameComponent(Game game)
         {
@@ -50,6 +51,7 @@ namespace CustomizableZombieHorde
             Scribe_Collections.Look(ref lastNightlySpawnDayByMap, "lastNightlySpawnDayByMap", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref zombieBehaviorByPawnId, "zombieBehaviorByPawnId", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref infectionHeadFatalPawnIds, "infectionHeadFatalPawnIds", LookMode.Value);
+            Scribe_Collections.Look(ref infectionLurkerPawnIds, "infectionLurkerPawnIds", LookMode.Value);
             base.ExposeData();
         }
 
@@ -1105,6 +1107,35 @@ namespace CustomizableZombieHorde
             infectionHeadFatalPawnIds.Remove(pawn.thingIDNumber);
         }
 
+        public void MarkInfectionShouldBecomeLurker(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            infectionLurkerPawnIds ??= new List<int>();
+            if (!infectionLurkerPawnIds.Contains(pawn.thingIDNumber))
+            {
+                infectionLurkerPawnIds.Add(pawn.thingIDNumber);
+            }
+        }
+
+        public bool ShouldBecomeLurkerAfterInfection(Pawn pawn)
+        {
+            return pawn != null && infectionLurkerPawnIds != null && infectionLurkerPawnIds.Contains(pawn.thingIDNumber);
+        }
+
+        public void ClearInfectionShouldBecomeLurker(Pawn pawn)
+        {
+            if (pawn == null || infectionLurkerPawnIds == null)
+            {
+                return;
+            }
+
+            infectionLurkerPawnIds.Remove(pawn.thingIDNumber);
+        }
+
         private void HandleZombieInfectionProgression()
         {
             if (Current.Game == null)
@@ -1146,6 +1177,7 @@ namespace CustomizableZombieHorde
             }
 
             infectionHeadFatalPawnIds.RemoveAll(id => !seen.Contains(id));
+            infectionLurkerPawnIds?.RemoveAll(id => !seen.Contains(id));
         }
 
         private static int DaysToTicks(float days)
