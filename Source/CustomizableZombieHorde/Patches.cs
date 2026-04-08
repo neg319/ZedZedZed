@@ -10,6 +10,12 @@ using Verse.AI;
 
 namespace CustomizableZombieHorde
 {
+    internal static class ZombieButcherSearchState
+    {
+        [ThreadStatic]
+        internal static Bill CurrentBill;
+    }
+
 
     [HarmonyPatch]
     public static class Patch_BloodMoonScreenTint
@@ -445,6 +451,43 @@ namespace CustomizableZombieHorde
             }
 
             __result = ZombieSpecialUtility.BuildZombieButcherProducts(__instance.InnerPawn);
+        }
+    }
+
+    [HarmonyPatch(typeof(WorkGiver_DoBill), "TryFindBestBillIngredients")]
+    public static class Patch_WorkGiver_DoBill_TryFindBestBillIngredients
+    {
+        public static void Prefix(Bill bill)
+        {
+            ZombieButcherSearchState.CurrentBill = bill;
+        }
+
+        public static void Finalizer()
+        {
+            ZombieButcherSearchState.CurrentBill = null;
+        }
+    }
+
+    [HarmonyPatch(typeof(ThingFilter), nameof(ThingFilter.Allows), new[] { typeof(Thing) })]
+    public static class Patch_ThingFilter_Allows_ZombieButchering
+    {
+        public static void Postfix(Thing t, ref bool __result)
+        {
+            if (__result)
+            {
+                return;
+            }
+
+            Bill currentBill = ZombieButcherSearchState.CurrentBill;
+            if (currentBill?.recipe?.defName != "ButcherCorpseFlesh")
+            {
+                return;
+            }
+
+            if (t is Corpse corpse && ZombieUtility.IsZombie(corpse.InnerPawn))
+            {
+                __result = true;
+            }
         }
     }
 

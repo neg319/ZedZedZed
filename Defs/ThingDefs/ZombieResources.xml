@@ -37,10 +37,10 @@
       <Flammability>0.35</Flammability>
       <Nutrition>0.05</Nutrition>
     </statBases>
+    <socialPropernessMatters>true</socialPropernessMatters>
     <ingestible>
       <foodType>Meat</foodType>
       <preferability>RawBad</preferability>
-      <socialPropernessMatters>true</socialPropernessMatters>
     </ingestible>
   </ThingDef>
 
@@ -97,10 +97,10 @@
       <Flammability>0.20</Flammability>
       <Nutrition>0.04</Nutrition>
     </statBases>
+    <socialPropernessMatters>true</socialPropernessMatters>
     <ingestible>
       <foodType>Meat, Processed</foodType>
       <preferability>MealAwful</preferability>
-      <socialPropernessMatters>true</socialPropernessMatters>
     </ingestible>
   </ThingDef>
 
