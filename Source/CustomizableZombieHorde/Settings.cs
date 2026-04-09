@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Verse;
 using RimWorld;
@@ -70,6 +72,8 @@ namespace CustomizableZombieHorde
 
         public bool showZombieCounter = true;
         public bool enableDebugControls = false;
+        public bool enablePrioritizedDoubleTap = false;
+        public List<string> prioritizedDoubleTapWorkTypeDefs = new List<string>();
 
         public bool allowBiters = true;
         public bool allowRunts = true;
@@ -131,6 +135,8 @@ namespace CustomizableZombieHorde
 
             Scribe_Values.Look(ref showZombieCounter, "showZombieCounter", true);
             Scribe_Values.Look(ref enableDebugControls, "enableDebugControls", false);
+            Scribe_Values.Look(ref enablePrioritizedDoubleTap, "enablePrioritizedDoubleTap", false);
+            Scribe_Collections.Look(ref prioritizedDoubleTapWorkTypeDefs, "prioritizedDoubleTapWorkTypeDefs", LookMode.Value);
 
             Scribe_Values.Look(ref allowBiters, "allowBiters", true);
             Scribe_Values.Look(ref allowRunts, "allowRunts", true);
@@ -161,8 +167,8 @@ namespace CustomizableZombieHorde
             {
                 ClampAndRepair();
 
-                Rect headerRect = new Rect(inRect.x, inRect.y, inRect.width, 82f);
-                Rect tabsRect = new Rect(inRect.x, headerRect.yMax + 8f, inRect.width, 34f);
+                Rect headerRect = new Rect(inRect.x, inRect.y, inRect.width, 90f);
+                Rect tabsRect = new Rect(inRect.x, headerRect.yMax + 10f, inRect.width, 34f);
                 Rect bodyRect = new Rect(inRect.x, tabsRect.yMax + 8f, inRect.width, inRect.height - (tabsRect.yMax - inRect.y) - 8f);
 
                 DrawHeader(headerRect);
@@ -242,6 +248,8 @@ namespace CustomizableZombieHorde
 
             showZombieCounter = true;
             enableDebugControls = false;
+            enablePrioritizedDoubleTap = false;
+            prioritizedDoubleTapWorkTypeDefs = GetDefaultDoubleTapWorkTypes();
 
             allowBiters = true;
             allowRunts = true;
@@ -351,6 +359,48 @@ namespace CustomizableZombieHorde
 
             graveEventMinDays = Mathf.Clamp(graveEventMinDays, 3f, 30f);
             graveEventMaxDays = Mathf.Clamp(graveEventMaxDays, graveEventMinDays, 40f);
+
+            prioritizedDoubleTapWorkTypeDefs ??= GetDefaultDoubleTapWorkTypes();
+            prioritizedDoubleTapWorkTypeDefs = prioritizedDoubleTapWorkTypeDefs
+                .Where(defName => !defName.NullOrEmpty() && DefDatabase<WorkTypeDef>.GetNamedSilentFail(defName) != null)
+                .Distinct()
+                .ToList();
+        }
+
+        public bool IsDoubleTapWorkTypeSelected(WorkTypeDef workType)
+        {
+            return workType != null && prioritizedDoubleTapWorkTypeDefs != null && prioritizedDoubleTapWorkTypeDefs.Contains(workType.defName);
+        }
+
+        private void SetDoubleTapWorkTypeSelected(WorkTypeDef workType, bool selected)
+        {
+            if (workType == null)
+            {
+                return;
+            }
+
+            prioritizedDoubleTapWorkTypeDefs ??= GetDefaultDoubleTapWorkTypes();
+            if (selected)
+            {
+                if (!prioritizedDoubleTapWorkTypeDefs.Contains(workType.defName))
+                {
+                    prioritizedDoubleTapWorkTypeDefs.Add(workType.defName);
+                }
+            }
+            else
+            {
+                prioritizedDoubleTapWorkTypeDefs.Remove(workType.defName);
+            }
+        }
+
+        private static List<WorkTypeDef> GetAvailableDoubleTapWorkTypes()
+        {
+            return ZombieDoubleTapUtility.GetAvailableWorkTypes().ToList();
+        }
+
+        private static List<string> GetDefaultDoubleTapWorkTypes()
+        {
+            return ZombieDoubleTapUtility.GetDefaultWorkTypeDefNames();
         }
 
         private string NormalizeVariantName(string value, string fallback)
@@ -379,10 +429,10 @@ namespace CustomizableZombieHorde
             SettingsTheme.DrawHeader(rect);
             SettingsTheme.DrawHeaderWatermark(rect);
 
-            Rect titleRect = new Rect(rect.x + 86f, rect.y + 8f, rect.width - 188f, 30f);
-            Rect subtitleRect = new Rect(rect.x + 86f, rect.y + 36f, rect.width - 188f, 20f);
-            Rect hintRect = new Rect(rect.x + 86f, rect.y + 56f, rect.width - 188f, 18f);
-            Rect badgeRect = new Rect(rect.xMax - 122f, rect.y + 18f, 96f, 28f);
+            Rect titleRect = new Rect(rect.x + 86f, rect.y + 10f, rect.width - 188f, 32f);
+            Rect subtitleRect = new Rect(rect.x + 86f, rect.y + 40f, rect.width - 188f, 22f);
+            Rect hintRect = new Rect(rect.x + 86f, rect.y + 62f, rect.width - 188f, 20f);
+            Rect badgeRect = new Rect(rect.xMax - 122f, rect.y + 20f, 96f, 28f);
 
             Text.Font = GameFont.Medium;
             GUI.color = SettingsTheme.Ink;
@@ -558,6 +608,13 @@ namespace CustomizableZombieHorde
             DrawSectionLabel(listing, "Zombie infection", "Controls how long infected pawns have before the infection fully turns them.");
             DrawIntStepperCard(listing, "Days until infection reaches 100%", "How many in game days it takes an untreated zombie infection to fully turn a pawn. It gets worse in daily steps.", ref infectionDaysToTurn, 1, 30, 1);
 
+            DrawSectionLabel(listing, "Prioritized double tapping", "Pick which colony job types should drop what they are doing and go finish fresh zombie corpses so they do not get back up.");
+            DrawToggleCard(listing, "Enable prioritized double tapping", "Selected pawns will make corpse finishing their top colony side cleanup task and try to destroy the head on zombies that could rise again.", ref enablePrioritizedDoubleTap);
+            if (enablePrioritizedDoubleTap)
+            {
+                DrawDoubleTapWorkTypeChecklist(listing);
+            }
+
             DrawSectionLabel(listing, "Manual controls and safety", "These settings matter most when you are forcing events, testing balance, or comparing setups.");
             DrawIntStepperCard(listing, "Manual horde minimum size", "Smallest group size used by manual spawns and forced events.", ref minGroupSize, 1, 60, 1);
             DrawIntStepperCard(listing, "Manual horde maximum size", "Largest group size used by manual spawns and forced events.", ref maxGroupSize, minGroupSize, 120, 1);
@@ -623,6 +680,48 @@ namespace CustomizableZombieHorde
             Widgets.EndScrollView();
         }
 
+        private void DrawDoubleTapWorkTypeChecklist(Listing_Standard listing)
+        {
+            List<WorkTypeDef> workTypes = GetAvailableDoubleTapWorkTypes();
+            int columnCount = 2;
+            int rowCount = Mathf.CeilToInt(workTypes.Count / (float)columnCount);
+            float descriptionHeight = CalculateWrappedTextHeight("Checked jobs will break off and head straight for reanimation risks on their current map.", Mathf.Max(220f, listing.ColumnWidth - 28f));
+            float cardHeight = Mathf.Max(120f, 50f + descriptionHeight + (rowCount * 28f) + 18f);
+            Rect row = DrawCard(listing, cardHeight);
+
+            Rect titleRect = new Rect(row.x + 12f, row.y + 10f, row.width - 24f, 22f);
+            Rect descRect = new Rect(row.x + 12f, row.y + 34f, row.width - 24f, descriptionHeight + 4f);
+
+            Text.Font = GameFont.Small;
+            GUI.color = SettingsTheme.Ink;
+            Widgets.Label(titleRect, "Checked job types");
+            GUI.color = SettingsTheme.MutedInk;
+            Widgets.Label(descRect, "Checked jobs will break off and head straight for reanimation risks on their current map.");
+            GUI.color = Color.white;
+
+            float startY = descRect.yMax + 10f;
+            float contentWidth = row.width - 24f;
+            float columnWidth = (contentWidth - 10f) / columnCount;
+
+            for (int i = 0; i < workTypes.Count; i++)
+            {
+                WorkTypeDef workType = workTypes[i];
+                int column = i % columnCount;
+                int rowIndex = i / columnCount;
+                Rect itemRect = new Rect(row.x + 12f + (column * (columnWidth + 10f)), startY + (rowIndex * 28f), columnWidth, 24f);
+                bool selected = IsDoubleTapWorkTypeSelected(workType);
+                Rect checkboxRect = new Rect(itemRect.x, itemRect.y, 24f, 24f);
+                Widgets.Checkbox(checkboxRect.position, ref selected, 24f);
+                SetDoubleTapWorkTypeSelected(workType, selected);
+
+                GUI.color = SettingsTheme.Ink;
+                Widgets.Label(new Rect(itemRect.x + 30f, itemRect.y + 2f, itemRect.width - 30f, 22f), (workType.label ?? workType.defName).CapitalizeFirst());
+                GUI.color = Color.white;
+            }
+
+            TooltipHandler.TipRegion(row, "Selected jobs will treat zombie double tapping as their top cleanup task while the feature is enabled.");
+        }
+
         private void BeginScrollableListing(Rect rect, ref Vector2 scrollPosition, ref float viewHeight, out Listing_Standard listing, out Rect viewRect)
         {
             viewRect = new Rect(0f, 0f, rect.width - 18f, viewHeight);
@@ -634,12 +733,12 @@ namespace CustomizableZombieHorde
         private void DrawSectionLabel(Listing_Standard listing, string title, string description)
         {
             float descriptionHeight = CalculateWrappedTextHeight(description, listing.ColumnWidth - 28f);
-            float sectionHeight = Mathf.Max(66f, 34f + descriptionHeight + 16f);
+            float sectionHeight = Mathf.Max(76f, 40f + descriptionHeight + 20f);
             Rect rect = listing.GetRect(sectionHeight);
             SettingsTheme.DrawSectionBand(rect);
 
-            Rect titleRect = new Rect(rect.x + 12f, rect.y + 10f, rect.width - 24f, 24f);
-            Rect descRect = new Rect(rect.x + 12f, rect.y + 36f, rect.width - 24f, descriptionHeight + 4f);
+            Rect titleRect = new Rect(rect.x + 14f, rect.y + 12f, rect.width - 28f, 26f);
+            Rect descRect = new Rect(rect.x + 14f, rect.y + 44f, rect.width - 28f, descriptionHeight + 8f);
 
             Text.Font = GameFont.Medium;
             GUI.color = SettingsTheme.Ink;
@@ -648,7 +747,7 @@ namespace CustomizableZombieHorde
             GUI.color = SettingsTheme.MutedInk;
             Widgets.Label(descRect, description);
             GUI.color = Color.white;
-            listing.Gap(10f);
+            listing.Gap(12f);
         }
 
         private void DrawPresetButtons(Listing_Standard listing)

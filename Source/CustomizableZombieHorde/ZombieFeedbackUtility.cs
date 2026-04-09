@@ -173,7 +173,7 @@ namespace CustomizableZombieHorde
                 string infectionLine;
                 if (ZombieInfectionUtility.HasReanimatedState(innerPawn))
                 {
-                    infectionLine = "Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. A global reanimation sweep checks this corpse every 1 to 3 in game hours. If the head and skull are still intact when that sweep happens, it will try to rise. ";
+                    infectionLine = "Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. This corpse will try to rise again after its reanimation delay, and a global sweep checks for ready corpses every 1 to 3 in game hours. ";
                 }
                 else
                 {
@@ -183,16 +183,16 @@ namespace CustomizableZombieHorde
                 }
 
                 ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
-                if (component != null && component.TryGetInfectionReanimationTick(corpse, out int wakeTick) && Find.TickManager != null)
+                if (component != null && component.TryGetCorpseReanimationTick(corpse, out int wakeTick) && Find.TickManager != null)
                 {
                     int ticksLeft = wakeTick - Find.TickManager.TicksGame;
                     if (ticksLeft > 0)
                     {
-                        infectionLine += "The next global resurrection sweep is in about " + ticksLeft.ToStringTicksToPeriod() + ".";
+                        infectionLine += "It should be ready in about " + ticksLeft.ToStringTicksToPeriod() + ".";
                     }
                     else
                     {
-                        infectionLine += "The next global resurrection sweep is about to happen.";
+                        infectionLine += "It should be ready to rise now.";
                     }
                 }
                 else

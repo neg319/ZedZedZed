@@ -183,7 +183,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 52** of the active development cycle in this build set.
+This source package is currently at **iteration 58** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -212,6 +212,12 @@ Iteration history:
 - Iteration 50: captured zombie prison rules were expanded so standard strains can be enslaved, only lurkers remain recruitable, and colony aligned undead stop treating colonists as prey while still going after enemy raiders.
 - Iteration 51: zombie reanimation head checks were loosened so small head injuries no longer permanently block resurrection, while destroyed or badly ruined heads still keep a corpse down.
 - Iteration 52: zombie resurrection was moved into a global reanimation sweep that runs every random 1 to 3 in game hours and only revives dead pawns or zombies that already carry the Reanimated state.
+- Iteration 53: the map counter HUD was rebuilt again with more vertical room and a fully solid background, and the resurrection call now searches for the same vanilla revive methods more aggressively and only counts success when the corpse actually comes back to life.
+- Iteration 54: reanimation now uses a corpse based global rise system that spawns a fresh zombie after its cooldown instead of trying to wake the dead pawn itself, and the HUD counter got another spacing pass so the lower line finally clears the bottom edge.
+- Iteration 55: passive lurker reanimation, colony lurker relationship carryover, boomer reanimation exclusion, and stale corpse wake cleanup were corrected so the corpse rise system stops fighting those edge cases.
+- Iteration 56: all active code paths that used the old zombie passive trait were unified onto dead scent, while the old trait def was kept only as a legacy save compatibility alias.
+- Iteration 57: the settings menu headers got more breathing room so section titles and subtext sit cleaner with less clipping and overlap.
+- Iteration 58: added prioritized double tapping with a settings toggle, a job type checklist, and a colony side corpse finishing job that damages zombie heads so they stay down.
 
 ## Changelog
 
@@ -232,6 +238,31 @@ This changelog treats a **major update** as something that adds substantial new 
 - Added rotten leather furniture and expanded rotten leather floors with multiple variants.
 
 ### Minor updates
+
+#### 2026-04-09 - prioritized double tapping
+- Added a new settings toggle for prioritized double tapping so selected colony workers can treat corpse finishing as a top cleanup task.
+- Added a job type checklist so you can decide which work roles are allowed to break off and go keep zombie corpses down.
+- Added a dedicated corpse finishing job that walks to zombie corpses and batters the head and brain so they stop qualifying for reanimation.
+
+#### 2026-04-09 - settings header spacing cleanup
+- Added a little more padding to the settings menu header so the main title, subtitle, and hint line sit with more breathing room.
+- Increased spacing inside section headers so title text and description text are less likely to overlap or clip at the edges.
+
+#### 2026-04-09 - dead scent trait cleanup
+- Replaced all active uses of the old zombie passive trait with dead scent so lurkers and other ignored pawns now use one shared trait path.
+- Kept the old zombie passive def only as a legacy save compatibility alias so older saves can still load cleanly.
+
+#### 2026-04-09 - reanimation edge case cleanup
+- Fixed passive lurkers so they stay passive after rising again instead of being reassigned to the hostile zombie faction.
+- Fixed colony lurker reanimation so name, skills, and direct pawn relationships can carry over more cleanly when a colonist returns as a colony lurker.
+- Excluded boomers from recurring reanimation, since they leave burst remains instead of a usable corpse.
+- Added cleanup for stale corpse wake entries so old destroyed corpses stop leaving dead timer data behind.
+
+#### 2026-04-09 - corpse rise rework and counter spacing
+- Reworked zombie reanimation so the game now checks ready corpses globally, then spawns a fresh zombie from the corpse instead of relying on code that lives on the dead pawn.
+- Dead zombies now use the normal reanimation delay setting as their cooldown, while the global sweep still only runs every random 1 to 3 in game hours to keep checks lightweight.
+- Dead infected pawns now rise through that same corpse based path, with colony victims returning as colony lurkers and hostile victims returning as normal horde members.
+- The map counter got another size and spacing pass so the Danger line has more room and no longer rides the bottom edge.
 
 #### 2026-04-09 - global reanimation sweep
 - Moved zombie resurrection checks out of corpse bound timing and into a game level reanimation sweep.

@@ -48,7 +48,6 @@ namespace CustomizableZombieHorde
         public static TraitDef CZH_Trait_ZombieSickImmune;
         public static TraitDef CZH_Trait_HeadHunter;
         public static TraitDef CZH_Trait_DeadScent;
-        public static TraitDef CZH_Trait_ZombiePassive;
         public static TraitDef CZH_Trait_HardToKill;
         public static TraitDef CZH_Trait_SteadyHands;
         public static TraitDef CZH_Trait_QuickEscape;
@@ -57,6 +56,7 @@ namespace CustomizableZombieHorde
         public static JobDef CZH_TameLurker;
         public static JobDef CZH_RecruitLurker;
         public static JobDef CZH_AdministerBileTreatment;
+        public static JobDef CZH_DoubleTapZombieCorpse;
 
         static ZombieDefOf()
         {

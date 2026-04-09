@@ -76,7 +76,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            EnsureLurkerZombiePassiveTrait(lurker);
+            EnsureLurkerDeadScent(lurker);
             EnsureEmotionlessLurker(lurker);
             TrySetFaction(lurker, Faction.OfPlayer);
             EnsureColonyLurkerState(lurker, emergencyStabilize: true, stopCurrentJobs: true);
@@ -92,7 +92,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            EnsureLurkerZombiePassiveTrait(lurker);
+            EnsureLurkerDeadScent(lurker);
             EnsureEmotionlessLurker(lurker);
             ZombiePawnFactory.FinalizeZombie(lurker, initialSpawn: true, desiredFaction: null);
             ClearFaction(lurker);
@@ -100,9 +100,9 @@ namespace CustomizableZombieHorde
             EnsurePassiveLurkerBehavior(lurker);
         }
 
-        public static void EnsureLurkerZombiePassiveTrait(Pawn pawn)
+        public static void EnsureLurkerDeadScent(Pawn pawn)
         {
-            ZombieTraitUtility.EnsureTrait(pawn, ZombieDefOf.CZH_Trait_ZombiePassive);
+            ZombieTraitUtility.EnsureTrait(pawn, ZombieDefOf.CZH_Trait_DeadScent);
         }
 
         public static void EnsureEmotionlessLurker(Pawn pawn)
@@ -159,7 +159,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            EnsureLurkerZombiePassiveTrait(pawn);
+            EnsureLurkerDeadScent(pawn);
             EnsureEmotionlessLurker(pawn);
             EndLurkerMentalState(pawn);
 

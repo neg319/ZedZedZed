@@ -14,6 +14,11 @@ namespace CustomizableZombieHorde
 
         public static Pawn GenerateZombie(PawnKindDef kind, Faction faction)
         {
+            return GenerateZombie(kind, faction, initialSpawn: true);
+        }
+
+        private static Pawn GenerateZombie(PawnKindDef kind, Faction faction, bool initialSpawn)
+        {
             Pawn pawn = null;
             SuppressZombieRelationGeneration = true;
             try
@@ -39,13 +44,117 @@ namespace CustomizableZombieHorde
                 SuppressZombieRelationGeneration = false;
             }
 
-            FinalizeZombie(pawn, initialSpawn: true, desiredFaction: faction);
+            FinalizeZombie(pawn, initialSpawn: initialSpawn, desiredFaction: faction);
             return pawn;
         }
 
         public static void FinalizeZombie(Pawn pawn, bool initialSpawn, Faction desiredFaction = null)
         {
             ConvertExistingPawnToZombie(pawn, pawn?.kindDef, desiredFaction, preserveName: false, preserveSkills: false, preserveRelations: false, initialSpawn: initialSpawn);
+        }
+
+
+        public static bool TrySpawnReanimatedZombieFromCorpse(Corpse corpse, out Pawn newPawn)
+        {
+            newPawn = null;
+            Pawn sourcePawn = corpse?.InnerPawn;
+            if (sourcePawn == null)
+            {
+                return false;
+            }
+
+            if (ZombieUtility.IsVariant(sourcePawn, ZombieVariant.Boomer))
+            {
+                return false;
+            }
+
+            ZombieVariant variant = ZombieUtility.GetVariant(sourcePawn);
+            PawnKindDef kind = ZombieKindSelector.GetKindForVariant(variant, corpse.MapHeld)
+                ?? sourcePawn.kindDef
+                ?? ZombieKindSelector.GetKindForVariant(ZombieVariant.Biter, corpse.MapHeld);
+            Faction desiredFaction = ZombieLurkerUtility.IsPassiveLurker(sourcePawn)
+                ? null
+                : (ZombieUtility.IsPlayerAlignedZombie(sourcePawn) ? Faction.OfPlayer : ZombieFactionUtility.GetOrCreateZombieFaction());
+            bool preserveName = ZombieUtility.IsPlayerAlignedZombie(sourcePawn) || ZombieLurkerUtility.IsLurker(sourcePawn);
+            bool preserveSkills = ZombieLurkerUtility.IsColonyLurker(sourcePawn);
+            bool preserveRelations = ZombieLurkerUtility.IsColonyLurker(sourcePawn);
+            return TrySpawnReanimatedPawnFromCorpse(corpse, kind, desiredFaction, preserveName, preserveSkills, preserveRelations, out newPawn);
+        }
+
+        public static bool TrySpawnReanimatedPawnFromCorpse(Corpse corpse, PawnKindDef kindDef, Faction desiredFaction, bool preserveName, bool preserveSkills, bool preserveRelations, out Pawn newPawn)
+        {
+            newPawn = null;
+            Pawn sourcePawn = corpse?.InnerPawn;
+            Map map = corpse?.MapHeld;
+            if (sourcePawn == null || map == null || kindDef == null)
+            {
+                return false;
+            }
+
+            Faction generationFaction = desiredFaction ?? ZombieFactionUtility.GetOrCreateZombieFaction();
+            Pawn generatedPawn = null;
+            try
+            {
+                generatedPawn = GenerateZombie(kindDef, generationFaction, initialSpawn: false);
+                if (generatedPawn == null)
+                {
+                    return false;
+                }
+
+                CopyReanimatedIdentity(sourcePawn, generatedPawn, preserveName, preserveSkills, preserveRelations);
+                if (desiredFaction == null && ZombieLurkerUtility.IsLurker(generatedPawn))
+                {
+                    ZombieLurkerUtility.ClearFaction(generatedPawn);
+                }
+
+                IntVec3 spawnCell = corpse.PositionHeld;
+                if (!spawnCell.IsValid || !spawnCell.InBounds(map))
+                {
+                    spawnCell = CellFinder.RandomClosewalkCellNear(map.Center, map, 8);
+                }
+
+                GenSpawn.Spawn(generatedPawn, spawnCell, map, WipeMode.Vanish);
+                Current.Game?.GetComponent<ZombieGameComponent>()?.RegisterBehavior(generatedPawn, ZombieSpawnEventType.AssaultBase);
+                ZombieUtility.PrepareZombieForReanimation(generatedPawn);
+                ZombieUtility.PrepareSpawnedZombie(generatedPawn);
+                if (preserveName && sourcePawn.Name != null)
+                {
+                    TrySetPawnName(generatedPawn, sourcePawn.Name);
+                }
+                ZombieUtility.RefreshDrownedState(generatedPawn);
+
+                if (ZombieLurkerUtility.IsPassiveLurker(generatedPawn))
+                {
+                    generatedPawn.jobs?.StopAll();
+                    ZombieLurkerUtility.EnsurePassiveLurkerBehavior(generatedPawn);
+                }
+                else if (ZombieLurkerUtility.IsColonyLurker(generatedPawn))
+                {
+                    ZombieLurkerUtility.EnsureColonyLurkerState(generatedPawn, emergencyStabilize: true, stopCurrentJobs: true);
+                }
+                else
+                {
+                    ZombieUtility.AssignInitialShambleJob(generatedPawn);
+                    ZombieUtility.EnsureZombieAggression(generatedPawn);
+                }
+
+                ZombieUtility.MarkPawnGraphicsDirty(generatedPawn);
+                corpse.Destroy(DestroyMode.Vanish);
+                newPawn = generatedPawn;
+                return true;
+            }
+            catch
+            {
+                try
+                {
+                    generatedPawn?.Destroy(DestroyMode.Vanish);
+                }
+                catch
+                {
+                }
+
+                return false;
+            }
         }
 
         public static void ConvertExistingPawnToZombie(Pawn pawn, PawnKindDef newKind, Faction desiredFaction, bool preserveName, bool preserveSkills, bool preserveRelations, bool initialSpawn)
@@ -166,6 +275,243 @@ namespace CustomizableZombieHorde
             try
             {
                 pawn.health.AddHediff(ZombieDefOf.CZH_PregnantBoomer);
+            }
+            catch
+            {
+            }
+        }
+
+
+
+        private static void CopyReanimatedIdentity(Pawn source, Pawn destination, bool preserveName, bool preserveSkills, bool preserveRelations)
+        {
+            if (source == null || destination == null)
+            {
+                return;
+            }
+
+            if (preserveName && source.Name != null)
+            {
+                TrySetPawnName(destination, source.Name);
+            }
+
+            TrySetGender(destination, source.gender);
+            CopyAge(source, destination);
+            CopyStoryIdentity(source, destination);
+            if (preserveSkills)
+            {
+                CopySkills(source, destination);
+            }
+
+            if (preserveRelations)
+            {
+                CopyRelations(source, destination);
+            }
+        }
+
+        private static void CopyStoryIdentity(Pawn source, Pawn destination)
+        {
+            if (source?.story == null || destination?.story == null)
+            {
+                return;
+            }
+
+            try
+            {
+                destination.story.skinColorOverride = source.story.skinColorOverride;
+                destination.story.bodyType = source.story.bodyType;
+            }
+            catch
+            {
+            }
+
+            CopyObjectMember(source.story, destination.story, "melanin");
+            CopyObjectMember(source.story, destination.story, "hairDef");
+            CopyObjectMember(source.story, destination.story, "hairColor");
+            CopyObjectMember(source.story, destination.story, "headType");
+            CopyObjectMember(source.story, destination.story, "crownType");
+            CopyObjectMember(source.story, destination.story, "favoriteColor");
+        }
+
+        private static void CopyAge(Pawn source, Pawn destination)
+        {
+            if (source?.ageTracker == null || destination?.ageTracker == null)
+            {
+                return;
+            }
+
+            CopyObjectMember(source.ageTracker, destination.ageTracker, "ageBiologicalTicksInt");
+            CopyObjectMember(source.ageTracker, destination.ageTracker, "ageChronologicalTicksInt");
+            CopyObjectMember(source.ageTracker, destination.ageTracker, "birthAbsTicksInt");
+        }
+
+
+        private static void CopyRelations(Pawn source, Pawn destination)
+        {
+            if (source?.relations == null || destination?.relations == null)
+            {
+                return;
+            }
+
+            System.Collections.IEnumerable directRelations = null;
+            try
+            {
+                directRelations = GetObjectMember(source.relations, "DirectRelations") as System.Collections.IEnumerable;
+            }
+            catch
+            {
+            }
+
+            if (directRelations == null)
+            {
+                directRelations = GetObjectMember(source.relations, "directRelations") as System.Collections.IEnumerable;
+            }
+
+            if (directRelations == null)
+            {
+                return;
+            }
+
+            MethodInfo addDirectRelation = AccessTools.Method(source.relations.GetType(), "AddDirectRelation");
+            if (addDirectRelation == null)
+            {
+                return;
+            }
+
+            foreach (object directRelation in directRelations)
+            {
+                if (directRelation == null)
+                {
+                    continue;
+                }
+
+                object relationDef = GetObjectMember(directRelation, "def");
+                Pawn otherPawn = GetObjectMember(directRelation, "otherPawn") as Pawn;
+                if (relationDef == null || otherPawn == null || otherPawn == destination)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    addDirectRelation.Invoke(destination.relations, new object[] { relationDef, otherPawn });
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static void CopySkills(Pawn source, Pawn destination)
+        {
+            if (source?.skills?.skills == null || destination?.skills?.skills == null)
+            {
+                return;
+            }
+
+            foreach (SkillRecord sourceSkill in source.skills.skills)
+            {
+                if (sourceSkill?.def == null)
+                {
+                    continue;
+                }
+
+                for (int i = 0; i < destination.skills.skills.Count; i++)
+                {
+                    SkillRecord destinationSkill = destination.skills.skills[i];
+                    if (destinationSkill?.def != sourceSkill.def)
+                    {
+                        continue;
+                    }
+
+                    SetObjectMember(destinationSkill, "levelInt", sourceSkill.Level);
+                    SetObjectMember(destinationSkill, "passion", sourceSkill.passion);
+                    SetObjectMember(destinationSkill, "xpSinceLastLevel", GetObjectMember(sourceSkill, "xpSinceLastLevel"));
+                    SetObjectMember(destinationSkill, "xpSinceMidnight", GetObjectMember(sourceSkill, "xpSinceMidnight"));
+                    SetObjectMember(destinationSkill, "totallyDisabled", GetObjectMember(sourceSkill, "totallyDisabled"));
+                    break;
+                }
+            }
+        }
+
+        private static void TrySetGender(Pawn pawn, Gender gender)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            SetObjectMember(pawn, "gender", gender);
+            SetObjectMember(pawn, "genderInt", gender);
+        }
+
+        private static void CopyObjectMember(object source, object destination, string memberName)
+        {
+            object value = GetObjectMember(source, memberName);
+            if (value != null)
+            {
+                SetObjectMember(destination, memberName, value);
+            }
+        }
+
+        private static object GetObjectMember(object source, string memberName)
+        {
+            if (source == null || memberName.NullOrEmpty())
+            {
+                return null;
+            }
+
+            try
+            {
+                PropertyInfo property = AccessTools.Property(source.GetType(), memberName);
+                if (property != null)
+                {
+                    return property.GetValue(source, null);
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                FieldInfo field = AccessTools.Field(source.GetType(), memberName);
+                if (field != null)
+                {
+                    return field.GetValue(source);
+                }
+            }
+            catch
+            {
+            }
+
+            return null;
+        }
+
+        private static void SetObjectMember(object destination, string memberName, object value)
+        {
+            if (destination == null || memberName.NullOrEmpty())
+            {
+                return;
+            }
+
+            try
+            {
+                PropertyInfo property = AccessTools.Property(destination.GetType(), memberName);
+                if (property != null && property.CanWrite)
+                {
+                    property.SetValue(destination, value, null);
+                    return;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                FieldInfo field = AccessTools.Field(destination.GetType(), memberName);
+                field?.SetValue(destination, value);
             }
             catch
             {

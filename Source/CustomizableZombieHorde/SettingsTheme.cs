@@ -124,13 +124,18 @@ namespace CustomizableZombieHorde
 
         public static void DrawCounterPanel(Rect rect)
         {
-            DrawOverlay(rect, new Color(0.07f, 0.08f, 0.07f, 0.98f));
-            DrawTexturedRect(rect, CardTexture, new Color(0.24f, 0.27f, 0.23f, 0.22f));
-            DrawOverlay(rect, new Color(0f, 0f, 0f, 0.22f));
+            DrawOverlay(rect, new Color(0.04f, 0.05f, 0.04f, 1f));
+
+            Rect topBand = new Rect(rect.x + 1f, rect.y + 1f, rect.width - 2f, 24f);
+            DrawOverlay(topBand, new Color(0.11f, 0.12f, 0.10f, 0.96f));
+
+            Rect bodyBand = new Rect(rect.x + 1f, rect.y + 25f, rect.width - 2f, rect.height - 30f);
+            DrawOverlay(bodyBand, new Color(0.08f, 0.09f, 0.08f, 0.98f));
+
             DrawBorder(rect, BorderBright, 1f);
             DrawBorder(rect.ContractedBy(2f), Border, 1f);
 
-            Rect accentStrip = new Rect(rect.x, rect.yMax - 3f, rect.width, 3f);
+            Rect accentStrip = new Rect(rect.x + 1f, rect.yMax - 5f, rect.width - 2f, 2f);
             DrawOverlay(accentStrip, new Color(0.56f, 0.12f, 0.12f, 0.92f));
         }
 

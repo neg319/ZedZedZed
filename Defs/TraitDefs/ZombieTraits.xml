@@ -80,14 +80,16 @@
   </TraitDef>
 
 
+  <!-- Legacy compatibility trait kept only so older saves that already contain CZH_Trait_ZombiePassive can still load cleanly.
+       New code now uses CZH_Trait_DeadScent everywhere instead. -->
   <TraitDef>
     <defName>CZH_Trait_ZombiePassive</defName>
-    <description>This pawn carries a corpse-like scent and presence that leaves zombies strangely uninterested.</description>
+    <description>Legacy compatibility alias for dead scent.</description>
     <commonality>0.0</commonality>
     <degreeDatas>
       <li>
         <label>dead scent</label>
-        <description>Zombies do not treat this pawn as hostile and usually ignore them unless caught in collateral damage.</description>
+        <description>Legacy compatibility alias for dead scent.</description>
         <degree>0</degree>
       </li>
     </degreeDatas>

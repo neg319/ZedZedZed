@@ -22,14 +22,14 @@ namespace CustomizableZombieHorde
             return HasTrait(pawn, ZombieDefOf.CZH_Trait_HeadHunter);
         }
 
-        public static bool HasZombiePassive(Pawn pawn)
+        public static bool HasDeadScent(Pawn pawn)
         {
-            return HasTrait(pawn, ZombieDefOf.CZH_Trait_ZombiePassive);
+            return HasTrait(pawn, ZombieDefOf.CZH_Trait_DeadScent);
         }
 
         public static bool IsIgnoredByZombies(Pawn pawn)
         {
-            return HasZombiePassive(pawn) || HasTrait(pawn, ZombieDefOf.CZH_Trait_DeadScent);
+            return HasDeadScent(pawn);
         }
 
         public static void EnsureTrait(Pawn pawn, TraitDef traitDef)

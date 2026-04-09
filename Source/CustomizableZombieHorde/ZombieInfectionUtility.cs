@@ -242,41 +242,32 @@ namespace CustomizableZombieHorde
             }
 
             bool wasColonist = ShouldBecomeLurkerAfterInfection(pawn, component);
-            Name preservedName = wasColonist ? pawn.Name : null;
-            component?.ClearInfectionReanimation(corpse);
+            PawnKindDef newKind = wasColonist
+                ? ZombieKindSelector.GetKindForVariant(ZombieVariant.Lurker, corpse.MapHeld)
+                : ZombieKindSelector.GetRandomKind(corpse.MapHeld);
+            Faction desiredFaction = wasColonist ? Faction.OfPlayer : ZombieFactionUtility.GetOrCreateZombieFaction();
 
-            if (!ZombieUtility.TryResurrectZombie(pawn))
+            if (!ZombiePawnFactory.TrySpawnReanimatedPawnFromCorpse(corpse, newKind, desiredFaction, preserveName: wasColonist, preserveSkills: wasColonist, preserveRelations: wasColonist, out Pawn risenPawn))
             {
-                component?.ScheduleInfectionReanimation(corpse, forceReschedule: true, fixedDelayTicks: GenDate.TicksPerHour);
+                component?.ScheduleInfectionReanimation(corpse, forceReschedule: true);
                 return false;
             }
 
-            Hediff lingeringInfection = GetZombieInfection(pawn);
-            if (lingeringInfection != null)
-            {
-                lingeringInfection.Severity = 1f;
-            }
+            component?.ClearInfectionHeadFatal(pawn);
+            component?.ClearInfectionShouldBecomeLurker(pawn);
+            component?.ClearInfectionReanimation(corpse);
+            component?.ClearDeadInfectedCorpse(corpse);
+            ApplyReanimatedState(risenPawn);
 
             if (wasColonist)
             {
-                PawnKindDef lurkerKind = ZombieKindSelector.GetKindForVariant(ZombieVariant.Lurker, pawn.MapHeld);
-                ZombiePawnFactory.ConvertExistingPawnToZombie(pawn, lurkerKind, Faction.OfPlayer, preserveName: true, preserveSkills: true, preserveRelations: true, initialSpawn: false);
-                if (preservedName != null)
-                {
-                    ZombiePawnFactory.TrySetPawnName(pawn, preservedName);
-                }
-
-                ApplyReanimatedState(pawn);
-                ZombieLurkerUtility.EnsureColonyLurkerState(pawn, emergencyStabilize: true, stopCurrentJobs: true);
-                ZombieFeedbackUtility.SendZombieTurnMessage(pawn, becameLurker: true);
+                ZombieLurkerUtility.EnsureColonyLurkerState(risenPawn, emergencyStabilize: true, stopCurrentJobs: true);
+                ZombieFeedbackUtility.SendZombieTurnMessage(risenPawn, becameLurker: true);
                 return true;
             }
 
-            PawnKindDef randomKind = ZombieKindSelector.GetRandomKind(pawn.MapHeld);
-            ZombiePawnFactory.ConvertExistingPawnToZombie(pawn, randomKind, ZombieFactionUtility.GetOrCreateZombieFaction(), preserveName: false, preserveSkills: false, preserveRelations: false, initialSpawn: false);
-            ApplyReanimatedState(pawn);
-            ZombieUtility.EnsureZombieAggression(pawn);
-            ZombieFeedbackUtility.SendZombieTurnMessage(pawn, becameLurker: false);
+            ZombieUtility.EnsureZombieAggression(risenPawn);
+            ZombieFeedbackUtility.SendZombieTurnMessage(risenPawn, becameLurker: false);
             return true;
         }
 

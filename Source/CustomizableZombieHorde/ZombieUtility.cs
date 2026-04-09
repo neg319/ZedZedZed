@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -882,7 +883,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (pawn.Faction == null)
+            if (pawn.Faction == null && !ZombieLurkerUtility.IsPassiveLurker(pawn))
             {
                 pawn.SetFactionDirect(ZombieFactionUtility.GetOrCreateZombieFaction());
             }
@@ -1325,27 +1326,151 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            try
+            if (!pawn.Dead)
             {
-                var resurrectMethod = AccessTools.Method(typeof(ResurrectionUtility), "Resurrect", new[] { typeof(Pawn) });
-                if (resurrectMethod != null)
-                {
-                    resurrectMethod.Invoke(null, new object[] { pawn });
-                    return true;
-                }
-
-                var tryResurrectMethod = AccessTools.Method(typeof(ResurrectionUtility), "TryResurrect", new[] { typeof(Pawn) });
-                if (tryResurrectMethod != null)
-                {
-                    object result = tryResurrectMethod.Invoke(null, new object[] { pawn });
-                    return !(result is bool success) || success;
-                }
-            }
-            catch
-            {
+                return true;
             }
 
-            return false;
+            Corpse corpse = ResolveCorpseForResurrection(pawn);
+            Type[] candidateTypes =
+            {
+                typeof(ResurrectionUtility),
+                AccessTools.TypeByName("RimWorld.DebugToolsSpawning"),
+                AccessTools.TypeByName("Verse.DebugToolsSpawning")
+            };
+
+            foreach (Type type in candidateTypes)
+            {
+                if (type == null)
+                {
+                    continue;
+                }
+
+                MethodInfo[] methods;
+                try
+                {
+                    methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                foreach (MethodInfo method in methods)
+                {
+                    if (method == null)
+                    {
+                        continue;
+                    }
+
+                    if (!string.Equals(method.Name, "Resurrect", StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(method.Name, "TryResurrect", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (!TryBuildResurrectionArgs(method, pawn, corpse, out object[] args))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        object result = method.Invoke(null, args);
+                        if (!pawn.Dead)
+                        {
+                            return true;
+                        }
+
+                        if (result is bool success && success && !pawn.Dead)
+                        {
+                            return true;
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            return !pawn.Dead;
+        }
+
+        private static Corpse ResolveCorpseForResurrection(Pawn pawn)
+        {
+            if (pawn?.Corpse != null && !pawn.Corpse.Destroyed)
+            {
+                return pawn.Corpse;
+            }
+
+            Map map = pawn?.MapHeld;
+            if (map != null && pawn.PositionHeld.IsValid && pawn.PositionHeld.InBounds(map))
+            {
+                Corpse localCorpse = map.thingGrid?.ThingsAt(pawn.PositionHeld)?.OfType<Corpse>()?.FirstOrDefault(c => c.InnerPawn == pawn);
+                if (localCorpse != null && !localCorpse.Destroyed)
+                {
+                    return localCorpse;
+                }
+            }
+
+            foreach (Map searchMap in Find.Maps)
+            {
+                Corpse found = searchMap.listerThings.ThingsInGroup(ThingRequestGroup.Corpse).OfType<Corpse>().FirstOrDefault(c => c.InnerPawn == pawn && !c.Destroyed);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool TryBuildResurrectionArgs(MethodInfo method, Pawn pawn, Corpse corpse, out object[] args)
+        {
+            args = null;
+            ParameterInfo[] parameters = method.GetParameters();
+            if (parameters == null || parameters.Length == 0 || parameters.Length > 4)
+            {
+                return false;
+            }
+
+            bool assignedPawnOrCorpse = false;
+            object[] built = new object[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                ParameterInfo parameter = parameters[i];
+                Type parameterType = parameter.ParameterType;
+
+                if (parameterType.IsAssignableFrom(typeof(Pawn)))
+                {
+                    built[i] = pawn;
+                    assignedPawnOrCorpse = true;
+                    continue;
+                }
+
+                if (corpse != null && parameterType.IsAssignableFrom(typeof(Corpse)))
+                {
+                    built[i] = corpse;
+                    assignedPawnOrCorpse = true;
+                    continue;
+                }
+
+                if (parameter.IsOptional)
+                {
+                    built[i] = parameter.DefaultValue is DBNull ? Type.Missing : parameter.DefaultValue;
+                    continue;
+                }
+
+                return false;
+            }
+
+            if (!assignedPawnOrCorpse)
+            {
+                return false;
+            }
+
+            args = built;
+            return true;
         }
     }
 }
