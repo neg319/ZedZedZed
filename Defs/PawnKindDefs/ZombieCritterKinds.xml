@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <PawnKindDef>
+    <defName>CZH_RuntKind</defName>
+    <label>runt</label>
+    <race>CZH_Runt</race>
+    <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
+    <combatPower>18</combatPower>
+    <canArriveManhunter>true</canArriveManhunter>
+    <canBeSapper>false</canBeSapper>
+  </PawnKindDef>
+</Defs>

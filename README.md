@@ -73,7 +73,7 @@ Iteration history:
 - Iteration 5 to 10: infection, terminal, lurker, and reanimation systems reworked into a staged death and resurrection flow
 - Iteration 11 to 16: sick spew presentation polish, dead infection corpse tracking, and related build fixes
 - Iteration 17 to 23: zombie flooring, texture scale work, acid and blood damage over time, filth variation support, and runt child enforcement
-- Iteration 24 to 29: crawler creature added, boomer crawler spawning added, naming cleanup, and debug spawn support
+- Iteration 24 to 29: runt creature added, boomer runt spawning added, naming cleanup, and debug spawn support
 - Iteration 30 to 32: settings cleanup, leftover system cleanup, pregnant boomer natural spawn pass, and README documentation upgrades
 - Iteration 33: rotten leather furniture added, including a functional chair and bed with directional textures
 - Iteration 34: rotten leather bed art rebuilt with cleaner vanilla inspired north, east, and south textures
@@ -103,7 +103,7 @@ Only major updates are listed here. Small single line tweaks are intentionally l
 - Added a rotten leather chair and rotten leather bed as fully buildable furniture that use rotten leather specifically instead of generic leather
 - Added north, east, and south directional textures for both rotten leather furniture pieces
 - Added a dedicated rotten leather stuff category so the new furniture can be restricted cleanly to rotten leather while leaving other leathery crafting behavior alone
-- Added the crawler creature as a new zombie critter with directional textures, fast movement, low damage, debug spawning, and rare natural spawns with biter groups
+- Added the runt creature as a new zombie critter with directional textures, fast movement, low damage, debug spawning, and rare natural spawns with biter groups
 - Added pregnant boomer support, then promoted it from a debug only test hook into a natural gameplay feature
 - Reworked dead infection progression so corpses can keep progressing after death and enter the reanimation cycle correctly
 - Reworked reanimation rules around Terminal and Reanimated states, hourly corpse checks, and recurring resurrection behavior
