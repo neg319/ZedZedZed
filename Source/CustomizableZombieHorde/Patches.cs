@@ -582,9 +582,9 @@ namespace CustomizableZombieHorde
             string countText = familyLabel + ": " + currentCount;
             string dangerText = cap > 0 ? $"Danger: {capPercent:0}%" : "Danger: off";
 
-            Rect rect = new Rect(UI.screenWidth - 176f, 6f, 166f, 34f);
-            Rect countRect = new Rect(rect.x + 8f, rect.y + 4f, rect.width - 16f, 15f);
-            Rect detailRect = new Rect(rect.x + 8f, rect.y + 18f, rect.width - 16f, 12f);
+            Rect rect = new Rect(UI.screenWidth - 176f, 6f, 166f, 40f);
+            Rect countRect = new Rect(rect.x + 8f, rect.y + 4f, rect.width - 16f, 16f);
+            Rect detailRect = new Rect(rect.x + 8f, rect.y + 21f, rect.width - 16f, 15f);
 
             SettingsTheme.DrawCounterPanel(rect);
 

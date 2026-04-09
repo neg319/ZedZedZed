@@ -3,34 +3,18 @@
   <ThingDef ParentName="Bed">
     <defName>CZH_RottenLeatherBed</defName>
     <label>rotten leather bed</label>
-    <description>A rough cot bed stitched from treated rotten leather over a salvage frame. It is ugly and foul smelling, but it still functions as a proper bed.</description>
+    <description>A standard single bed rebuilt with rotten leather instead of wood. It uses the normal wooden bed footprint, the normal wooden bed behavior, and custom rotten leather textures.</description>
     <graphicData>
       <texPath>Things/Building/Furniture/RottenLeatherBed/RottenLeatherBed</texPath>
       <graphicClass>Graphic_Multi</graphicClass>
-      <drawSize>(2.0,1.0)</drawSize>
+      <drawSize>(1.0,2.0)</drawSize>
     </graphicData>
     <uiIconPath>Things/Building/Furniture/RottenLeatherBed/RottenLeatherBed_south</uiIconPath>
-    <size>(2,1)</size>
-    <designationCategory>Furniture</designationCategory>
-    <researchPrerequisites>
-      <li>ComplexFurniture</li>
-    </researchPrerequisites>
+    <size>(1,2)</size>
     <stuffCategories Inherit="False">
       <li>CZH_RottenLeathery</li>
     </stuffCategories>
     <costStuffCount>45</costStuffCount>
-    <statBases Inherit="False">
-      <MaxHitPoints>110</MaxHitPoints>
-      <Mass>24</Mass>
-      <Beauty>-1</Beauty>
-      <Flammability>0.70</Flammability>
-      <WorkToBuild>900</WorkToBuild>
-      <MarketValue>38</MarketValue>
-      <Comfort>0.68</Comfort>
-      <BedRestEffectiveness>0.92</BedRestEffectiveness>
-      <ImmunityGainSpeedFactor>1.03</ImmunityGainSpeedFactor>
-      <SurgerySuccessChanceFactor>0.95</SurgerySuccessChanceFactor>
-    </statBases>
   </ThingDef>
 
   <ThingDef ParentName="ArtableFurnitureBase">

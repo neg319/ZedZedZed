@@ -123,7 +123,7 @@ This is the running feature list for the mod. Dates are listed when they can be 
 - Old leftover systems and disabled remnants were cleaned out.
 - The natural pregnant boomer chance was raised to 10 percent.
 - Rotten leather bed art was repainted in a cleaner RimWorld style pass.
-- Rotten leather bed footprint was locked to a standard 2 by 1 single bed size.
+- Rotten leather bed footprint was corrected to the standard wooden single bed size.
 - Rotten leather bed textures were rebuilt again to fit that footprint properly.
 
 ### 2026-04-09
@@ -136,6 +136,7 @@ This is the running feature list for the mod. Dates are listed when they can be 
 - The counter was changed to show danger as a percentage instead of showing current over cap.
 - The counter was simplified into a cleaner two line format, such as `Zombies: 14` and `Danger: 117%`.
 - The README and About text were rewritten in a more natural workshop style voice and expanded to explain the mod's features more clearly.
+- The map counter HUD card was given a little more height so the lower line does not clip at the bottom.
 
 ## Building the mod on GitHub
 
@@ -177,7 +178,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 43** of the active development cycle in this build set.
+This source package is currently at **iteration 45** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -188,8 +189,8 @@ Iteration history:
 - Iteration 30 to 32: settings cleanup, leftover cleanup, pregnant boomer natural spawn work, and README documentation upgrades.
 - Iteration 33: rotten leather furniture was added, including a functional chair and bed with directional textures.
 - Iteration 34: rotten leather bed art was rebuilt with cleaner vanilla inspired north, east, and south textures.
-- Iteration 35: rotten leather bed defs were locked to a standard 2 by 1 RimWorld bed footprint and matching draw size.
-- Iteration 36: rotten leather bed north, east, and south textures were rebuilt again to properly fit the new 2 by 1 footprint.
+- Iteration 35: rotten leather bed defs were first aligned around the vanilla single bed layout, but the footprint note in the README was later corrected after testing.
+- Iteration 36: rotten leather bed north, east, and south textures were rebuilt again to properly fit the standard single bed footprint.
 - Iteration 37: an in game pause menu shortcut was added so Zed Zed Zed settings can be opened directly from the pause menu.
 - Iteration 38: the settings UI got more breathing room and the settings text was rewritten to read more naturally.
 - Iteration 39: the map counter was rebuilt into a smaller themed HUD card that uses the custom family name and shows danger as a percentage.
@@ -197,6 +198,8 @@ Iteration history:
 - Iteration 41: the README gained a dated feature ledger so the mod's main systems can be tracked more clearly over time.
 - Iteration 42: the pause menu settings shortcut build error was fixed by correcting the Quit to OS shutdown call.
 - Iteration 43: the README and About text were rewritten to sound more natural, better explain the mod, and follow a cleaner workshop style structure.
+- Iteration 44: the map counter HUD card got a little more vertical room so the lower line no longer clips at the bottom.
+- Iteration 45: the rotten leather bed was corrected to use the exact wooden bed footprint and behavior, while keeping its custom rotten leather textures and material.
 
 ## Changelog
 
@@ -212,6 +215,12 @@ This changelog treats a **major update** as something that adds substantial new 
 - Added rotten leather furniture and expanded rotten leather floors with multiple variants.
 
 ### Minor updates
+
+#### 2026-04-09 - counter layout cleanup
+- Gave the map counter HUD card a little more height so the lower Danger line no longer clips at the bottom.
+
+#### 2026-04-09 - rotten leather bed footprint fix
+- Corrected the rotten leather bed so it now uses the same single bed footprint and behavior as the standard wooden bed while keeping the rotten leather material and custom textures.
 
 #### 2026-04-09 - documentation voice pass
 - Rewrote the About description to sound more natural and clearly explain what the mod does.
@@ -231,8 +240,8 @@ This changelog treats a **major update** as something that adds substantial new 
 
 #### 2026-04-08 - rotten leather art and footprint cleanup
 - Repainted the rotten leather bed north, east, and south sprites in a cleaner RimWorld style pass.
-- Set the rotten leather bed to a clear 2 by 1 footprint and matched the draw size to it.
-- Reworked the bed sprites again so they actually fit that footprint in game.
+- Set the rotten leather bed to use the normal wooden single bed footprint and matched the draw size to it.
+- Reworked the bed sprites again so they fit that footprint in game.
 
 #### 2026-04-07 - stability and readability pass
 - Fixed early compile and XML issues that were blocking the mod from loading or building cleanly.
