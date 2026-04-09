@@ -124,7 +124,7 @@ namespace CustomizableZombieHorde
 
             if (Widgets.ButtonText(quitToOsRect, "Quit to OS"))
             {
-                Current.Root?.Shutdown();
+                Root.Shutdown();
             }
         }
 

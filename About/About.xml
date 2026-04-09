@@ -15,8 +15,12 @@
     </li>
   </modDependencies>
   <description>
-Zed Zed Zed is a configurable zombie horde mod for RimWorld built around restless, shambling pressure instead of constant straight line raids. The undead trickle in from the edges, drift in packs, huddle until disturbed, burst from graves and the ground, and swell into larger threats under full moons and blood moons.
+Zed Zed Zed is a RimWorld zombie mod built around slow pressure, ugly cleanup, and bad nights that can spiral out of control. Instead of throwing the same raid at you over and over, the mod mixes together edge trickles, huddled packs, base pushes, ground bursts, grave events, full moons, and blood moons. The result feels more like an outbreak that keeps wearing your colony down than a single attack you can clean up and forget.
 
-The mod includes multiple zombie variants, custom visuals, grave events, debug tools, and a GitHub build workflow for easy packaging. This repository is set up as a clean, vibe coded source package for ongoing development.
+The horde includes several strains with different jobs. Biters make up the bulk of the dead. Runts are smaller and nastier in tight spaces. Boomers burst into acid. Sick zombies spread infection, filth, and bile. Drowned zombies are strongest around water and roam more freely in rain. Brutes soak damage and hit hard. Grabbers pin pawns in place. Lurkers can show up as a rare passive strain you can capture, recruit, and keep.
+
+The mod also adds zombie infection and reanimation, craftable bile treatment kits, zombie resources like rotten flesh, rotten leather, jerky, bile, and gold teeth, rotten leather furniture and floors, a themed settings menu, a pause menu shortcut to settings, debug tools, custom naming for the zombie family and each strain, and a small HUD readout that shows current danger on your home map.
+
+Built for RimWorld 1.6. Requires Harmony.
   </description>
 </ModMetaData>
