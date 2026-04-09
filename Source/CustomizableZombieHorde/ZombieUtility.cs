@@ -296,7 +296,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            NameSingle name = new NameSingle(ZombieDefUtility.GetDisplayLabelForKind(pawn.kindDef));
+            NameSingle name = new NameSingle(ZombieDefUtility.GetDisplayLabelForPawn(pawn));
             try
             {
                 Traverse.Create(pawn).Property("Name").SetValue(name);
@@ -706,6 +706,11 @@ namespace CustomizableZombieHorde
 
             PrepareSpawnedZombie(pawn);
             if (pawn.Downed)
+            {
+                return;
+            }
+
+            if (ZombieSpecialUtility.HandleBoneBiterBehavior(pawn))
             {
                 return;
             }

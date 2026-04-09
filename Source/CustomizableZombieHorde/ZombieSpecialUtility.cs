@@ -14,7 +14,12 @@ namespace CustomizableZombieHorde
         private static readonly HashSet<int> TriggeredBoomerBursts = new HashSet<int>();
         private static readonly Dictionary<int, int> LastSickSpitTickByPawn = new Dictionary<int, int>();
         private static readonly Dictionary<int, PendingSickSpewState> PendingSickSpewsByPawn = new Dictionary<int, PendingSickSpewState>();
+        private static readonly Dictionary<int, int> BoneBiterMealTargetByPawn = new Dictionary<int, int>();
+        private static readonly Dictionary<int, int> BoneBiterDisturbedUntilTickByPawn = new Dictionary<int, int>();
         private const int SickSpitCooldownTicks = 360;
+        private const int BoneBiterDisturbedTicks = 900;
+        private const float BoneBiterMealSearchRadius = 28f;
+        private const float BoneBiterMealTouchRadius = 2.9f;
         private const int SickSpewWarmupTicks = 60;
         private const int SickSpewPreviewIntervalTicks = 12;
         private const float SickSpitMinRange = 1.9f;
@@ -112,12 +117,39 @@ namespace CustomizableZombieHorde
                 return null;
             }
 
+            Pawn bileTarget = FindBestLivingPrey(pawn, Mathf.Max(radius, 22f), true);
+            if (bileTarget != null)
+            {
+                return bileTarget;
+            }
+
+            return FindBestLivingPrey(pawn, radius, false);
+        }
+
+        private static Pawn FindBestLivingPrey(Pawn pawn, float radius, bool requirePukedOn)
+        {
+            if (pawn?.MapHeld?.mapPawns?.AllPawnsSpawned == null)
+            {
+                return null;
+            }
+
             float radiusSquared = radius * radius;
             Pawn best = null;
             float bestDistance = float.MaxValue;
             foreach (Pawn other in pawn.MapHeld.mapPawns.AllPawnsSpawned)
             {
-                if (other == pawn || other.Dead || other.Destroyed || !other.RaceProps.IsFlesh || ZombieUtility.ShouldZombiesIgnore(other))
+                if (other == pawn || other.Dead || other.Destroyed || other.RaceProps?.IsFlesh != true)
+                {
+                    continue;
+                }
+
+                bool hasPukedOn = HasPukedOn(other);
+                if (ZombieUtility.ShouldZombiesIgnore(other) && !hasPukedOn)
+                {
+                    continue;
+                }
+
+                if (requirePukedOn && !hasPukedOn)
                 {
                     continue;
                 }
@@ -138,6 +170,356 @@ namespace CustomizableZombieHorde
             }
 
             return best;
+        }
+
+        public static bool HasPukedOn(Pawn pawn)
+        {
+            return pawn?.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_PukedOn) == true;
+        }
+
+        public static bool IsBoneBiter(Pawn pawn)
+        {
+            return pawn != null
+                && ZombieUtility.IsVariant(pawn, ZombieVariant.Biter)
+                && (ZombieUtility.IsSkeletonBiter(pawn) || ZombieUtility.ShouldSpawnAsSkeletonBiter(pawn));
+        }
+
+        public static void NotifyBoneBiterDisturbed(Pawn pawn)
+        {
+            if (!IsBoneBiter(pawn))
+            {
+                return;
+            }
+
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            BoneBiterDisturbedUntilTickByPawn[pawn.thingIDNumber] = ticksGame + BoneBiterDisturbedTicks;
+        }
+
+        public static bool IsBoneBiterDisturbed(Pawn pawn)
+        {
+            if (!IsBoneBiter(pawn))
+            {
+                return false;
+            }
+
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            return BoneBiterDisturbedUntilTickByPawn.TryGetValue(pawn.thingIDNumber, out int untilTick) && untilTick > ticksGame;
+        }
+
+        public static void ClearBoneBiterMealTarget(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            BoneBiterMealTargetByPawn.Remove(pawn.thingIDNumber);
+        }
+
+        public static Thing GetBoneBiterMealTarget(Pawn pawn)
+        {
+            if (pawn?.MapHeld == null)
+            {
+                return null;
+            }
+
+            if (!BoneBiterMealTargetByPawn.TryGetValue(pawn.thingIDNumber, out int thingId))
+            {
+                return null;
+            }
+
+            Thing target = FindThingById(pawn.MapHeld, thingId);
+            if (!IsValidBoneBiterMealTarget(pawn, target))
+            {
+                if (target is Pawn targetPawn && targetPawn.Dead && targetPawn.Corpse != null && IsValidBoneBiterMealTarget(pawn, targetPawn.Corpse))
+                {
+                    SetBoneBiterMealTarget(pawn, targetPawn.Corpse);
+                    return targetPawn.Corpse;
+                }
+
+                BoneBiterMealTargetByPawn.Remove(pawn.thingIDNumber);
+                return null;
+            }
+
+            return target;
+        }
+
+        public static bool HandleBoneBiterBehavior(Pawn pawn)
+        {
+            if (!IsBoneBiter(pawn) || pawn?.MapHeld == null || pawn.jobs == null || pawn.Dead || pawn.Destroyed || pawn.Downed)
+            {
+                return false;
+            }
+
+            Thing mealTarget = GetBoneBiterMealTarget(pawn);
+            Thing preferredMeal = FindPreferredBoneBiterMealTarget(pawn, BoneBiterMealSearchRadius);
+            if (preferredMeal != null)
+            {
+                mealTarget = preferredMeal;
+                SetBoneBiterMealTarget(pawn, preferredMeal);
+            }
+            else if (mealTarget == null)
+            {
+                return false;
+            }
+
+            if (IsBoneBiterDisturbed(pawn))
+            {
+                return false;
+            }
+
+            if (pawn.CurJob != null && pawn.CurJob.def == JobDefOf.AttackMelee)
+            {
+                pawn.jobs.StopAll();
+            }
+
+            if (IsBoneBiterCloseEnoughToFeed(pawn, mealTarget))
+            {
+                EnsureBoneBiterFeedingJob(pawn, mealTarget);
+            }
+            else
+            {
+                EnsureBoneBiterApproachJob(pawn, mealTarget);
+            }
+
+            return true;
+        }
+
+        private static void SetBoneBiterMealTarget(Pawn pawn, Thing target)
+        {
+            if (pawn == null || target == null)
+            {
+                return;
+            }
+
+            BoneBiterMealTargetByPawn[pawn.thingIDNumber] = target.thingIDNumber;
+        }
+
+        private static Thing FindThingById(Map map, int thingId)
+        {
+            if (map?.listerThings?.AllThings == null)
+            {
+                return null;
+            }
+
+            return map.listerThings.AllThings.FirstOrDefault(thing => thing != null && thing.thingIDNumber == thingId);
+        }
+
+        private static Thing FindPreferredBoneBiterMealTarget(Pawn pawn, float radius)
+        {
+            if (pawn?.MapHeld == null)
+            {
+                return null;
+            }
+
+            float radiusSquared = radius * radius;
+            Thing bestCorpse = null;
+            float bestCorpseDistance = float.MaxValue;
+            foreach (Corpse corpse in pawn.MapHeld.listerThings.ThingsInGroup(ThingRequestGroup.Corpse).OfType<Corpse>())
+            {
+                if (!IsValidBoneBiterMealTarget(pawn, corpse))
+                {
+                    continue;
+                }
+
+                float distance = pawn.PositionHeld.DistanceToSquared(corpse.PositionHeld);
+                if (distance > radiusSquared || distance >= bestCorpseDistance)
+                {
+                    continue;
+                }
+
+                if (!GenSight.LineOfSight(pawn.PositionHeld, corpse.PositionHeld, pawn.MapHeld))
+                {
+                    continue;
+                }
+
+                bestCorpse = corpse;
+                bestCorpseDistance = distance;
+            }
+
+            if (bestCorpse != null)
+            {
+                return bestCorpse;
+            }
+
+            Pawn bestDownedPawn = null;
+            float bestDownedDistance = float.MaxValue;
+            foreach (Pawn other in pawn.MapHeld.mapPawns.AllPawnsSpawned)
+            {
+                if (!IsValidBoneBiterMealTarget(pawn, other))
+                {
+                    continue;
+                }
+
+                float distance = pawn.PositionHeld.DistanceToSquared(other.PositionHeld);
+                if (distance > radiusSquared || distance >= bestDownedDistance)
+                {
+                    continue;
+                }
+
+                if (!GenSight.LineOfSight(pawn.PositionHeld, other.PositionHeld, pawn.MapHeld))
+                {
+                    continue;
+                }
+
+                bestDownedPawn = other;
+                bestDownedDistance = distance;
+            }
+
+            return bestDownedPawn;
+        }
+
+        private static bool IsValidBoneBiterMealTarget(Pawn pawn, Thing target)
+        {
+            if (pawn?.MapHeld == null || target == null || target.Destroyed || target.MapHeld != pawn.MapHeld)
+            {
+                return false;
+            }
+
+            if (target is Corpse corpse)
+            {
+                Pawn innerPawn = corpse.InnerPawn;
+                return innerPawn != null
+                    && innerPawn.RaceProps?.IsFlesh == true
+                    && !ZombieUtility.IsZombie(innerPawn);
+            }
+
+            if (target is Pawn targetPawn)
+            {
+                return targetPawn != pawn
+                    && !targetPawn.Dead
+                    && !targetPawn.Destroyed
+                    && targetPawn.Downed
+                    && targetPawn.RaceProps?.IsFlesh == true
+                    && !ZombieUtility.IsZombie(targetPawn)
+                    && !ZombieUtility.ShouldZombiesIgnore(targetPawn);
+            }
+
+            return false;
+        }
+
+        private static bool IsBoneBiterCloseEnoughToFeed(Pawn pawn, Thing target)
+        {
+            return pawn != null
+                && target != null
+                && pawn.PositionHeld.DistanceToSquared(target.PositionHeld) <= BoneBiterMealTouchRadius * BoneBiterMealTouchRadius;
+        }
+
+        private static void EnsureBoneBiterApproachJob(Pawn pawn, Thing target)
+        {
+            if (pawn?.jobs == null || target == null)
+            {
+                return;
+            }
+
+            if (pawn.CurJob != null
+                && pawn.CurJob.def == JobDefOf.Goto
+                && pawn.CurJob.targetA.IsValid
+                && pawn.CurJob.targetA.Cell == target.PositionHeld)
+            {
+                return;
+            }
+
+            Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, target.PositionHeld);
+            moveJob.expiryInterval = 750;
+            moveJob.checkOverrideOnExpire = true;
+            moveJob.locomotionUrgency = ZombieUtility.GetZombieUrgency(pawn);
+            pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);
+        }
+
+        private static void EnsureBoneBiterFeedingJob(Pawn pawn, Thing target)
+        {
+            if (pawn?.jobs == null)
+            {
+                return;
+            }
+
+            pawn.rotationTracker?.FaceTarget(new LocalTargetInfo(target));
+            if (pawn.CurJob != null && pawn.CurJob.def == JobDefOf.Wait_Combat)
+            {
+                return;
+            }
+
+            Job waitJob = JobMaker.MakeJob(JobDefOf.Wait_Combat);
+            waitJob.expiryInterval = 240;
+            waitJob.checkOverrideOnExpire = true;
+            pawn.jobs.TryTakeOrderedJob(waitJob, JobTag.Misc);
+        }
+
+        public static void HandleBoneBiterFeeding(Map map)
+        {
+            if (map == null)
+            {
+                return;
+            }
+
+            PruneBoneBiterState(map);
+            foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned)
+            {
+                if (!IsBoneBiter(pawn) || pawn.Dead || pawn.Destroyed || pawn.Downed)
+                {
+                    continue;
+                }
+
+                Thing target = GetBoneBiterMealTarget(pawn);
+                if (target == null)
+                {
+                    continue;
+                }
+
+                if (IsBoneBiterDisturbed(pawn) || !IsBoneBiterCloseEnoughToFeed(pawn, target))
+                {
+                    continue;
+                }
+
+                EnsureBoneBiterFeedingJob(pawn, target);
+                if (target is Corpse corpse)
+                {
+                    FilthMaker.TryMakeFilth(corpse.PositionHeld, map, ZombieDefOf.CZH_Filth_ZombieBlood ?? ThingDefOf.Filth_Blood);
+                    FilthMaker.TryMakeFilth(corpse.PositionHeld, map, ZombieDefOf.CZH_Filth_ZombieBlood ?? ThingDefOf.Filth_Blood);
+                    if (Rand.Chance(0.22f))
+                    {
+                        corpse.Destroy(DestroyMode.Vanish);
+                        ClearBoneBiterMealTarget(pawn);
+                    }
+
+                    continue;
+                }
+
+                if (target is Pawn prey && prey.Downed && !prey.Dead)
+                {
+                    DamageInfo dinfo = new DamageInfo(DamageDefOf.Cut, Rand.Range(4f, 8f), 999f, -1f, pawn);
+                    prey.TakeDamage(dinfo);
+                    FilthMaker.TryMakeFilth(prey.PositionHeld, map, ZombieDefOf.CZH_Filth_ZombieBlood ?? ThingDefOf.Filth_Blood);
+                    if (prey.Dead && prey.Corpse != null)
+                    {
+                        SetBoneBiterMealTarget(pawn, prey.Corpse);
+                    }
+                }
+            }
+        }
+
+        private static void PruneBoneBiterState(Map map)
+        {
+            if (map?.mapPawns?.AllPawnsSpawned == null)
+            {
+                return;
+            }
+
+            HashSet<int> liveBoneBiterIds = new HashSet<int>(map.mapPawns.AllPawnsSpawned
+                .Where(IsBoneBiter)
+                .Select(pawn => pawn.thingIDNumber));
+
+            foreach (int pawnId in BoneBiterMealTargetByPawn.Keys.Where(id => !liveBoneBiterIds.Contains(id)).ToList())
+            {
+                BoneBiterMealTargetByPawn.Remove(pawnId);
+            }
+
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            foreach (int pawnId in BoneBiterDisturbedUntilTickByPawn.Keys.Where(id => !liveBoneBiterIds.Contains(id) || BoneBiterDisturbedUntilTickByPawn[id] <= ticksGame).ToList())
+            {
+                BoneBiterDisturbedUntilTickByPawn.Remove(pawnId);
+            }
         }
 
         public static Corpse FindNearbyFreshCorpse(Pawn pawn, float radius)
@@ -588,6 +970,55 @@ namespace CustomizableZombieHorde
                 bile.stackCount = Rand.RangeInclusive(1, 2);
                 GenPlace.TryPlaceThing(bile, pos, map, ThingPlaceMode.Near);
             }
+
+            TrySpawnBoomerGraveRunt(pawn, map, pos);
+        }
+
+        private static void TrySpawnBoomerGraveRunt(Pawn sourcePawn, Map map, IntVec3 pos)
+        {
+            bool isPregnantBoomer = sourcePawn?.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_PregnantBoomer) ?? false;
+            if (sourcePawn == null || map == null || !pos.IsValid || !pos.InBounds(map) || ZombieDefOf.CZH_GraveRuntKind == null)
+            {
+                return;
+            }
+
+            if (!isPregnantBoomer && sourcePawn.gender != Gender.Female)
+            {
+                return;
+            }
+
+            if (!isPregnantBoomer && !Rand.Chance(0.10f))
+            {
+                return;
+            }
+
+            try
+            {
+                Faction faction = ZombieFactionUtility.GetOrCreateZombieFaction();
+                if (faction == null)
+                {
+                    return;
+                }
+
+                Pawn runt = PawnGenerator.GeneratePawn(ZombieDefOf.CZH_GraveRuntKind, faction);
+                if (runt == null)
+                {
+                    return;
+                }
+
+                IntVec3 spawnCell = CellFinder.RandomClosewalkCellNear(pos, map, 2);
+                if (!spawnCell.IsValid || !spawnCell.InBounds(map))
+                {
+                    spawnCell = pos;
+                }
+
+                GenSpawn.Spawn(runt, spawnCell, map);
+                runt.mindState?.mentalStateHandler?.TryStartMentalState(MentalStateDefOf.ManhunterPermanent, forceWake: true);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[ZedZedZed] Failed to spawn runt from female boomer burst: {ex}");
+            }
         }
 
         public static void DoAcidBurst(Pawn pawn)
@@ -598,6 +1029,80 @@ namespace CustomizableZombieHorde
             }
 
             DoAcidBurst(map, center, pawn);
+        }
+
+        public static void ApplyAcidCorrosion(Pawn pawn, float severityGain)
+        {
+            if (pawn == null || pawn.Dead || pawn.health == null || severityGain <= 0f)
+            {
+                return;
+            }
+
+            AddOrRefreshDamageOverTimeHediff(pawn, ZombieDefOf.CZH_ZombieAcidCorrosion, severityGain, 0.75f);
+        }
+
+        public static void ApplyZombieBloodExposure(Pawn pawn, float severityGain)
+        {
+            if (pawn == null || pawn.Dead || pawn.health == null || severityGain <= 0f)
+            {
+                return;
+            }
+
+            AddOrRefreshDamageOverTimeHediff(pawn, ZombieDefOf.CZH_ZombieBloodSepsis, severityGain, 0.35f);
+        }
+
+        public static void ApplyPukedOn(Pawn pawn, int durationTicks = 1200)
+        {
+            if (pawn == null || pawn.Dead || pawn.health == null || ZombieDefOf.CZH_PukedOn == null)
+            {
+                return;
+            }
+
+            Hediff existing = pawn.health.hediffSet?.GetFirstHediffOfDef(ZombieDefOf.CZH_PukedOn);
+            if (existing == null)
+            {
+                existing = HediffMaker.MakeHediff(ZombieDefOf.CZH_PukedOn, pawn);
+                existing.Severity = 1f;
+                pawn.health.AddHediff(existing);
+            }
+
+            if (existing is HediffWithComps withComps)
+            {
+                HediffComp_TemporaryStatus timed = withComps.TryGetComp<HediffComp_TemporaryStatus>();
+                if (timed != null)
+                {
+                    timed.RefreshDuration(durationTicks);
+                }
+            }
+        }
+
+        public static void TryApplyAcidPukedOn(Pawn pawn, int durationTicks = 1200)
+        {
+            if (pawn == null || pawn.Dead || ZombieUtility.ShouldZombiesIgnore(pawn))
+            {
+                return;
+            }
+
+            ApplyPukedOn(pawn, durationTicks);
+        }
+
+        private static void AddOrRefreshDamageOverTimeHediff(Pawn pawn, HediffDef hediffDef, float severityGain, float maxSeverity)
+        {
+            if (pawn == null || hediffDef == null || pawn.health == null)
+            {
+                return;
+            }
+
+            Hediff existing = pawn.health.hediffSet?.GetFirstHediffOfDef(hediffDef);
+            if (existing == null)
+            {
+                existing = HediffMaker.MakeHediff(hediffDef, pawn);
+                existing.Severity = Mathf.Clamp(severityGain, 0.01f, maxSeverity);
+                pawn.health.AddHediff(existing);
+                return;
+            }
+
+            existing.Severity = Mathf.Clamp(existing.Severity + severityGain, 0.01f, maxSeverity);
         }
 
         private static void DoAcidBurst(Map map, IntVec3 center, Pawn instigator)
@@ -622,6 +1127,8 @@ namespace CustomizableZombieHorde
                     {
                         float damage = Rand.Range(7f, 12f);
                         target.TakeDamage(new DamageInfo(ZombieDefOf.CZH_ZombieAcidBurn ?? DamageDefOf.Burn, damage, 0f, -1f, instigator));
+                        ApplyAcidCorrosion(target, 0.42f);
+                        TryApplyAcidPukedOn(target, 1200);
                     }
                 }
             }
@@ -978,7 +1485,46 @@ namespace CustomizableZombieHorde
 
         public static void HandleSickBloodContact(Map map)
         {
-            if (map == null || ZombieDefOf.CZH_Filth_SickZombieBlood == null)
+            if (map == null)
+            {
+                return;
+            }
+
+            if (ZombieDefOf.CZH_Filth_ZombieAcid != null)
+            {
+                List<Thing> acidFilth = map.listerThings.ThingsOfDef(ZombieDefOf.CZH_Filth_ZombieAcid);
+                for (int i = 0; i < acidFilth.Count; i++)
+                {
+                    IntVec3 cell = acidFilth[i].Position;
+                    List<Thing> things = cell.GetThingList(map);
+                    for (int j = 0; j < things.Count; j++)
+                    {
+                        if (things[j] is Pawn pawn && !pawn.Dead && !ZombieUtility.ShouldZombiesIgnore(pawn))
+                        {
+                            ApplyAcidCorrosion(pawn, 0.12f);
+                        }
+                    }
+                }
+            }
+
+            if (ZombieDefOf.CZH_Filth_ZombieBlood != null)
+            {
+                List<Thing> bloodFilth = map.listerThings.ThingsOfDef(ZombieDefOf.CZH_Filth_ZombieBlood);
+                for (int i = 0; i < bloodFilth.Count; i++)
+                {
+                    IntVec3 cell = bloodFilth[i].Position;
+                    List<Thing> things = cell.GetThingList(map);
+                    for (int j = 0; j < things.Count; j++)
+                    {
+                        if (things[j] is Pawn pawn && !pawn.Dead && !ZombieUtility.ShouldZombiesIgnore(pawn))
+                        {
+                            ApplyZombieBloodExposure(pawn, 0.04f);
+                        }
+                    }
+                }
+            }
+
+            if (ZombieDefOf.CZH_Filth_SickZombieBlood == null)
             {
                 return;
             }
@@ -993,6 +1539,7 @@ namespace CustomizableZombieHorde
                     if (things[j] is Pawn pawn && !pawn.Dead && !ZombieUtility.ShouldZombiesIgnore(pawn))
                     {
                         ZombieTraitUtility.TryApplyZombieSickness(pawn, 0.035f);
+                        ApplyZombieBloodExposure(pawn, 0.05f);
                     }
                 }
             }

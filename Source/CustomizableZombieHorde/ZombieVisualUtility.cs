@@ -167,8 +167,9 @@ namespace CustomizableZombieHorde
             switch (variant)
             {
                 case ZombieVariant.Biter:
-                case ZombieVariant.Crawler:
                     return BodyTypeDefOf.Thin;
+                case ZombieVariant.Crawler:
+                    return GetChildBodyType() ?? BodyTypeDefOf.Thin;
                 case ZombieVariant.Boomer:
                     return BodyTypeDefOf.Fat;
                 case ZombieVariant.Drowned:
@@ -179,6 +180,12 @@ namespace CustomizableZombieHorde
                 default:
                     return fallback ?? GetNormalBodyType(pawn);
             }
+        }
+
+        private static BodyTypeDef GetChildBodyType()
+        {
+            return DefDatabase<BodyTypeDef>.GetNamedSilentFail("Child")
+                ?? DefDatabase<BodyTypeDef>.GetNamedSilentFail("Baby");
         }
 
         private static BodyTypeDef GetNormalBodyType(Pawn pawn)

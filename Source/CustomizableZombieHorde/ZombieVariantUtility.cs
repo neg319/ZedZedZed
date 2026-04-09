@@ -52,11 +52,11 @@ namespace CustomizableZombieHorde
         private static readonly Dictionary<ZombieVariant, string> DefaultVariantLabels = new Dictionary<ZombieVariant, string>
         {
             { ZombieVariant.Biter, "Biter" },
-            { ZombieVariant.Crawler, "Crawler" },
+            { ZombieVariant.Crawler, "Runt" },
             { ZombieVariant.Boomer, "Boomer" },
             { ZombieVariant.Sick, "Sick" },
             { ZombieVariant.Drowned, "Drowned" },
-            { ZombieVariant.Tank, "Heavy" },
+            { ZombieVariant.Tank, "Brute" },
             { ZombieVariant.Grabber, "Grabber" },
             { ZombieVariant.Lurker, "Lurker" }
         };

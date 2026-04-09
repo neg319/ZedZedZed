@@ -30,6 +30,22 @@ namespace CustomizableZombieHorde
                 }
             }
 
+            PawnKindDef graveRuntKind = DefDatabase<PawnKindDef>.GetNamedSilentFail("CZH_GraveRuntKind");
+            if (graveRuntKind != null)
+            {
+                graveRuntKind.label = "crawler";
+            }
+
+            ThingDef graveRunt = DefDatabase<ThingDef>.GetNamedSilentFail("CZH_GraveRunt");
+            if (graveRunt != null)
+            {
+                graveRunt.label = "crawler";
+                graveRunt.description = "A tiny, frantic undead crawler left behind by the most grotesque boomer bursts. It moves fast, bites lightly, and scurries straight for the living.";
+            }
+
+            ApplyDynamicGraveLabel("CZH_Grave_Crawler", ZombieVariant.Crawler);
+            ApplyDynamicGraveLabel("CZH_Grave_Tank", ZombieVariant.Tank);
+
             IncidentDef incident = DefDatabase<IncidentDef>.GetNamedSilentFail("CZH_ZombieHorde");
             if (incident != null)
             {
@@ -55,6 +71,21 @@ namespace CustomizableZombieHorde
             return kindDef.label.NullOrEmpty() ? prefix : kindDef.label.CapitalizeFirst();
         }
 
+        public static string GetDisplayLabelForPawn(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return "Zombie";
+            }
+
+            if (ZombieUtility.IsSkeletonBiter(pawn) || ZombieUtility.ShouldSpawnAsSkeletonBiter(pawn))
+            {
+                return "Bone Biter";
+            }
+
+            return GetDisplayLabelForKind(pawn.kindDef);
+        }
+
         public static string GetVariantLabel(ZombieVariant variant)
         {
             CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
@@ -63,7 +94,7 @@ namespace CustomizableZombieHorde
                 case ZombieVariant.Biter:
                     return CleanVariantName(settings?.biterName, "Biter");
                 case ZombieVariant.Crawler:
-                    return CleanVariantName(settings?.crawlerName, "Crawler");
+                    return CleanVariantName(settings?.crawlerName, "Runt");
                 case ZombieVariant.Boomer:
                     return CleanVariantName(settings?.boomerName, "Boomer");
                 case ZombieVariant.Sick:
@@ -71,7 +102,7 @@ namespace CustomizableZombieHorde
                 case ZombieVariant.Drowned:
                     return CleanVariantName(settings?.drownedName, "Drowned");
                 case ZombieVariant.Tank:
-                    return CleanVariantName(settings?.heavyName, "Heavy");
+                    return CleanVariantName(settings?.heavyName, "Brute");
                 case ZombieVariant.Grabber:
                     return CleanVariantName(settings?.grabberName, "Grabber");
                 case ZombieVariant.Lurker:
@@ -85,12 +116,28 @@ namespace CustomizableZombieHorde
 
         public static string GetChildhoodBackstoryDefName(ZombieVariant variant)
         {
-            return "CZH_BackstoryChild_" + ZombieVariantUtility.GetDefaultVariantLabel(variant).Replace(" ", string.Empty);
+            switch (variant)
+            {
+                case ZombieVariant.Crawler:
+                    return "CZH_BackstoryChild_Crawler";
+                case ZombieVariant.Tank:
+                    return "CZH_BackstoryChild_Heavy";
+                default:
+                    return "CZH_BackstoryChild_" + ZombieVariantUtility.GetDefaultVariantLabel(variant).Replace(" ", string.Empty);
+            }
         }
 
         public static string GetAdulthoodBackstoryDefName(ZombieVariant variant)
         {
-            return "CZH_BackstoryAdult_" + ZombieVariantUtility.GetDefaultVariantLabel(variant).Replace(" ", string.Empty);
+            switch (variant)
+            {
+                case ZombieVariant.Crawler:
+                    return "CZH_BackstoryAdult_Crawler";
+                case ZombieVariant.Tank:
+                    return "CZH_BackstoryAdult_Heavy";
+                default:
+                    return "CZH_BackstoryAdult_" + ZombieVariantUtility.GetDefaultVariantLabel(variant).Replace(" ", string.Empty);
+            }
         }
 
         public static string GetGraveLetterLabel(ZombieVariant variant)
@@ -137,6 +184,25 @@ namespace CustomizableZombieHorde
 
             string trimmed = value.Trim();
             return trimmed.NullOrEmpty() ? fallback : trimmed;
+        }
+
+        private static void ApplyDynamicGraveLabel(string defName, ZombieVariant variant)
+        {
+            ThingDef grave = DefDatabase<ThingDef>.GetNamedSilentFail(defName);
+            if (grave == null)
+            {
+                return;
+            }
+
+            string variantLabel = GetVariantLabel(variant);
+            string lower = variantLabel.ToLowerInvariant();
+            grave.label = lower + " grave";
+            grave.description = "A collapsed grave that spits " + lower + "s out through the dirt.";
+
+            if (variant == ZombieVariant.Tank)
+            {
+                grave.description = "A heaving grave that keeps forcing " + lower + " zombies up from the dirt.";
+            }
         }
 
         private static string BuildDisplayName(string prefix, string variantLabel)

@@ -67,9 +67,15 @@ namespace CustomizableZombieHorde
 
             ZombieInfectionUtility.ApplyReanimatedState(pawn);
 
+            ZombieVariant variant = ZombieUtility.GetVariant(pawn);
+            TryApplyNaturalPregnantBoomerState(pawn, variant, initialSpawn);
+            if (variant == ZombieVariant.Crawler)
+            {
+                EnsureCrawlerIsChild(pawn);
+            }
+
             if (pawn.story != null)
             {
-                ZombieVariant variant = ZombieUtility.GetVariant(pawn);
                 ZombieVariant visualVariant = ZombieLurkerUtility.GetEffectiveVisualVariant(pawn, variant);
                 ApplyZombieBackstories(pawn, variant, preserveSkills);
                 pawn.story.skinColorOverride = ZombieVisualUtility.GetSkinColor(pawn, variant);
@@ -135,6 +141,116 @@ namespace CustomizableZombieHorde
             ZombieUtility.MarkPawnGraphicsDirty(pawn);
         }
 
+
+        private static void TryApplyNaturalPregnantBoomerState(Pawn pawn, ZombieVariant variant, bool initialSpawn)
+        {
+            if (!initialSpawn || pawn?.health?.hediffSet == null || variant != ZombieVariant.Boomer || pawn.gender != Gender.Female)
+            {
+                return;
+            }
+
+            if (ZombieDefOf.CZH_PregnantBoomer == null || pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_PregnantBoomer))
+            {
+                return;
+            }
+
+            if (!Rand.Chance(0.10f))
+            {
+                return;
+            }
+
+            try
+            {
+                pawn.health.AddHediff(ZombieDefOf.CZH_PregnantBoomer);
+            }
+            catch
+            {
+            }
+        }
+
+
+        private static void EnsureCrawlerIsChild(Pawn pawn)
+        {
+            if (pawn?.ageTracker == null)
+            {
+                return;
+            }
+
+            const long ticksPerYear = 3600000L;
+            int childYears = Rand.RangeInclusive(7, 12);
+            long biologicalTicks = (childYears * ticksPerYear) + Rand.RangeInclusive(0, (int)ticksPerYear - 1);
+            long chronologicalTicks = biologicalTicks;
+            long currentTicks = Find.TickManager?.TicksGame ?? 0;
+            long birthAbsTicks = currentTicks - chronologicalTicks;
+
+            SetAgeTrackerValue(pawn.ageTracker, "AgeBiologicalTicks", biologicalTicks);
+            SetAgeTrackerValue(pawn.ageTracker, "AgeChronologicalTicks", chronologicalTicks);
+            SetAgeTrackerValue(pawn.ageTracker, "ageBiologicalTicksInt", biologicalTicks);
+            SetAgeTrackerValue(pawn.ageTracker, "ageChronologicalTicksInt", chronologicalTicks);
+            SetAgeTrackerValue(pawn.ageTracker, "BirthAbsTicks", birthAbsTicks);
+            SetAgeTrackerValue(pawn.ageTracker, "birthAbsTicksInt", birthAbsTicks);
+
+            try
+            {
+                AccessTools.Method(pawn.ageTracker.GetType(), "RecalculateLifeStageIndex")?.Invoke(pawn.ageTracker, null);
+                AccessTools.Method(pawn.ageTracker.GetType(), "PostResolveLifeStageChange")?.Invoke(pawn.ageTracker, null);
+                AccessTools.Method(pawn.ageTracker.GetType(), "CalculateInitialGrowth")?.Invoke(pawn.ageTracker, null);
+            }
+            catch
+            {
+            }
+        }
+
+        private static void SetAgeTrackerValue(object tracker, string memberName, long value)
+        {
+            if (tracker == null || string.IsNullOrEmpty(memberName))
+            {
+                return;
+            }
+
+            try
+            {
+                PropertyInfo property = AccessTools.Property(tracker.GetType(), memberName);
+                if (property != null && property.CanWrite)
+                {
+                    if (property.PropertyType == typeof(long))
+                    {
+                        property.SetValue(tracker, value, null);
+                        return;
+                    }
+
+                    if (property.PropertyType == typeof(int))
+                    {
+                        property.SetValue(tracker, (int)value, null);
+                        return;
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                FieldInfo field = AccessTools.Field(tracker.GetType(), memberName);
+                if (field == null)
+                {
+                    return;
+                }
+
+                if (field.FieldType == typeof(long))
+                {
+                    field.SetValue(tracker, value);
+                }
+                else if (field.FieldType == typeof(int))
+                {
+                    field.SetValue(tracker, (int)value);
+                }
+            }
+            catch
+            {
+            }
+        }
 
         public static void TrySetPawnName(Pawn pawn, Name name)
         {

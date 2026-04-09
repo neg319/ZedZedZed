@@ -80,11 +80,11 @@ namespace CustomizableZombieHorde
         public bool allowGrabbers = true;
 
         public string biterName = "Biter";
-        public string crawlerName = "Crawler";
+        public string crawlerName = "Runt";
         public string boomerName = "Boomer";
         public string sickName = "Sick";
         public string drownedName = "Drowned";
-        public string heavyName = "Heavy";
+        public string heavyName = "Brute";
         public string grabberName = "Grabber";
         public string lurkerName = "Lurker";
 
@@ -141,11 +141,11 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref allowGrabbers, "allowGrabbers", true);
 
             Scribe_Values.Look(ref biterName, "biterName", "Biter");
-            Scribe_Values.Look(ref crawlerName, "crawlerName", "Crawler");
+            Scribe_Values.Look(ref crawlerName, "crawlerName", "Runt");
             Scribe_Values.Look(ref boomerName, "boomerName", "Boomer");
             Scribe_Values.Look(ref sickName, "sickName", "Sick");
             Scribe_Values.Look(ref drownedName, "drownedName", "Drowned");
-            Scribe_Values.Look(ref heavyName, "heavyName", "Heavy");
+            Scribe_Values.Look(ref heavyName, "heavyName", "Brute");
             Scribe_Values.Look(ref grabberName, "grabberName", "Grabber");
             Scribe_Values.Look(ref lurkerName, "lurkerName", "Lurker");
 
@@ -168,7 +168,7 @@ namespace CustomizableZombieHorde
                 DrawHeader(headerRect);
                 DrawTabButtons(tabsRect);
 
-                Widgets.DrawMenuSection(bodyRect);
+                SettingsTheme.DrawBody(bodyRect);
                 Rect innerRect = bodyRect.ContractedBy(12f);
 
                 switch (selectedTab)
@@ -252,11 +252,11 @@ namespace CustomizableZombieHorde
             allowGrabbers = true;
 
             biterName = "Biter";
-            crawlerName = "Crawler";
+            crawlerName = "Runt";
             boomerName = "Boomer";
             sickName = "Sick";
             drownedName = "Drowned";
-            heavyName = "Heavy";
+            heavyName = "Brute";
             grabberName = "Grabber";
             lurkerName = "Lurker";
         }
@@ -307,11 +307,11 @@ namespace CustomizableZombieHorde
 
             zombiePrefix = zombiePrefix.Trim();
             biterName = NormalizeVariantName(biterName, "Biter");
-            crawlerName = NormalizeVariantName(crawlerName, "Crawler");
+            crawlerName = MigrateLegacyVariantName(NormalizeVariantName(crawlerName, "Runt"), "Crawler", "Runt");
             boomerName = NormalizeVariantName(boomerName, "Boomer");
             sickName = NormalizeVariantName(sickName, "Sick");
             drownedName = NormalizeVariantName(drownedName, "Drowned");
-            heavyName = NormalizeVariantName(heavyName, "Heavy");
+            heavyName = MigrateLegacyVariantName(NormalizeVariantName(heavyName, "Brute"), "Heavy", "Brute");
             grabberName = NormalizeVariantName(grabberName, "Grabber");
             lurkerName = NormalizeVariantName(lurkerName, "Lurker");
             difficultyLevel = Mathf.Clamp(difficultyLevel, 0, 8);
@@ -369,21 +369,36 @@ namespace CustomizableZombieHorde
             return trimmed.NullOrEmpty() ? fallback : trimmed;
         }
 
+        private string MigrateLegacyVariantName(string value, string legacyDefault, string newDefault)
+        {
+            return string.Equals(value, legacyDefault, System.StringComparison.Ordinal) ? newDefault : value;
+        }
+
         private void DrawHeader(Rect rect)
         {
-            Widgets.DrawMenuSection(rect);
+            SettingsTheme.DrawHeader(rect);
+            SettingsTheme.DrawHeaderWatermark(rect);
 
-            Rect titleRect = new Rect(rect.x + 12f, rect.y + 8f, rect.width - 24f, 28f);
-            Rect subtitleRect = new Rect(rect.x + 12f, rect.y + 36f, rect.width - 24f, 22f);
-            Rect hintRect = new Rect(rect.x + 12f, rect.y + 56f, rect.width - 24f, 18f);
+            Rect titleRect = new Rect(rect.x + 86f, rect.y + 8f, rect.width - 188f, 30f);
+            Rect subtitleRect = new Rect(rect.x + 86f, rect.y + 36f, rect.width - 188f, 20f);
+            Rect hintRect = new Rect(rect.x + 86f, rect.y + 56f, rect.width - 188f, 18f);
+            Rect badgeRect = new Rect(rect.xMax - 122f, rect.y + 18f, 96f, 28f);
 
             Text.Font = GameFont.Medium;
+            GUI.color = SettingsTheme.Ink;
             Widgets.Label(titleRect, "Zed Zed Zed Settings");
             Text.Font = GameFont.Small;
-            GUI.color = Color.gray;
-            Widgets.Label(subtitleRect, "A cleaner control panel for outbreak pacing, variants, colony tools, and debug actions.");
-            Widgets.Label(hintRect, "Use the tabs below. Most values now use step buttons instead of long sliders.");
+            GUI.color = SettingsTheme.MutedInk;
+            Widgets.Label(subtitleRect, "Outbreak pacing, strain control, debug tools, and colony-side safety tuning.");
+            Widgets.Label(hintRect, "A clean panel with a grimy colony-horror finish.");
             GUI.color = Color.white;
+
+            SettingsTheme.DrawStatusPill(badgeRect, true);
+            Text.Anchor = TextAnchor.MiddleCenter;
+            GUI.color = SettingsTheme.Ink;
+            Widgets.Label(badgeRect, "ACTIVE");
+            GUI.color = Color.white;
+            Text.Anchor = TextAnchor.UpperLeft;
         }
 
         private void DrawTabButtons(Rect rect)
@@ -405,13 +420,10 @@ namespace CustomizableZombieHorde
             {
                 Rect buttonRect = new Rect(rect.x + (i * (width + gap)), rect.y, width, rect.height);
                 bool active = selectedTab == tabs[i];
-                Color old = GUI.color;
-                GUI.color = active ? new Color(0.82f, 0.88f, 0.72f) : Color.white;
-                if (Widgets.ButtonText(buttonRect, labels[i]))
+                if (SettingsTheme.DrawButton(buttonRect, labels[i], active))
                 {
                     selectedTab = tabs[i];
                 }
-                GUI.color = old;
             }
         }
 
@@ -493,11 +505,11 @@ namespace CustomizableZombieHorde
             DrawInfoCard(listing, "What this tab does", "Variants lets you decide which special strains are allowed to appear and what they are called in game. Turn off types you do not want in the pool, or rename them so the mod matches the theme and tone of your playthrough.");
             DrawSectionLabel(listing, "Variant roster", "Turn individual strains on or off. Disabled strains will not appear in standard random waves or grave events.");
             DrawVariantCard(listing, "Standard Biters", "Baseline shamblers. The common core of most packs and hordes.", ref allowBiters);
-            DrawVariantCard(listing, "Crawlers", "Slow dragging corpses that pressure choke points and add creep factor.", ref allowCrawlers);
+            DrawVariantCard(listing, "Runts", "Slow dragging corpses that pressure choke points and add creep factor.", ref allowCrawlers);
             DrawVariantCard(listing, "Boomers", "Unstable corpses that can burst in acid and punish tight formations.", ref allowBoomers);
             DrawVariantCard(listing, "Sick", "Disease-spreading corpses that contaminate blood trails and can infect colonists.", ref allowSick);
             DrawVariantCard(listing, "Drowned", "Water-adapted corpses that are strongest near rivers, marshes, and shorelines.", ref allowDrowned);
-            DrawVariantCard(listing, "Heavies", "Large resilient corpses that soak damage and hit harder in melee.", ref allowHeavies);
+            DrawVariantCard(listing, "Brutes", "Large resilient corpses that soak damage and hit harder in melee.", ref allowHeavies);
             DrawVariantCard(listing, "Grabbers", "Corpse grapplers that pin colonists in place until they break free.", ref allowGrabbers);
 
             if (!allowBiters && !allowCrawlers && !allowBoomers && !allowSick && !allowDrowned && !allowHeavies && !allowGrabbers)
@@ -507,11 +519,11 @@ namespace CustomizableZombieHorde
 
             DrawSectionLabel(listing, "Custom variant names", "These names replace the built in variant titles in pawn labels, letters, grave warnings, and other player facing text.");
             DrawTextEntryCard(listing, "Biter name", "The name used for the baseline shambler strain.", ref biterName, "Biter");
-            DrawTextEntryCard(listing, "Crawler name", "The name used for the dragging low to the ground strain.", ref crawlerName, "Crawler");
+            DrawTextEntryCard(listing, "Runt name", "The name used for the dragging low to the ground strain.", ref crawlerName, "Runt");
             DrawTextEntryCard(listing, "Boomer name", "The name used for the unstable bursting strain.", ref boomerName, "Boomer");
             DrawTextEntryCard(listing, "Sick name", "The name used for the plague spreading strain.", ref sickName, "Sick");
             DrawTextEntryCard(listing, "Drowned name", "The name used for the blue waterlogged strain.", ref drownedName, "Drowned");
-            DrawTextEntryCard(listing, "Heavy name", "The name used for the large tank like strain.", ref heavyName, "Heavy");
+            DrawTextEntryCard(listing, "Brute name", "The name used for the large tank like strain.", ref heavyName, "Brute");
             DrawTextEntryCard(listing, "Grabber name", "The name used for the grappling strain.", ref grabberName, "Grabber");
             DrawTextEntryCard(listing, "Lurker name", "The name used for the passive tameable strain.", ref lurkerName, "Lurker");
             DrawInfoCard(listing, "Example names", ZombieDefUtility.ExampleNames(zombiePrefix));
@@ -592,12 +604,14 @@ namespace CustomizableZombieHorde
                 DrawDebugActionButton(listing, component, "Force ground burst now", "Forced a ground burst.", "Could not force a ground burst.");
                 DrawDebugActionButton(listing, component, "Force random grave event now", "Forced a grave event.", "Could not force a grave event.");
                 DrawDebugActionButton(listing, component, "Force biter grave now", "Forced a biter grave.", "Could not force a biter grave.");
-                DrawDebugActionButton(listing, component, "Force crawler grave now", "Forced a crawler grave.", "Could not force a crawler grave.");
+                DrawDebugActionButton(listing, component, "Force runt grave now", "Forced a runt grave.", "Could not force a runt grave.");
                 DrawDebugActionButton(listing, component, "Force boomer grave now", "Forced a boomer grave.", "Could not force a boomer grave.");
                 DrawDebugActionButton(listing, component, "Force sick grave now", "Forced a sick grave.", "Could not force a sick grave.");
                 DrawDebugActionButton(listing, component, "Force drowned grave now", "Forced a drowned grave.", "Could not force a drowned grave.");
-                DrawDebugActionButton(listing, component, "Force heavy grave now", "Forced a heavy grave.", "Could not force a heavy grave.");
-                DrawDebugActionButton(listing, component, "Spawn bone biter now", "Spawned a bone biter.", "Could not spawn a bone biter.");
+                DrawDebugActionButton(listing, component, "Force brute grave now", "Forced a brute grave.", "Could not force a brute grave.");
+                DrawDebugActionButton(listing, component, "Spawn Bone Biter now", "Spawned a Bone Biter.", "Could not spawn a Bone Biter.");
+                DrawDebugActionButton(listing, component, "Spawn crawler now", "Spawned a crawler.", "Could not spawn a crawler.");
+                DrawDebugActionButton(listing, component, "Spawn pregnant boomer now", "Spawned a pregnant boomer.", "Could not spawn a pregnant boomer.");
                 DrawDebugActionButton(listing, component, "Spawn lurker now", "Spawned a lurker.", "Could not spawn a lurker.");
                 DrawDebugActionButton(listing, component, "Force grabber grave now", "Forced a grabber grave.", "Could not force a grabber grave.");
                 DrawDebugActionButton(listing, component, "Force full moon horde now", "Forced a full moon horde.", "Could not force a full moon horde.");
@@ -619,57 +633,70 @@ namespace CustomizableZombieHorde
 
         private void DrawSectionLabel(Listing_Standard listing, string title, string description)
         {
-            Rect rect = listing.GetRect(50f);
+            float descriptionHeight = CalculateWrappedTextHeight(description, listing.ColumnWidth - 28f);
+            float sectionHeight = Mathf.Max(60f, 30f + descriptionHeight + 14f);
+            Rect rect = listing.GetRect(sectionHeight);
+            SettingsTheme.DrawSectionBand(rect);
+
+            Rect titleRect = new Rect(rect.x + 12f, rect.y + 8f, rect.width - 24f, 24f);
+            Rect descRect = new Rect(rect.x + 12f, rect.y + 32f, rect.width - 24f, descriptionHeight + 2f);
+
             Text.Font = GameFont.Medium;
-            Widgets.Label(new Rect(rect.x, rect.y, rect.width, 26f), title);
+            GUI.color = SettingsTheme.Ink;
+            Widgets.Label(titleRect, title);
             Text.Font = GameFont.Small;
-            GUI.color = Color.gray;
-            Widgets.Label(new Rect(rect.x, rect.y + 26f, rect.width, 22f), description);
-            GUI.color = Color.white;
-            listing.Gap(6f);
-        }
-
-        private void DrawPresetButtons(Listing_Standard listing)
-        {
-            Rect row = listing.GetRect(70f);
-            float gap = 8f;
-            float width = (row.width - (gap * 2f)) / 3f;
-
-            if (Widgets.ButtonText(new Rect(row.x, row.y, width, 32f), "Casual"))
-            {
-                ApplyCasualPreset();
-            }
-
-            if (Widgets.ButtonText(new Rect(row.x + width + gap, row.y, width, 32f), "Recommended"))
-            {
-                ResetToRecommendedDefaults();
-            }
-
-            if (Widgets.ButtonText(new Rect(row.x + ((width + gap) * 2f), row.y, width, 32f), "Apocalypse"))
-            {
-                ApplyApocalypsePreset();
-            }
-
-            GUI.color = Color.gray;
-            Widgets.Label(new Rect(row.x, row.y + 38f, row.width, 24f), "Casual lowers pressure. Recommended restores the intended baseline. Apocalypse pushes the mod toward late-game chaos.");
+            GUI.color = SettingsTheme.MutedInk;
+            Widgets.Label(descRect, description);
             GUI.color = Color.white;
             listing.Gap(8f);
         }
 
+        private void DrawPresetButtons(Listing_Standard listing)
+        {
+            Rect row = listing.GetRect(78f);
+            float gap = 8f;
+            float width = (row.width - (gap * 2f)) / 3f;
+
+            if (SettingsTheme.DrawButton(new Rect(row.x, row.y, width, 34f), "Casual"))
+            {
+                ApplyCasualPreset();
+            }
+
+            if (SettingsTheme.DrawButton(new Rect(row.x + width + gap, row.y, width, 34f), "Recommended", true))
+            {
+                ResetToRecommendedDefaults();
+            }
+
+            if (SettingsTheme.DrawButton(new Rect(row.x + ((width + gap) * 2f), row.y, width, 34f), "Apocalypse"))
+            {
+                ApplyApocalypsePreset();
+            }
+
+            GUI.color = SettingsTheme.MutedInk;
+            Widgets.Label(new Rect(row.x, row.y + 42f, row.width, 28f), "Casual lowers pressure. Recommended restores the intended baseline. Apocalypse pushes the mod toward late game chaos.");
+            GUI.color = Color.white;
+            listing.Gap(10f);
+        }
+
         private void DrawTextEntryCard(Listing_Standard listing, string label, string description, ref string value, string fallback)
         {
-            Rect row = DrawCard(listing, 108f);
+            float contentWidth = Mathf.Max(220f, listing.ColumnWidth - 32f);
+            float descriptionHeight = CalculateWrappedTextHeight(description, contentWidth);
+            float cardHeight = Mathf.Max(122f, 56f + descriptionHeight + 44f);
+            Rect row = DrawCard(listing, cardHeight);
             Rect labelRect = new Rect(row.x + 12f, row.y + 8f, row.width - 24f, 22f);
-            Rect descRect = new Rect(row.x + 12f, row.y + 30f, row.width - 24f, 36f);
-            Rect textRect = new Rect(row.x + 12f, row.y + 70f, row.width - 24f, 28f);
+            Rect descRect = new Rect(row.x + 12f, row.y + 30f, row.width - 24f, descriptionHeight + 2f);
+            Rect shellRect = new Rect(row.x + 12f, descRect.yMax + 8f, row.width - 24f, 32f);
+            Rect textRect = shellRect.ContractedBy(4f);
 
             Text.Font = GameFont.Small;
-            GUI.color = Color.white;
+            GUI.color = SettingsTheme.Ink;
             Widgets.Label(labelRect, label);
-            GUI.color = Color.gray;
+            GUI.color = SettingsTheme.MutedInk;
             Widgets.Label(descRect, description);
             GUI.color = Color.white;
 
+            SettingsTheme.DrawTextFieldShell(shellRect);
             value = Widgets.TextField(textRect, value ?? fallback);
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -681,83 +708,106 @@ namespace CustomizableZombieHorde
 
         private void DrawToggleCard(Listing_Standard listing, string label, string description, ref bool value)
         {
-            Rect row = DrawCard(listing, 58f);
-            Rect checkboxRect = new Rect(row.x + 12f, row.y + 12f, 24f, 24f);
+            float descriptionHeight = CalculateWrappedTextHeight(description, listing.ColumnWidth - 180f);
+            float cardHeight = Mathf.Max(74f, 26f + descriptionHeight + 20f);
+            Rect row = DrawCard(listing, cardHeight);
+            Rect checkboxRect = new Rect(row.x + 12f, row.y + 14f, 24f, 24f);
+            Rect pillRect = new Rect(row.x + row.width - 104f, row.y + 14f, 92f, 24f);
             Widgets.Checkbox(checkboxRect.position, ref value, 24f);
-            DrawCardText(new Rect(row.x + 40f, row.y, row.width - 52f, row.height), label, description);
+            DrawCardText(new Rect(row.x + 40f, row.y, row.width - 152f, row.height), label, description, null, 0f);
+            SettingsTheme.DrawStatusPill(pillRect, value);
+            Text.Anchor = TextAnchor.MiddleCenter;
+            GUI.color = SettingsTheme.Ink;
+            Widgets.Label(pillRect, value ? "Enabled" : "Disabled");
+            GUI.color = Color.white;
+            Text.Anchor = TextAnchor.UpperLeft;
             TooltipHandler.TipRegion(row, description);
         }
 
         private void DrawDifficultyCard(Listing_Standard listing)
         {
-            Rect row = DrawCard(listing, 96f);
+            Rect row = DrawCard(listing, 102f);
             string description = "Global population multiplier for major spawns. Higher values mean more bodies in serious events.";
-            DrawCardText(row, "Difficulty", description);
+            DrawCardText(row, "Difficulty", description, null, 236f);
             DrawStepperControls(row, ref difficultyLevel, 0, 8, 1, $"Level {difficultyLevel}  |  {DifficultyMultiplier:0.00}x");
         }
 
         private void DrawIntStepperCard(Listing_Standard listing, string label, string description, ref int value, int min, int max, int step)
         {
-            Rect row = DrawCard(listing, 96f);
-            DrawCardText(row, label, description);
+            Rect row = DrawCard(listing, 102f);
+            DrawCardText(row, label, description, null, 236f);
             DrawStepperControls(row, ref value, min, max, step, value.ToString());
         }
 
         private void DrawFloatStepperCard(Listing_Standard listing, string label, string description, ref float value, float min, float max, float step, string suffix)
         {
-            Rect row = DrawCard(listing, 96f);
-            DrawCardText(row, label, description);
+            Rect row = DrawCard(listing, 102f);
+            DrawCardText(row, label, description, null, 236f);
             DrawStepperControls(row, ref value, min, max, step, $"{value:0.0} {suffix}".Trim());
         }
 
         private void DrawPercentStepperCard(Listing_Standard listing, string label, string description, ref float value, float min, float max, float step)
         {
-            Rect row = DrawCard(listing, 96f);
-            DrawCardText(row, label, description);
+            Rect row = DrawCard(listing, 102f);
+            DrawCardText(row, label, description, null, 236f);
             DrawPercentControls(row, ref value, min, max, step, $"{value * 100f:0}%");
         }
 
         private void DrawVariantCard(Listing_Standard listing, string label, string description, ref bool value)
         {
-            Rect row = DrawCard(listing, 58f);
-            Rect checkboxRect = new Rect(row.x + 12f, row.y + 12f, 24f, 24f);
+            float descriptionHeight = CalculateWrappedTextHeight(description, listing.ColumnWidth - 180f);
+            float cardHeight = Mathf.Max(74f, 26f + descriptionHeight + 20f);
+            Rect row = DrawCard(listing, cardHeight);
+            Rect checkboxRect = new Rect(row.x + 12f, row.y + 14f, 24f, 24f);
+            Rect pillRect = new Rect(row.x + row.width - 104f, row.y + 14f, 92f, 24f);
             Widgets.Checkbox(checkboxRect.position, ref value, 24f);
-            DrawCardText(new Rect(row.x + 40f, row.y, row.width - 52f, row.height), label, description, value ? "Enabled" : "Disabled");
+            DrawCardText(new Rect(row.x + 40f, row.y, row.width - 152f, row.height), label, description, null, 0f);
+            SettingsTheme.DrawStatusPill(pillRect, value);
+            Text.Anchor = TextAnchor.MiddleCenter;
+            GUI.color = SettingsTheme.Ink;
+            Widgets.Label(pillRect, value ? "Enabled" : "Blocked");
+            GUI.color = Color.white;
+            Text.Anchor = TextAnchor.UpperLeft;
             TooltipHandler.TipRegion(row, description);
         }
 
         private bool DrawActionCard(Listing_Standard listing, string label, string description)
         {
-            Rect row = DrawCard(listing, 86f);
-            DrawCardText(row, label, description);
-            Rect buttonRect = new Rect(row.x + row.width - 164f, row.y + 22f, 152f, 32f);
-            return Widgets.ButtonText(buttonRect, "Apply");
+            float cardHeight = Mathf.Max(94f, 26f + 16f + CalculateWrappedTextHeight(description, Mathf.Max(160f, listing.ColumnWidth - 220f)));
+            Rect row = DrawCard(listing, cardHeight);
+            DrawCardText(new Rect(row.x, row.y, row.width - 176f, row.height), label, description, null, 0f);
+            Rect buttonRect = new Rect(row.x + row.width - 164f, row.y + ((row.height - 34f) / 2f), 152f, 34f);
+            return SettingsTheme.DrawButton(buttonRect, "Apply");
         }
 
         private void DrawInfoCard(Listing_Standard listing, string label, string description)
         {
-            Rect row = DrawCard(listing, 84f);
-            DrawCardText(row, label, description);
+            float cardHeight = Mathf.Max(84f, 18f + 22f + CalculateWrappedTextHeight(description, Mathf.Max(220f, listing.ColumnWidth - 28f)) + 16f);
+            Rect row = DrawCard(listing, cardHeight);
+            DrawCardText(row, label, description, null, 0f);
         }
 
         private void DrawWarningCard(Listing_Standard listing, string description)
         {
-            Rect row = DrawCard(listing, 56f);
-            Color old = GUI.color;
-            GUI.color = new Color(1f, 0.93f, 0.7f);
-            Widgets.DrawMenuSection(row);
-            GUI.color = old;
+            float cardHeight = Mathf.Max(62f, 18f + CalculateWrappedTextHeight(description, Mathf.Max(220f, listing.ColumnWidth - 28f)) + 18f);
+            Rect row = listing.GetRect(cardHeight);
+            SettingsTheme.DrawWarningCard(row);
             Text.Font = GameFont.Small;
-            Widgets.Label(new Rect(row.x + 12f, row.y + 10f, row.width - 24f, 36f), description);
+            GUI.color = SettingsTheme.Ink;
+            Widgets.Label(new Rect(row.x + 12f, row.y + 10f, row.width - 24f, row.height - 16f), description);
+            GUI.color = Color.white;
         }
 
         private void DrawDebugActionButton(Listing_Standard listing, ZombieGameComponent component, string label, string successText, string failText)
         {
-            Rect row = DrawCard(listing, 54f);
+            float cardHeight = Mathf.Max(66f, 18f + CalculateWrappedTextHeight(label, Mathf.Max(160f, listing.ColumnWidth - 200f)) + 20f);
+            Rect row = DrawCard(listing, cardHeight);
             Text.Font = GameFont.Small;
-            Widgets.Label(new Rect(row.x + 12f, row.y + 16f, row.width - 184f, 24f), label);
-            Rect buttonRect = new Rect(row.x + row.width - 160f, row.y + 11f, 148f, 32f);
-            if (Widgets.ButtonText(buttonRect, "Run now"))
+            GUI.color = SettingsTheme.Ink;
+            Widgets.Label(new Rect(row.x + 12f, row.y + 12f, row.width - 184f, row.height - 18f), label);
+            GUI.color = Color.white;
+            Rect buttonRect = new Rect(row.x + row.width - 160f, row.y + ((row.height - 34f) / 2f), 148f, 34f);
+            if (SettingsTheme.DrawButton(buttonRect, "Run now"))
             {
                 bool success = ResolveDebugAction(component, label);
                 ShowDebugResult(success, successText, failText);
@@ -784,7 +834,7 @@ namespace CustomizableZombieHorde
                     return component.DebugForceRandomGraveEvent();
                 case "Force biter grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Biter);
-                case "Force crawler grave now":
+                case "Force runt grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Crawler);
                 case "Force boomer grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Boomer);
@@ -792,10 +842,14 @@ namespace CustomizableZombieHorde
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Sick);
                 case "Force drowned grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Drowned);
-                case "Force heavy grave now":
+                case "Force brute grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Tank);
-                case "Spawn bone biter now":
+                case "Spawn Bone Biter now":
                     return component.DebugSpawnBoneBiter();
+                case "Spawn crawler now":
+                    return component.DebugSpawnRunt();
+                case "Spawn pregnant boomer now":
+                    return component.DebugSpawnPregnantBoomer();
                 case "Force grabber grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Grabber);
                 case "Spawn lurker now":
@@ -812,50 +866,65 @@ namespace CustomizableZombieHorde
         private Rect DrawCard(Listing_Standard listing, float height)
         {
             Rect row = listing.GetRect(height);
-            Widgets.DrawMenuSection(row);
+            SettingsTheme.DrawCard(row);
             return row;
         }
 
-        private void DrawCardText(Rect row, string label, string description, string valueText = null)
+        private float CalculateWrappedTextHeight(string text, float width)
         {
-            float reservedRight = string.IsNullOrEmpty(valueText) ? 196f : 228f;
-            Rect textRect = new Rect(row.x + 12f, row.y + 8f, Mathf.Max(120f, row.width - reservedRight), row.height - 16f);
             Text.Font = GameFont.Small;
-            GUI.color = Color.white;
-            Widgets.Label(new Rect(textRect.x, textRect.y, textRect.width, 22f), label);
-            GUI.color = Color.gray;
-            Widgets.Label(new Rect(textRect.x, textRect.y + 20f, textRect.width, Mathf.Max(18f, textRect.height - 20f)), description);
+            return Mathf.Max(Text.LineHeight, Text.CalcHeight(text ?? string.Empty, width));
+        }
+
+        private void DrawCardText(Rect row, string label, string description, string valueText = null, float reservedRight = 0f)
+        {
+            float labelHeight = 22f;
+            float textWidth = Mathf.Max(120f, row.width - 24f - reservedRight);
+            Rect textRect = new Rect(row.x + 12f, row.y + 8f, textWidth, row.height - 16f);
+            float descriptionHeight = Mathf.Max(18f, CalculateWrappedTextHeight(description, textRect.width));
+
+            Text.Font = GameFont.Small;
+            GUI.color = SettingsTheme.Ink;
+            Widgets.Label(new Rect(textRect.x, textRect.y, textRect.width, labelHeight), label);
+            GUI.color = SettingsTheme.MutedInk;
+            Widgets.Label(new Rect(textRect.x, textRect.y + 20f, textRect.width, Mathf.Min(descriptionHeight, textRect.height - 20f)), description);
             GUI.color = Color.white;
 
             if (!string.IsNullOrEmpty(valueText))
             {
-                Text.Anchor = TextAnchor.UpperRight;
-                Widgets.Label(new Rect(row.x + row.width - 220f, row.y + 8f, 96f, 22f), valueText);
+                Rect pillRect = new Rect(row.x + row.width - 112f, row.y + 8f, 100f, 24f);
+                SettingsTheme.DrawStatusPill(pillRect, true);
+                Text.Anchor = TextAnchor.MiddleCenter;
+                GUI.color = SettingsTheme.Ink;
+                Widgets.Label(pillRect, valueText);
+                GUI.color = Color.white;
                 Text.Anchor = TextAnchor.UpperLeft;
             }
         }
 
         private void DrawStepperControls(Rect row, ref int value, int min, int max, int step, string displayText)
         {
-            float buttonWidth = 34f;
-            float valueWidth = 140f;
+            float buttonWidth = 36f;
+            float valueWidth = 148f;
             float totalWidth = buttonWidth + 8f + valueWidth + 8f + buttonWidth;
             float controlsY = row.y + row.height - 42f;
             Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, controlsY, buttonWidth, 30f);
             Rect valueRect = new Rect(minusRect.xMax + 8f, controlsY, valueWidth, 30f);
             Rect plusRect = new Rect(valueRect.xMax + 8f, controlsY, buttonWidth, 30f);
 
-            if (Widgets.ButtonText(minusRect, "-"))
+            if (SettingsTheme.DrawButton(minusRect, "-"))
             {
                 value = Mathf.Max(min, value - step);
             }
 
-            Widgets.DrawBoxSolid(valueRect, new Color(0.16f, 0.16f, 0.16f));
+            SettingsTheme.DrawValueShell(valueRect);
             Text.Anchor = TextAnchor.MiddleCenter;
+            GUI.color = SettingsTheme.Ink;
             Widgets.Label(valueRect, string.IsNullOrEmpty(displayText) ? value.ToString() : displayText);
+            GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            if (Widgets.ButtonText(plusRect, "+"))
+            if (SettingsTheme.DrawButton(plusRect, "+"))
             {
                 value = Mathf.Min(max, value + step);
             }
@@ -863,25 +932,27 @@ namespace CustomizableZombieHorde
 
         private void DrawStepperControls(Rect row, ref float value, float min, float max, float step, string displayText)
         {
-            float buttonWidth = 34f;
-            float valueWidth = 140f;
+            float buttonWidth = 36f;
+            float valueWidth = 148f;
             float totalWidth = buttonWidth + 8f + valueWidth + 8f + buttonWidth;
             float controlsY = row.y + row.height - 42f;
             Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, controlsY, buttonWidth, 30f);
             Rect valueRect = new Rect(minusRect.xMax + 8f, controlsY, valueWidth, 30f);
             Rect plusRect = new Rect(valueRect.xMax + 8f, controlsY, buttonWidth, 30f);
 
-            if (Widgets.ButtonText(minusRect, "-"))
+            if (SettingsTheme.DrawButton(minusRect, "-"))
             {
                 value = Mathf.Max(min, value - step);
             }
 
-            Widgets.DrawBoxSolid(valueRect, new Color(0.16f, 0.16f, 0.16f));
+            SettingsTheme.DrawValueShell(valueRect);
             Text.Anchor = TextAnchor.MiddleCenter;
+            GUI.color = SettingsTheme.Ink;
             Widgets.Label(valueRect, string.IsNullOrEmpty(displayText) ? $"{value:0.0}" : displayText);
+            GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            if (Widgets.ButtonText(plusRect, "+"))
+            if (SettingsTheme.DrawButton(plusRect, "+"))
             {
                 value = Mathf.Min(max, value + step);
             }
@@ -889,25 +960,27 @@ namespace CustomizableZombieHorde
 
         private void DrawPercentControls(Rect row, ref float value, float min, float max, float step, string displayText)
         {
-            float buttonWidth = 34f;
-            float valueWidth = 140f;
+            float buttonWidth = 36f;
+            float valueWidth = 148f;
             float totalWidth = buttonWidth + 8f + valueWidth + 8f + buttonWidth;
             float controlsY = row.y + row.height - 42f;
             Rect minusRect = new Rect(row.x + row.width - totalWidth - 12f, controlsY, buttonWidth, 30f);
             Rect valueRect = new Rect(minusRect.xMax + 8f, controlsY, valueWidth, 30f);
             Rect plusRect = new Rect(valueRect.xMax + 8f, controlsY, buttonWidth, 30f);
 
-            if (Widgets.ButtonText(minusRect, "-"))
+            if (SettingsTheme.DrawButton(minusRect, "-"))
             {
                 value = Mathf.Max(min, value - step);
             }
 
-            Widgets.DrawBoxSolid(valueRect, new Color(0.16f, 0.16f, 0.16f));
+            SettingsTheme.DrawValueShell(valueRect);
             Text.Anchor = TextAnchor.MiddleCenter;
+            GUI.color = SettingsTheme.Ink;
             Widgets.Label(valueRect, string.IsNullOrEmpty(displayText) ? $"{value * 100f:0}%" : displayText);
+            GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            if (Widgets.ButtonText(plusRect, "+"))
+            if (SettingsTheme.DrawButton(plusRect, "+"))
             {
                 value = Mathf.Min(max, value + step);
             }
@@ -916,7 +989,7 @@ namespace CustomizableZombieHorde
         private void DrawFallbackWindow(Rect inRect)
         {
             ClampAndRepair();
-            Widgets.DrawMenuSection(inRect);
+            SettingsTheme.DrawBody(inRect);
             Rect inner = inRect.ContractedBy(12f);
             Listing_Standard listing = new Listing_Standard();
             listing.Begin(inner);
@@ -939,16 +1012,16 @@ namespace CustomizableZombieHorde
             listing.Label("Variant names");
             listing.Label("Biter");
             biterName = listing.TextEntry(biterName ?? "Biter");
-            listing.Label("Crawler");
-            crawlerName = listing.TextEntry(crawlerName ?? "Crawler");
+            listing.Label("Runt");
+            crawlerName = listing.TextEntry(crawlerName ?? "Runt");
             listing.Label("Boomer");
             boomerName = listing.TextEntry(boomerName ?? "Boomer");
             listing.Label("Sick");
             sickName = listing.TextEntry(sickName ?? "Sick");
             listing.Label("Drowned");
             drownedName = listing.TextEntry(drownedName ?? "Drowned");
-            listing.Label("Heavy");
-            heavyName = listing.TextEntry(heavyName ?? "Heavy");
+            listing.Label("Brute");
+            heavyName = listing.TextEntry(heavyName ?? "Brute");
             listing.Label("Grabber");
             grabberName = listing.TextEntry(grabberName ?? "Grabber");
             listing.Label("Lurker");

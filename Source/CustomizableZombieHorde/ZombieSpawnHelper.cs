@@ -522,6 +522,8 @@ namespace CustomizableZombieHorde
 
             Faction faction = ZombieFactionUtility.GetOrCreateZombieFaction();
             bool anySpawned = false;
+            int biterSpawnCount = 0;
+            IntVec3 firstBiterSpawnCell = IntVec3.Invalid;
             for (int i = 0; i < count; i++)
             {
                 Pawn pawn = ZombiePawnFactory.GenerateZombie(kind, faction);
@@ -540,6 +542,15 @@ namespace CustomizableZombieHorde
                 if (SpawnZombiePawn(map, pawn, spawnCell, behavior))
                 {
                     anySpawned = true;
+                    if (ZombieUtility.IsVariant(pawn, ZombieVariant.Biter))
+                    {
+                        biterSpawnCount++;
+                        if (!firstBiterSpawnCell.IsValid)
+                        {
+                            firstBiterSpawnCell = spawnCell;
+                        }
+                    }
+
                     for (int j = 0; j < 2; j++)
                     {
                         FilthMaker.TryMakeFilth(spawnCell, map, ThingDefOf.Filth_Dirt);
@@ -551,6 +562,7 @@ namespace CustomizableZombieHorde
                 }
             }
 
+            TrySpawnRareGraveRuntWithBiters(map, faction, biterSpawnCount, firstBiterSpawnCell, behavior);
             return anySpawned;
         }
 
@@ -702,6 +714,8 @@ namespace CustomizableZombieHorde
         private static List<Pawn> SpawnPack(Map map, Faction faction, int count, ZombieSpawnEventType behavior, IntVec3 anchor, bool canUseWater)
         {
             List<Pawn> pawns = new List<Pawn>();
+            int biterSpawnCount = 0;
+            IntVec3 firstBiterSpawnCell = IntVec3.Invalid;
             for (int i = 0; i < count; i++)
             {
                 PawnKindDef kind = ZombieKindSelector.GetRandomKind(map);
@@ -732,6 +746,14 @@ namespace CustomizableZombieHorde
                 if (SpawnZombiePawn(map, pawn, spawnCell, behavior))
                 {
                     pawns.Add(pawn);
+                    if (ZombieUtility.IsVariant(pawn, ZombieVariant.Biter))
+                    {
+                        biterSpawnCount++;
+                        if (!firstBiterSpawnCell.IsValid)
+                        {
+                            firstBiterSpawnCell = spawnCell;
+                        }
+                    }
                 }
                 else
                 {
@@ -739,6 +761,7 @@ namespace CustomizableZombieHorde
                 }
             }
 
+            TrySpawnRareGraveRuntWithBiters(map, faction, biterSpawnCount, firstBiterSpawnCell, behavior, pawns);
             return pawns;
         }
 
@@ -763,6 +786,49 @@ namespace CustomizableZombieHorde
                 return false;
             }
         }
+
+        private static void TrySpawnRareGraveRuntWithBiters(Map map, Faction faction, int biterSpawnCount, IntVec3 anchorCell, ZombieSpawnEventType behavior, List<Pawn> spawnedPawns = null)
+        {
+            if (map == null || faction == null || biterSpawnCount < 3 || !anchorCell.IsValid || ZombieDefOf.CZH_GraveRuntKind == null)
+            {
+                return;
+            }
+
+            float spawnChance = Mathf.Clamp01(0.015f * biterSpawnCount);
+            if (!Rand.Chance(spawnChance))
+            {
+                return;
+            }
+
+            try
+            {
+                Pawn runt = PawnGenerator.GeneratePawn(ZombieDefOf.CZH_GraveRuntKind, faction);
+                if (runt == null)
+                {
+                    return;
+                }
+
+                IntVec3 spawnCell = CellFinder.RandomClosewalkCellNear(anchorCell, map, 4);
+                if (!spawnCell.IsValid || !spawnCell.InBounds(map))
+                {
+                    spawnCell = anchorCell;
+                }
+
+                if (SpawnZombiePawn(map, runt, spawnCell, behavior))
+                {
+                    spawnedPawns?.Add(runt);
+                }
+                else
+                {
+                    runt.Destroy(DestroyMode.Vanish);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Log.Error($"[ZedZedZed] Failed to spawn rare runt with biter group: {ex}");
+            }
+        }
+
 
         private static string DescribeBehavior(string prefix, ZombieSpawnEventType behavior)
         {

@@ -443,7 +443,98 @@ namespace CustomizableZombieHorde
 
             ZombieUtility.SetZombieDisplayName(boneBiter);
             GenSpawn.Spawn(boneBiter, spawnCell, map);
-            Messages.Message("A debug bone biter has been spawned.", boneBiter, MessageTypeDefOf.NeutralEvent);
+            Messages.Message("A debug Bone Biter has been spawned.", boneBiter, MessageTypeDefOf.NeutralEvent);
+            RefreshCurrentMapCount();
+            return true;
+        }
+
+        public bool DebugSpawnRunt()
+        {
+            Map map = GetDebugTargetMap();
+            if (map == null || ZombieDefOf.CZH_GraveRuntKind == null)
+            {
+                return false;
+            }
+
+            IntVec3 spawnCell;
+            if (!CellFinder.TryFindRandomCellNear(map.Center, map, 12, c => c.Walkable(map) && !c.Fogged(map), out spawnCell))
+            {
+                spawnCell = CellFinder.RandomClosewalkCellNear(map.Center, map, 12);
+            }
+
+            if (!spawnCell.IsValid)
+            {
+                spawnCell = map.Center;
+            }
+
+            Faction faction = ZombieFactionUtility.GetOrCreateZombieFaction();
+            if (faction == null)
+            {
+                return false;
+            }
+
+            Pawn runt = PawnGenerator.GeneratePawn(ZombieDefOf.CZH_GraveRuntKind, faction);
+            if (runt == null)
+            {
+                return false;
+            }
+
+            GenSpawn.Spawn(runt, spawnCell, map);
+            RegisterBehavior(runt, ZombieSpawnEventType.AssaultBase);
+            ZombieUtility.PrepareSpawnedZombie(runt);
+            ZombieUtility.AssignInitialShambleJob(runt, ZombieSpawnEventType.AssaultBase);
+            ZombieUtility.EnsureZombieAggression(runt);
+            Messages.Message("A debug crawler has been spawned.", runt, MessageTypeDefOf.NeutralEvent);
+            RefreshCurrentMapCount();
+            return true;
+        }
+
+        public bool DebugSpawnPregnantBoomer()
+        {
+            Map map = GetDebugTargetMap();
+            if (map == null)
+            {
+                return false;
+            }
+
+            PawnKindDef kind = DefDatabase<PawnKindDef>.GetNamedSilentFail("CZH_Zombie_Boomer");
+            Faction faction = ZombieFactionUtility.GetOrCreateZombieFaction();
+            if (kind == null || faction == null)
+            {
+                return false;
+            }
+
+            IntVec3 spawnCell;
+            if (!CellFinder.TryFindRandomCellNear(map.Center, map, 12, c => c.Walkable(map) && !c.Fogged(map), out spawnCell))
+            {
+                spawnCell = CellFinder.RandomClosewalkCellNear(map.Center, map, 12);
+            }
+
+            if (!spawnCell.IsValid)
+            {
+                spawnCell = map.Center;
+            }
+
+            Pawn boomer = ZombiePawnFactory.GenerateZombie(kind, faction);
+            if (boomer == null)
+            {
+                return false;
+            }
+
+            boomer.gender = Gender.Female;
+            if (boomer.health?.hediffSet != null && ZombieDefOf.CZH_PregnantBoomer != null && !boomer.health.hediffSet.HasHediff(ZombieDefOf.CZH_PregnantBoomer))
+            {
+                boomer.health.AddHediff(ZombieDefOf.CZH_PregnantBoomer);
+            }
+
+            ZombieUtility.SetZombieDisplayName(boomer);
+            ZombieUtility.MarkPawnGraphicsDirty(boomer);
+            GenSpawn.Spawn(boomer, spawnCell, map);
+            RegisterBehavior(boomer, ZombieSpawnEventType.AssaultBase);
+            ZombieUtility.PrepareSpawnedZombie(boomer);
+            ZombieUtility.AssignInitialShambleJob(boomer, ZombieSpawnEventType.AssaultBase);
+            ZombieUtility.EnsureZombieAggression(boomer);
+            Messages.Message("A debug pregnant boomer has been spawned.", boomer, MessageTypeDefOf.NeutralEvent);
             RefreshCurrentMapCount();
             return true;
         }
@@ -990,6 +1081,11 @@ namespace CustomizableZombieHorde
                 {
                     if (!ZombieUtility.IsZombie(pawn))
                     {
+                        if (ZombieRulesUtility.IsZombieAlignedCritter(pawn))
+                        {
+                            ZombieUtility.SetZombieDisplayName(pawn);
+                        }
+
                         continue;
                     }
 
@@ -1043,6 +1139,7 @@ namespace CustomizableZombieHorde
         {
             foreach (Map map in Find.Maps)
             {
+                ZombieSpecialUtility.HandleBoneBiterFeeding(map);
                 ZombieSpecialUtility.HandleCorpseFeeding(map);
             }
         }
@@ -1328,8 +1425,9 @@ namespace CustomizableZombieHorde
                     bool hasReanimated = ZombieInfectionUtility.HasReanimatedState(innerPawn);
                     bool isTracked = deadInfectionProgressEndTicks != null && deadInfectionProgressEndTicks.ContainsKey(corpseId);
                     Hediff infection = ZombieInfectionUtility.GetZombieInfection(innerPawn);
+                    float pendingStartSeverity = ZombieInfectionUtility.InitialInfectionSeverity;
                     bool hasPendingSeverity = pendingDeadInfectionSeverityByPawnId != null
-                        && pendingDeadInfectionSeverityByPawnId.TryGetValue(innerPawn.thingIDNumber, out float pendingStartSeverity);
+                        && pendingDeadInfectionSeverityByPawnId.TryGetValue(innerPawn.thingIDNumber, out pendingStartSeverity);
 
                     if (!hasReanimated && (infection != null || isTracked || hasPendingSeverity))
                     {
@@ -1341,8 +1439,8 @@ namespace CustomizableZombieHorde
 
                         if (!isTracked)
                         {
-                            float startSeverity = infection != null ? infection.Severity : pendingStartSeverity;
-                            RegisterDeadInfectedCorpse(corpse, startSeverity, forceReschedule: true);
+                            float pendingOrCurrentSeverity = infection != null ? infection.Severity : pendingStartSeverity;
+                            RegisterDeadInfectedCorpse(corpse, pendingOrCurrentSeverity, forceReschedule: true);
                             isTracked = true;
                         }
 

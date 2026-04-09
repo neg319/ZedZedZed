@@ -27,9 +27,17 @@ namespace CustomizableZombieHorde
             return pawn != null && ZombieLurkerUtility.IsPassiveLurker(pawn);
         }
 
+        public static bool IsZombieAlignedCritter(Pawn pawn)
+        {
+            string kindDefName = pawn?.kindDef?.defName;
+            string thingDefName = pawn?.def?.defName;
+            return string.Equals(kindDefName, "CZH_GraveRuntKind", StringComparison.Ordinal)
+                || string.Equals(thingDefName, "CZH_GraveRunt", StringComparison.Ordinal);
+        }
+
         public static bool IsIgnoredByZombies(Pawn pawn)
         {
-            return pawn != null && (IsZombie(pawn) || IsPassiveUndead(pawn) || ZombieTraitUtility.IsIgnoredByZombies(pawn));
+            return pawn != null && (IsZombie(pawn) || IsPassiveUndead(pawn) || IsZombieAlignedCritter(pawn) || ZombieTraitUtility.IsIgnoredByZombies(pawn));
         }
 
         public static bool CanReanimate(Pawn pawn)

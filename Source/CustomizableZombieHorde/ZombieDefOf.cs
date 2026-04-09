@@ -18,6 +18,10 @@ namespace CustomizableZombieHorde
         public static HediffDef CZH_ZombieDrownedWater;
         public static HediffDef CZH_ZombieSickness;
         public static HediffDef CZH_ZombieReanimated;
+        public static HediffDef CZH_ZombieAcidCorrosion;
+        public static HediffDef CZH_ZombieBloodSepsis;
+        public static HediffDef CZH_PukedOn;
+        public static HediffDef CZH_PregnantBoomer;
 
         public static ThingDef CZH_RottenFlesh;
         public static ThingDef CZH_RottenLeather;
@@ -28,7 +32,9 @@ namespace CustomizableZombieHorde
         public static ThingDef CZH_Filth_ZombieBlood;
         public static ThingDef CZH_Filth_SickZombieBlood;
         public static ThingDef CZH_Filth_ZombieAcid;
-        public static ThingDef CZH_SickSpitProjectile;
+        public static ThingDef CZH_GraveRunt;
+
+        public static PawnKindDef CZH_GraveRuntKind;
 
         public static ThingDef CZH_Grave_Biter;
         public static ThingDef CZH_Grave_Crawler;

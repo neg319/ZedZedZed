@@ -46,6 +46,52 @@ namespace CustomizableZombieHorde
         }
     }
 
+
+    internal static class ZombieFloorUtility
+    {
+        private static readonly HashSet<string> ZombieLeatherFloorDefNames = new HashSet<string>
+        {
+            "CZH_RottenLeatherFloor",
+            "CZH_StitchedRottenLeatherFloor",
+            "CZH_PatchworkRottenLeatherFloor",
+            "CZH_MottledHideFloor"
+        };
+
+        internal static bool IsZombieLeatherFloor(TerrainDef terrain)
+        {
+            return terrain != null && ZombieLeatherFloorDefNames.Contains(terrain.defName);
+        }
+
+        internal static bool IsZombieLeatherFloor(BuildableDef buildable)
+        {
+            return IsZombieLeatherFloor(buildable as TerrainDef);
+        }
+    }
+
+    [HarmonyPatch(typeof(GenConstruct), nameof(GenConstruct.CanBuildOnTerrain))]
+    public static class Patch_GenConstruct_CanBuildOnTerrain_ZombieFloors
+    {
+        public static void Postfix(BuildableDef entDef, IntVec3 c, Map map, ref bool __result)
+        {
+            if (__result || entDef == null || map == null)
+            {
+                return;
+            }
+
+            TerrainDef currentTerrain = c.GetTerrain(map);
+            if (ZombieFloorUtility.IsZombieLeatherFloor(entDef))
+            {
+                __result = true;
+                return;
+            }
+
+            if (ZombieFloorUtility.IsZombieLeatherFloor(currentTerrain))
+            {
+                __result = true;
+            }
+        }
+    }
+
     [StaticConstructorOnStartup]
     [HarmonyPatch(typeof(PawnRenderer), "RenderPawnAt")]
     public static class Patch_PawnRenderer_RenderPawnAt
@@ -609,6 +655,7 @@ namespace CustomizableZombieHorde
             }
 
             Pawn attacker = ZombieTraitUtility.ResolveDamageInstigatorPawn(dinfo.Instigator);
+            ZombieSpecialUtility.NotifyBoneBiterDisturbed(victim);
 
             if (victim.Dead && ZombieInfectionUtility.HasZombieInfection(victim) && ZombieInfectionUtility.IsHeadOrChildPart(dinfo.HitPart, victim))
             {
@@ -929,38 +976,5 @@ namespace CustomizableZombieHorde
         }
     }
 
-    public static class Patch_StatExtension_GetStatValue_Disabled
-    {
-        public static void Postfix(Thing thing, StatDef stat, ref float __result)
-        {
-            Pawn pawn = thing as Pawn;
-            if (pawn == null || stat == null)
-            {
-                return;
-            }
-
-            if (ZombieTraitUtility.HasHardToKill(pawn) && stat == StatDefOf.PainShockThreshold)
-            {
-                __result += 0.18f;
-            }
-
-            if (ZombieTraitUtility.HasSteadyHands(pawn) && stat == StatDefOf.ShootingAccuracyPawn)
-            {
-                __result *= 1.12f;
-            }
-
-            if (ZombieTraitUtility.HasQuickEscape(pawn))
-            {
-                if (stat == StatDefOf.MoveSpeed)
-                {
-                    __result += 0.35f;
-                }
-                else if (stat == StatDefOf.MeleeDodgeChance)
-                {
-                    __result += 0.08f;
-                }
-            }
-        }
-    }
 
 }
