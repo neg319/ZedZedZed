@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <IncidentDef>
+    <defName>CZH_ZombieHorde</defName>
+    <label>zombie horde</label>
+    <workerClass>CustomizableZombieHorde.IncidentWorker_ZombieHorde</workerClass>
+    <category>ThreatBig</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <letterLabel>Zombie Horde Approaches</letterLabel>
+    <letterText>A shambling horde is closing in from the edge of the map.</letterText>
+    <baseChance>0</baseChance>
+    <pointsScaleable>true</pointsScaleable>
+    <minThreatPoints>35</minThreatPoints>
+  </IncidentDef>
+
+
+  <IncidentDef>
+    <defName>CZH_LurkerArrives</defName>
+    <label>lurker</label>
+    <workerClass>CustomizableZombieHorde.IncidentWorker_LurkerArrives</workerClass>
+    <category>Misc</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <letterLabel>A lurker shambles nearby</letterLabel>
+    <letterText>A strange passive zombie has wandered onto the map. It does not join the horde and might be tamed with rotten flesh or human meat.</letterText>
+    <baseChance>0.03</baseChance>
+    <minRefireDays>15</minRefireDays>
+  </IncidentDef>
+</Defs>
