@@ -43,7 +43,7 @@ namespace CustomizableZombieHorde
             switch (roll)
             {
                 case 1:
-                    return ZombieVariant.Crawler;
+                    return ZombieVariant.Runt;
                 case 2:
                     return ZombieVariant.Boomer;
                 case 3:
@@ -51,7 +51,7 @@ namespace CustomizableZombieHorde
                 case 4:
                     return ZombieVariant.Drowned;
                 case 5:
-                    return ZombieVariant.Tank;
+                    return ZombieVariant.Brute;
                 case 6:
                     return ZombieVariant.Grabber;
                 default:

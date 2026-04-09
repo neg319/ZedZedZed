@@ -971,13 +971,13 @@ namespace CustomizableZombieHorde
                 GenPlace.TryPlaceThing(bile, pos, map, ThingPlaceMode.Near);
             }
 
-            TrySpawnBoomerGraveRunt(pawn, map, pos);
+            TrySpawnBoomerRunt(pawn, map, pos);
         }
 
-        private static void TrySpawnBoomerGraveRunt(Pawn sourcePawn, Map map, IntVec3 pos)
+        private static void TrySpawnBoomerRunt(Pawn sourcePawn, Map map, IntVec3 pos)
         {
             bool isPregnantBoomer = sourcePawn?.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_PregnantBoomer) ?? false;
-            if (sourcePawn == null || map == null || !pos.IsValid || !pos.InBounds(map) || ZombieDefOf.CZH_GraveRuntKind == null)
+            if (sourcePawn == null || map == null || !pos.IsValid || !pos.InBounds(map) || ZombieDefOf.CZH_RuntKind == null)
             {
                 return;
             }
@@ -1000,7 +1000,7 @@ namespace CustomizableZombieHorde
                     return;
                 }
 
-                Pawn runt = PawnGenerator.GeneratePawn(ZombieDefOf.CZH_GraveRuntKind, faction);
+                Pawn runt = PawnGenerator.GeneratePawn(ZombieDefOf.CZH_RuntKind, faction);
                 if (runt == null)
                 {
                     return;

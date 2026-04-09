@@ -69,9 +69,9 @@ namespace CustomizableZombieHorde
 
             ZombieVariant variant = ZombieUtility.GetVariant(pawn);
             TryApplyNaturalPregnantBoomerState(pawn, variant, initialSpawn);
-            if (variant == ZombieVariant.Crawler)
+            if (variant == ZombieVariant.Runt)
             {
-                EnsureCrawlerIsChild(pawn);
+                EnsureRuntIsChild(pawn);
             }
 
             if (pawn.story != null)
@@ -122,7 +122,7 @@ namespace CustomizableZombieHorde
             ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: initialSpawn);
             ZombieUtility.ApplyLimbDecay(pawn);
             ZombieUtility.ApplyVariantHediffs(pawn);
-            ZombieUtility.ApplyCrawlerLegDamage(pawn);
+            ZombieUtility.ApplyRuntLegDamage(pawn);
             ApplyZombieXenotype(pawn);
 
             if (initialSpawn)
@@ -169,7 +169,7 @@ namespace CustomizableZombieHorde
         }
 
 
-        private static void EnsureCrawlerIsChild(Pawn pawn)
+        private static void EnsureRuntIsChild(Pawn pawn)
         {
             if (pawn?.ageTracker == null)
             {

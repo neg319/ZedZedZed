@@ -408,7 +408,7 @@ namespace CustomizableZombieHorde
             }
 
             List<ZombieVariant> options = new List<ZombieVariant>();
-            foreach (ZombieVariant variant in new[] { ZombieVariant.Biter, ZombieVariant.Crawler, ZombieVariant.Boomer, ZombieVariant.Sick, ZombieVariant.Drowned, ZombieVariant.Tank, ZombieVariant.Grabber })
+            foreach (ZombieVariant variant in new[] { ZombieVariant.Biter, ZombieVariant.Runt, ZombieVariant.Boomer, ZombieVariant.Sick, ZombieVariant.Drowned, ZombieVariant.Brute, ZombieVariant.Grabber })
             {
                 if (ZombieKindSelector.IsVariantEnabled(variant, map))
                 {
@@ -562,7 +562,7 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            TrySpawnRareGraveRuntWithBiters(map, faction, biterSpawnCount, firstBiterSpawnCell, behavior);
+            TrySpawnRareRuntWithBiters(map, faction, biterSpawnCount, firstBiterSpawnCell, behavior);
             return anySpawned;
         }
 
@@ -761,7 +761,7 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            TrySpawnRareGraveRuntWithBiters(map, faction, biterSpawnCount, firstBiterSpawnCell, behavior, pawns);
+            TrySpawnRareRuntWithBiters(map, faction, biterSpawnCount, firstBiterSpawnCell, behavior, pawns);
             return pawns;
         }
 
@@ -787,9 +787,9 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private static void TrySpawnRareGraveRuntWithBiters(Map map, Faction faction, int biterSpawnCount, IntVec3 anchorCell, ZombieSpawnEventType behavior, List<Pawn> spawnedPawns = null)
+        private static void TrySpawnRareRuntWithBiters(Map map, Faction faction, int biterSpawnCount, IntVec3 anchorCell, ZombieSpawnEventType behavior, List<Pawn> spawnedPawns = null)
         {
-            if (map == null || faction == null || biterSpawnCount < 3 || !anchorCell.IsValid || ZombieDefOf.CZH_GraveRuntKind == null)
+            if (map == null || faction == null || biterSpawnCount < 3 || !anchorCell.IsValid || ZombieDefOf.CZH_RuntKind == null)
             {
                 return;
             }
@@ -802,7 +802,7 @@ namespace CustomizableZombieHorde
 
             try
             {
-                Pawn runt = PawnGenerator.GeneratePawn(ZombieDefOf.CZH_GraveRuntKind, faction);
+                Pawn runt = PawnGenerator.GeneratePawn(ZombieDefOf.CZH_RuntKind, faction);
                 if (runt == null)
                 {
                     return;

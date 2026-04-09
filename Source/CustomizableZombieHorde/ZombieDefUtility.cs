@@ -9,11 +9,11 @@ namespace CustomizableZombieHorde
         private static readonly Dictionary<string, ZombieVariant> KindToVariant = new Dictionary<string, ZombieVariant>
         {
             { "CZH_Zombie_Biter", ZombieVariant.Biter },
-            { "CZH_Zombie_Crawler", ZombieVariant.Crawler },
+            { "CZH_Zombie_Runt", ZombieVariant.Runt },
             { "CZH_Zombie_Boomer", ZombieVariant.Boomer },
             { "CZH_Zombie_Sick", ZombieVariant.Sick },
             { "CZH_Zombie_Drowned", ZombieVariant.Drowned },
-            { "CZH_Zombie_Tank", ZombieVariant.Tank },
+            { "CZH_Zombie_Brute", ZombieVariant.Brute },
             { "CZH_Zombie_Grabber", ZombieVariant.Grabber },
             { "CZH_Zombie_Lurker", ZombieVariant.Lurker }
         };
@@ -30,21 +30,21 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            PawnKindDef graveRuntKind = DefDatabase<PawnKindDef>.GetNamedSilentFail("CZH_GraveRuntKind");
-            if (graveRuntKind != null)
+            PawnKindDef runtKind = DefDatabase<PawnKindDef>.GetNamedSilentFail("CZH_RuntKind");
+            if (runtKind != null)
             {
-                graveRuntKind.label = "crawler";
+                runtKind.label = "runt";
             }
 
-            ThingDef graveRunt = DefDatabase<ThingDef>.GetNamedSilentFail("CZH_GraveRunt");
-            if (graveRunt != null)
+            ThingDef runt = DefDatabase<ThingDef>.GetNamedSilentFail("CZH_Runt");
+            if (runt != null)
             {
-                graveRunt.label = "crawler";
-                graveRunt.description = "A tiny, frantic undead crawler left behind by the most grotesque boomer bursts. It moves fast, bites lightly, and scurries straight for the living.";
+                runt.label = "runt";
+                runt.description = "A tiny, frantic undead runt left behind by the most grotesque boomer bursts. It moves fast, bites lightly, and scurries straight for the living.";
             }
 
-            ApplyDynamicGraveLabel("CZH_Grave_Crawler", ZombieVariant.Crawler);
-            ApplyDynamicGraveLabel("CZH_Grave_Tank", ZombieVariant.Tank);
+            ApplyDynamicGraveLabel("CZH_Grave_Runt", ZombieVariant.Runt);
+            ApplyDynamicGraveLabel("CZH_Grave_Brute", ZombieVariant.Brute);
 
             IncidentDef incident = DefDatabase<IncidentDef>.GetNamedSilentFail("CZH_ZombieHorde");
             if (incident != null)
@@ -93,16 +93,16 @@ namespace CustomizableZombieHorde
             {
                 case ZombieVariant.Biter:
                     return CleanVariantName(settings?.biterName, "Biter");
-                case ZombieVariant.Crawler:
-                    return CleanVariantName(settings?.crawlerName, "Runt");
+                case ZombieVariant.Runt:
+                    return CleanVariantName(settings?.runtName, "Runt");
                 case ZombieVariant.Boomer:
                     return CleanVariantName(settings?.boomerName, "Boomer");
                 case ZombieVariant.Sick:
                     return CleanVariantName(settings?.sickName, "Sick");
                 case ZombieVariant.Drowned:
                     return CleanVariantName(settings?.drownedName, "Drowned");
-                case ZombieVariant.Tank:
-                    return CleanVariantName(settings?.heavyName, "Brute");
+                case ZombieVariant.Brute:
+                    return CleanVariantName(settings?.bruteName, "Brute");
                 case ZombieVariant.Grabber:
                     return CleanVariantName(settings?.grabberName, "Grabber");
                 case ZombieVariant.Lurker:
@@ -118,10 +118,10 @@ namespace CustomizableZombieHorde
         {
             switch (variant)
             {
-                case ZombieVariant.Crawler:
-                    return "CZH_BackstoryChild_Crawler";
-                case ZombieVariant.Tank:
-                    return "CZH_BackstoryChild_Heavy";
+                case ZombieVariant.Runt:
+                    return "CZH_BackstoryChild_Runt";
+                case ZombieVariant.Brute:
+                    return "CZH_BackstoryChild_Brute";
                 default:
                     return "CZH_BackstoryChild_" + ZombieVariantUtility.GetDefaultVariantLabel(variant).Replace(" ", string.Empty);
             }
@@ -131,10 +131,10 @@ namespace CustomizableZombieHorde
         {
             switch (variant)
             {
-                case ZombieVariant.Crawler:
-                    return "CZH_BackstoryAdult_Crawler";
-                case ZombieVariant.Tank:
-                    return "CZH_BackstoryAdult_Heavy";
+                case ZombieVariant.Runt:
+                    return "CZH_BackstoryAdult_Runt";
+                case ZombieVariant.Brute:
+                    return "CZH_BackstoryAdult_Brute";
                 default:
                     return "CZH_BackstoryAdult_" + ZombieVariantUtility.GetDefaultVariantLabel(variant).Replace(" ", string.Empty);
             }
@@ -156,11 +156,11 @@ namespace CustomizableZombieHorde
             string clean = CleanPrefix(prefix);
             return string.Join(", ",
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Biter)),
-                BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Crawler)),
+                BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Runt)),
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Boomer)),
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Sick)),
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Drowned)),
-                BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Tank)),
+                BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Brute)),
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Grabber)),
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Lurker)));
         }
@@ -199,7 +199,7 @@ namespace CustomizableZombieHorde
             grave.label = lower + " grave";
             grave.description = "A collapsed grave that spits " + lower + "s out through the dirt.";
 
-            if (variant == ZombieVariant.Tank)
+            if (variant == ZombieVariant.Brute)
             {
                 grave.description = "A heaving grave that keeps forcing " + lower + " zombies up from the dirt.";
             }

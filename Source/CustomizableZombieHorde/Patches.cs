@@ -153,13 +153,13 @@ namespace CustomizableZombieHorde
 
             DrawGrabberTongue(pawn, drawLoc);
 
-            if (ZombieUtility.IsVariant(pawn, ZombieVariant.Tank))
+            if (ZombieUtility.IsVariant(pawn, ZombieVariant.Brute))
             {
                 Matrix4x4 matrix = Matrix4x4.TRS(loc, Quaternion.identity, new Vector3(2f, 2f, 2f));
                 Graphics.DrawMesh(mesh, matrix, DirtMat, 0);
                 Graphics.DrawMesh(mesh, matrix, variantMat, 0);
             }
-            else if (ZombieUtility.IsVariant(pawn, ZombieVariant.Crawler))
+            else if (ZombieUtility.IsVariant(pawn, ZombieVariant.Runt))
             {
                 int ticks = Find.TickManager?.TicksGame ?? 0;
                 float phase = (ticks * 0.18f) + (pawn.thingIDNumber % 17) * 0.37f;

@@ -54,10 +54,10 @@ namespace CustomizableZombieHorde
             {
                 switch (variant)
                 {
-                    case ZombieVariant.Tank: return 8;
+                    case ZombieVariant.Brute: return 8;
                     case ZombieVariant.Biter: return 7;
                     case ZombieVariant.Grabber: return 6;
-                    case ZombieVariant.Crawler: return 4;
+                    case ZombieVariant.Runt: return 4;
                     case ZombieVariant.Drowned: return 5;
                     case ZombieVariant.Boomer: return 2;
                     case ZombieVariant.Sick: return 3;
@@ -71,7 +71,7 @@ namespace CustomizableZombieHorde
 
             if (def == SkillDefOf.Construction || def == SkillDefOf.Mining || def == SkillDefOf.Crafting)
             {
-                return variant == ZombieVariant.Tank ? 2 : variant == ZombieVariant.Grabber ? 1 : 0;
+                return variant == ZombieVariant.Brute ? 2 : variant == ZombieVariant.Grabber ? 1 : 0;
             }
 
             if (def == SkillDefOf.Plants)

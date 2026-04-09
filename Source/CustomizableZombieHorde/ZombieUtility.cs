@@ -57,7 +57,7 @@ namespace CustomizableZombieHorde
                 return 4f;
             }
 
-            if (IsVariant(pawn, ZombieVariant.Crawler))
+            if (IsVariant(pawn, ZombieVariant.Runt))
             {
                 return 4f;
             }
@@ -77,7 +77,7 @@ namespace CustomizableZombieHorde
                 return 4f;
             }
 
-            if (IsVariant(pawn, ZombieVariant.Tank))
+            if (IsVariant(pawn, ZombieVariant.Brute))
             {
                 return 1f;
             }
@@ -155,9 +155,9 @@ namespace CustomizableZombieHorde
             }
         }
 
-        public static void ApplyCrawlerLegDamage(Pawn pawn)
+        public static void ApplyRuntLegDamage(Pawn pawn)
         {
-            if (!IsVariant(pawn, ZombieVariant.Crawler) || pawn?.health?.hediffSet == null || pawn.RaceProps?.body?.AllParts == null)
+            if (!IsVariant(pawn, ZombieVariant.Runt) || pawn?.health?.hediffSet == null || pawn.RaceProps?.body?.AllParts == null)
             {
                 return;
             }
@@ -209,7 +209,7 @@ namespace CustomizableZombieHorde
                 .InRandomOrder()
                 .ToList();
 
-            int woundCount = Math.Min(parts.Count, IsVariant(pawn, ZombieVariant.Crawler) ? Rand.RangeInclusive(1, 2) : Rand.RangeInclusive(1, 3));
+            int woundCount = Math.Min(parts.Count, IsVariant(pawn, ZombieVariant.Runt) ? Rand.RangeInclusive(1, 2) : Rand.RangeInclusive(1, 3));
             for (int i = 0; i < woundCount; i++)
             {
                 BodyPartRecord part = parts[i];
@@ -244,11 +244,11 @@ namespace CustomizableZombieHorde
                 }
 
                 float severity = torsoSeverity ? Rand.Range(1.6f, 3.0f) : Rand.Range(0.8f, 2.0f);
-                if (IsVariant(pawn, ZombieVariant.Tank))
+                if (IsVariant(pawn, ZombieVariant.Brute))
                 {
                     severity *= 0.30f;
                 }
-                else if (IsVariant(pawn, ZombieVariant.Crawler))
+                else if (IsVariant(pawn, ZombieVariant.Runt))
                 {
                     severity *= 0.85f;
                 }
@@ -278,14 +278,14 @@ namespace CustomizableZombieHorde
                 pawn.health.AddHediff(ZombieDefOf.CZH_ZombieSkeletonBiter);
             }
 
-            if (IsVariant(pawn, ZombieVariant.Crawler) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieCrawler))
+            if (IsVariant(pawn, ZombieVariant.Runt) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieRunt))
             {
-                pawn.health.AddHediff(ZombieDefOf.CZH_ZombieCrawler);
+                pawn.health.AddHediff(ZombieDefOf.CZH_ZombieRunt);
             }
 
-            if (IsVariant(pawn, ZombieVariant.Tank) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieTank))
+            if (IsVariant(pawn, ZombieVariant.Brute) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieBrute))
             {
-                pawn.health.AddHediff(ZombieDefOf.CZH_ZombieTank);
+                pawn.health.AddHediff(ZombieDefOf.CZH_ZombieBrute);
             }
         }
 
@@ -371,13 +371,13 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            bool isHeavy = IsVariant(pawn, ZombieVariant.Tank);
+            bool isBrute = IsVariant(pawn, ZombieVariant.Brute);
             List<Apparel> worn = pawn.apparel.WornApparel.ToList();
             List<Apparel> keep = new List<Apparel>();
 
-            int basicTarget = isHeavy ? Rand.RangeInclusive(0, 1) : Rand.RangeInclusive(0, 2);
-            bool allowRareArmor = !isHeavy && Rand.Chance(0.025f);
-            bool allowRareHeadwear = Rand.Chance(isHeavy ? 0.008f : 0.018f);
+            int basicTarget = isBrute ? Rand.RangeInclusive(0, 1) : Rand.RangeInclusive(0, 2);
+            bool allowRareArmor = !isBrute && Rand.Chance(0.025f);
+            bool allowRareHeadwear = Rand.Chance(isBrute ? 0.008f : 0.018f);
             int basicKept = 0;
 
             foreach (Apparel apparel in worn.InRandomOrder())
@@ -772,7 +772,7 @@ namespace CustomizableZombieHorde
 
         public static LocomotionUrgency GetZombieUrgency(Pawn pawn)
         {
-            if (IsVariant(pawn, ZombieVariant.Crawler))
+            if (IsVariant(pawn, ZombieVariant.Runt))
             {
                 return LocomotionUrgency.Amble;
             }

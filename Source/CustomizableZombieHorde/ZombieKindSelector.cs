@@ -33,16 +33,16 @@ namespace CustomizableZombieHorde
         {
             switch (variant)
             {
-                case ZombieVariant.Crawler:
-                    return CustomizableZombieHordeMod.Settings.allowCrawlers;
+                case ZombieVariant.Runt:
+                    return CustomizableZombieHordeMod.Settings.allowRunts;
                 case ZombieVariant.Boomer:
                     return CustomizableZombieHordeMod.Settings.allowBoomers;
                 case ZombieVariant.Sick:
                     return CustomizableZombieHordeMod.Settings.allowSick;
                 case ZombieVariant.Drowned:
                     return CustomizableZombieHordeMod.Settings.allowDrowned && ZombieSpecialUtility.MapHasWater(map);
-                case ZombieVariant.Tank:
-                    return CustomizableZombieHordeMod.Settings.allowHeavies;
+                case ZombieVariant.Brute:
+                    return CustomizableZombieHordeMod.Settings.allowBrutes;
                 case ZombieVariant.Grabber:
                     return CustomizableZombieHordeMod.Settings.allowGrabbers;
                 case ZombieVariant.Lurker:
@@ -58,11 +58,11 @@ namespace CustomizableZombieHorde
             List<float> weights = new List<float>();
 
             AddIfAllowed(kinds, weights, "CZH_Zombie_Biter", CustomizableZombieHordeMod.Settings.allowBiters, 100f);
-            AddIfAllowed(kinds, weights, "CZH_Zombie_Crawler", CustomizableZombieHordeMod.Settings.allowCrawlers, 8f);
+            AddIfAllowed(kinds, weights, "CZH_Zombie_Runt", CustomizableZombieHordeMod.Settings.allowRunts, 8f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Boomer", CustomizableZombieHordeMod.Settings.allowBoomers, 6f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Sick", CustomizableZombieHordeMod.Settings.allowSick, 5f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Drowned", CustomizableZombieHordeMod.Settings.allowDrowned && ZombieSpecialUtility.MapHasWater(map), GetDrownedWeight(map));
-            AddIfAllowed(kinds, weights, "CZH_Zombie_Tank", CustomizableZombieHordeMod.Settings.allowHeavies, 2f);
+            AddIfAllowed(kinds, weights, "CZH_Zombie_Brute", CustomizableZombieHordeMod.Settings.allowBrutes, 2f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Grabber", CustomizableZombieHordeMod.Settings.allowGrabbers, 3f);
 
             if (kinds.Count == 0)

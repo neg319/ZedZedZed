@@ -451,7 +451,7 @@ namespace CustomizableZombieHorde
         public bool DebugSpawnRunt()
         {
             Map map = GetDebugTargetMap();
-            if (map == null || ZombieDefOf.CZH_GraveRuntKind == null)
+            if (map == null || ZombieDefOf.CZH_RuntKind == null)
             {
                 return false;
             }
@@ -473,7 +473,7 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            Pawn runt = PawnGenerator.GeneratePawn(ZombieDefOf.CZH_GraveRuntKind, faction);
+            Pawn runt = PawnGenerator.GeneratePawn(ZombieDefOf.CZH_RuntKind, faction);
             if (runt == null)
             {
                 return false;
@@ -484,7 +484,7 @@ namespace CustomizableZombieHorde
             ZombieUtility.PrepareSpawnedZombie(runt);
             ZombieUtility.AssignInitialShambleJob(runt, ZombieSpawnEventType.AssaultBase);
             ZombieUtility.EnsureZombieAggression(runt);
-            Messages.Message("A debug crawler has been spawned.", runt, MessageTypeDefOf.NeutralEvent);
+            Messages.Message("A debug runt has been spawned.", runt, MessageTypeDefOf.NeutralEvent);
             RefreshCurrentMapCount();
             return true;
         }

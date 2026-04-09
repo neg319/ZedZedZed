@@ -31,8 +31,8 @@ namespace CustomizableZombieHorde
         {
             string kindDefName = pawn?.kindDef?.defName;
             string thingDefName = pawn?.def?.defName;
-            return string.Equals(kindDefName, "CZH_GraveRuntKind", StringComparison.Ordinal)
-                || string.Equals(thingDefName, "CZH_GraveRunt", StringComparison.Ordinal);
+            return string.Equals(kindDefName, "CZH_RuntKind", StringComparison.Ordinal)
+                || string.Equals(thingDefName, "CZH_Runt", StringComparison.Ordinal);
         }
 
         public static bool IsIgnoredByZombies(Pawn pawn)

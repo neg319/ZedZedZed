@@ -3,11 +3,11 @@ namespace CustomizableZombieHorde
     public enum ZombieVariant
     {
         Biter,
-        Crawler,
+        Runt,
         Boomer,
         Sick,
         Drowned,
-        Tank,
+        Brute,
         Grabber,
         Lurker
     }

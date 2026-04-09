@@ -28,11 +28,11 @@ namespace CustomizableZombieHorde
         private static readonly Dictionary<string, ZombieVariant> KindDefNameToVariant = new Dictionary<string, ZombieVariant>
         {
             { "CZH_Zombie_Biter", ZombieVariant.Biter },
-            { "CZH_Zombie_Crawler", ZombieVariant.Crawler },
+            { "CZH_Zombie_Runt", ZombieVariant.Runt },
             { "CZH_Zombie_Boomer", ZombieVariant.Boomer },
             { "CZH_Zombie_Sick", ZombieVariant.Sick },
             { "CZH_Zombie_Drowned", ZombieVariant.Drowned },
-            { "CZH_Zombie_Tank", ZombieVariant.Tank },
+            { "CZH_Zombie_Brute", ZombieVariant.Brute },
             { "CZH_Zombie_Grabber", ZombieVariant.Grabber },
             { "CZH_Zombie_Lurker", ZombieVariant.Lurker }
         };
@@ -40,11 +40,11 @@ namespace CustomizableZombieHorde
         private static readonly Dictionary<ZombieVariant, string> VariantToKindDefName = new Dictionary<ZombieVariant, string>
         {
             { ZombieVariant.Biter, "CZH_Zombie_Biter" },
-            { ZombieVariant.Crawler, "CZH_Zombie_Crawler" },
+            { ZombieVariant.Runt, "CZH_Zombie_Runt" },
             { ZombieVariant.Boomer, "CZH_Zombie_Boomer" },
             { ZombieVariant.Sick, "CZH_Zombie_Sick" },
             { ZombieVariant.Drowned, "CZH_Zombie_Drowned" },
-            { ZombieVariant.Tank, "CZH_Zombie_Tank" },
+            { ZombieVariant.Brute, "CZH_Zombie_Brute" },
             { ZombieVariant.Grabber, "CZH_Zombie_Grabber" },
             { ZombieVariant.Lurker, "CZH_Zombie_Lurker" }
         };
@@ -52,11 +52,11 @@ namespace CustomizableZombieHorde
         private static readonly Dictionary<ZombieVariant, string> DefaultVariantLabels = new Dictionary<ZombieVariant, string>
         {
             { ZombieVariant.Biter, "Biter" },
-            { ZombieVariant.Crawler, "Runt" },
+            { ZombieVariant.Runt, "Runt" },
             { ZombieVariant.Boomer, "Boomer" },
             { ZombieVariant.Sick, "Sick" },
             { ZombieVariant.Drowned, "Drowned" },
-            { ZombieVariant.Tank, "Brute" },
+            { ZombieVariant.Brute, "Brute" },
             { ZombieVariant.Grabber, "Grabber" },
             { ZombieVariant.Lurker, "Lurker" }
         };
@@ -64,11 +64,11 @@ namespace CustomizableZombieHorde
         private static readonly Dictionary<ZombieVariant, ZombieButcherProfile> ButcherProfiles = new Dictionary<ZombieVariant, ZombieButcherProfile>
         {
             { ZombieVariant.Biter, new ZombieButcherProfile(9, 7, 0f, 0, 0) },
-            { ZombieVariant.Crawler, new ZombieButcherProfile(5, 4, 0.22f, 1, 1) },
+            { ZombieVariant.Runt, new ZombieButcherProfile(5, 4, 0.22f, 1, 1) },
             { ZombieVariant.Boomer, new ZombieButcherProfile(9, 7, 1f, 1, 2) },
             { ZombieVariant.Sick, new ZombieButcherProfile(9, 7, 1f, 1, 2) },
             { ZombieVariant.Drowned, new ZombieButcherProfile(9, 7, 0.34f, 1, 1) },
-            { ZombieVariant.Tank, new ZombieButcherProfile(18, 14, 0.40f, 1, 2) },
+            { ZombieVariant.Brute, new ZombieButcherProfile(18, 14, 0.40f, 1, 2) },
             { ZombieVariant.Grabber, new ZombieButcherProfile(9, 7, 0.44f, 1, 1) },
             { ZombieVariant.Lurker, new ZombieButcherProfile(9, 7, 0.28f, 1, 1) }
         };
@@ -137,16 +137,16 @@ namespace CustomizableZombieHorde
         {
             switch (variant)
             {
-                case ZombieVariant.Crawler:
-                    return ZombieDefOf.CZH_Grave_Crawler;
+                case ZombieVariant.Runt:
+                    return ZombieDefOf.CZH_Grave_Runt;
                 case ZombieVariant.Boomer:
                     return ZombieDefOf.CZH_Grave_Boomer;
                 case ZombieVariant.Sick:
                     return ZombieDefOf.CZH_Grave_Sick;
                 case ZombieVariant.Drowned:
                     return ZombieDefOf.CZH_Grave_Drowned;
-                case ZombieVariant.Tank:
-                    return ZombieDefOf.CZH_Grave_Tank;
+                case ZombieVariant.Brute:
+                    return ZombieDefOf.CZH_Grave_Brute;
                 case ZombieVariant.Grabber:
                     return ZombieDefOf.CZH_Grave_Grabber;
                 default:

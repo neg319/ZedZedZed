@@ -14,7 +14,7 @@ namespace CustomizableZombieHorde
             new Color(0.47f, 0.48f, 0.46f)
         };
 
-        private static readonly Color[] CrawlerSkinPalette =
+        private static readonly Color[] RuntSkinPalette =
         {
             new Color(0.53f, 0.48f, 0.40f),
             new Color(0.47f, 0.42f, 0.34f),
@@ -46,7 +46,7 @@ namespace CustomizableZombieHorde
             new Color(0.40f, 0.46f, 0.49f)
         };
 
-        private static readonly Color[] TankSkinPalette =
+        private static readonly Color[] BruteSkinPalette =
         {
             new Color(0.51f, 0.47f, 0.44f),
             new Color(0.47f, 0.43f, 0.40f),
@@ -113,16 +113,16 @@ namespace CustomizableZombieHorde
 
             switch (variant)
             {
-                case ZombieVariant.Crawler:
-                    return CrawlerSkinPalette.RandomElement();
+                case ZombieVariant.Runt:
+                    return RuntSkinPalette.RandomElement();
                 case ZombieVariant.Boomer:
                     return BoomerSkinPalette.RandomElement();
                 case ZombieVariant.Sick:
                     return SickSkinPalette.RandomElement();
                 case ZombieVariant.Drowned:
                     return DrownedSkinPalette.RandomElement();
-                case ZombieVariant.Tank:
-                    return TankSkinPalette.RandomElement();
+                case ZombieVariant.Brute:
+                    return BruteSkinPalette.RandomElement();
                 case ZombieVariant.Grabber:
                     return GrabberSkinPalette.RandomElement();
                 default:
@@ -144,7 +144,7 @@ namespace CustomizableZombieHorde
                 case ZombieVariant.Drowned:
                     tint = new Color(0.28f, 0.39f, 0.37f);
                     break;
-                case ZombieVariant.Tank:
+                case ZombieVariant.Brute:
                     tint = new Color(0.22f, 0.22f, 0.20f);
                     break;
                 case ZombieVariant.Grabber:
@@ -168,14 +168,14 @@ namespace CustomizableZombieHorde
             {
                 case ZombieVariant.Biter:
                     return BodyTypeDefOf.Thin;
-                case ZombieVariant.Crawler:
+                case ZombieVariant.Runt:
                     return GetChildBodyType() ?? BodyTypeDefOf.Thin;
                 case ZombieVariant.Boomer:
                     return BodyTypeDefOf.Fat;
                 case ZombieVariant.Drowned:
                 case ZombieVariant.Grabber:
                     return GetNormalBodyType(pawn);
-                case ZombieVariant.Tank:
+                case ZombieVariant.Brute:
                     return BodyTypeDefOf.Hulk;
                 default:
                     return fallback ?? GetNormalBodyType(pawn);
@@ -219,16 +219,16 @@ namespace CustomizableZombieHorde
 
             switch (variant)
             {
-                case ZombieVariant.Crawler:
-                    return "PawnOverlays/ZombieCrawlerBody";
+                case ZombieVariant.Runt:
+                    return "PawnOverlays/ZombieRuntBody";
                 case ZombieVariant.Boomer:
                     return "PawnOverlays/ZombieBoomerBody";
                 case ZombieVariant.Sick:
                     return "PawnOverlays/ZombieSickBody";
                 case ZombieVariant.Drowned:
                     return "PawnOverlays/ZombieDrownedBody";
-                case ZombieVariant.Tank:
-                    return "PawnOverlays/ZombieTankBody";
+                case ZombieVariant.Brute:
+                    return "PawnOverlays/ZombieBruteBody";
                 case ZombieVariant.Grabber:
                     return "PawnOverlays/ZombieGrabberBody";
                 default:

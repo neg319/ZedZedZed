@@ -72,19 +72,19 @@ namespace CustomizableZombieHorde
         public bool enableDebugControls = false;
 
         public bool allowBiters = true;
-        public bool allowCrawlers = true;
+        public bool allowRunts = true;
         public bool allowBoomers = true;
         public bool allowSick = true;
         public bool allowDrowned = true;
-        public bool allowHeavies = true;
+        public bool allowBrutes = true;
         public bool allowGrabbers = true;
 
         public string biterName = "Biter";
-        public string crawlerName = "Runt";
+        public string runtName = "Runt";
         public string boomerName = "Boomer";
         public string sickName = "Sick";
         public string drownedName = "Drowned";
-        public string heavyName = "Brute";
+        public string bruteName = "Brute";
         public string grabberName = "Grabber";
         public string lurkerName = "Lurker";
 
@@ -133,19 +133,19 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref enableDebugControls, "enableDebugControls", false);
 
             Scribe_Values.Look(ref allowBiters, "allowBiters", true);
-            Scribe_Values.Look(ref allowCrawlers, "allowCrawlers", true);
+            Scribe_Values.Look(ref allowRunts, "allowRunts", true);
             Scribe_Values.Look(ref allowBoomers, "allowBoomers", true);
             Scribe_Values.Look(ref allowSick, "allowSick", true);
             Scribe_Values.Look(ref allowDrowned, "allowDrowned", true);
-            Scribe_Values.Look(ref allowHeavies, "allowHeavies", true);
+            Scribe_Values.Look(ref allowBrutes, "allowBrutes", true);
             Scribe_Values.Look(ref allowGrabbers, "allowGrabbers", true);
 
             Scribe_Values.Look(ref biterName, "biterName", "Biter");
-            Scribe_Values.Look(ref crawlerName, "crawlerName", "Runt");
+            Scribe_Values.Look(ref runtName, "runtName", "Runt");
             Scribe_Values.Look(ref boomerName, "boomerName", "Boomer");
             Scribe_Values.Look(ref sickName, "sickName", "Sick");
             Scribe_Values.Look(ref drownedName, "drownedName", "Drowned");
-            Scribe_Values.Look(ref heavyName, "heavyName", "Brute");
+            Scribe_Values.Look(ref bruteName, "bruteName", "Brute");
             Scribe_Values.Look(ref grabberName, "grabberName", "Grabber");
             Scribe_Values.Look(ref lurkerName, "lurkerName", "Lurker");
 
@@ -244,19 +244,19 @@ namespace CustomizableZombieHorde
             enableDebugControls = false;
 
             allowBiters = true;
-            allowCrawlers = true;
+            allowRunts = true;
             allowBoomers = true;
             allowSick = true;
             allowDrowned = true;
-            allowHeavies = true;
+            allowBrutes = true;
             allowGrabbers = true;
 
             biterName = "Biter";
-            crawlerName = "Runt";
+            runtName = "Runt";
             boomerName = "Boomer";
             sickName = "Sick";
             drownedName = "Drowned";
-            heavyName = "Brute";
+            bruteName = "Brute";
             grabberName = "Grabber";
             lurkerName = "Lurker";
         }
@@ -307,11 +307,11 @@ namespace CustomizableZombieHorde
 
             zombiePrefix = zombiePrefix.Trim();
             biterName = NormalizeVariantName(biterName, "Biter");
-            crawlerName = MigrateLegacyVariantName(NormalizeVariantName(crawlerName, "Runt"), "Crawler", "Runt");
+            runtName = MigrateLegacyVariantName(NormalizeVariantName(runtName, "Runt"), "Crawler", "Runt");
             boomerName = NormalizeVariantName(boomerName, "Boomer");
             sickName = NormalizeVariantName(sickName, "Sick");
             drownedName = NormalizeVariantName(drownedName, "Drowned");
-            heavyName = MigrateLegacyVariantName(NormalizeVariantName(heavyName, "Brute"), "Heavy", "Brute");
+            bruteName = MigrateLegacyVariantName(MigrateLegacyVariantName(NormalizeVariantName(bruteName, "Brute"), "Heavy", "Brute"), "Tank", "Brute");
             grabberName = NormalizeVariantName(grabberName, "Grabber");
             lurkerName = NormalizeVariantName(lurkerName, "Lurker");
             difficultyLevel = Mathf.Clamp(difficultyLevel, 0, 8);
@@ -505,25 +505,25 @@ namespace CustomizableZombieHorde
             DrawInfoCard(listing, "What this tab does", "Variants lets you decide which special strains are allowed to appear and what they are called in game. Turn off types you do not want in the pool, or rename them so the mod matches the theme and tone of your playthrough.");
             DrawSectionLabel(listing, "Variant roster", "Turn individual strains on or off. Disabled strains will not appear in standard random waves or grave events.");
             DrawVariantCard(listing, "Standard Biters", "Baseline shamblers. The common core of most packs and hordes.", ref allowBiters);
-            DrawVariantCard(listing, "Runts", "Slow dragging corpses that pressure choke points and add creep factor.", ref allowCrawlers);
+            DrawVariantCard(listing, "Runts", "Slow dragging corpses that pressure choke points and add creep factor.", ref allowRunts);
             DrawVariantCard(listing, "Boomers", "Unstable corpses that can burst in acid and punish tight formations.", ref allowBoomers);
             DrawVariantCard(listing, "Sick", "Disease-spreading corpses that contaminate blood trails and can infect colonists.", ref allowSick);
             DrawVariantCard(listing, "Drowned", "Water-adapted corpses that are strongest near rivers, marshes, and shorelines.", ref allowDrowned);
-            DrawVariantCard(listing, "Brutes", "Large resilient corpses that soak damage and hit harder in melee.", ref allowHeavies);
+            DrawVariantCard(listing, "Brutes", "Large resilient corpses that soak damage and hit harder in melee.", ref allowBrutes);
             DrawVariantCard(listing, "Grabbers", "Corpse grapplers that pin colonists in place until they break free.", ref allowGrabbers);
 
-            if (!allowBiters && !allowCrawlers && !allowBoomers && !allowSick && !allowDrowned && !allowHeavies && !allowGrabbers)
+            if (!allowBiters && !allowRunts && !allowBoomers && !allowSick && !allowDrowned && !allowBrutes && !allowGrabbers)
             {
                 DrawWarningCard(listing, "No variants are enabled. Standard Biters will be used as a safe fallback.");
             }
 
             DrawSectionLabel(listing, "Custom variant names", "These names replace the built in variant titles in pawn labels, letters, grave warnings, and other player facing text.");
             DrawTextEntryCard(listing, "Biter name", "The name used for the baseline shambler strain.", ref biterName, "Biter");
-            DrawTextEntryCard(listing, "Runt name", "The name used for the dragging low to the ground strain.", ref crawlerName, "Runt");
+            DrawTextEntryCard(listing, "Runt name", "The name used for the dragging low to the ground strain.", ref runtName, "Runt");
             DrawTextEntryCard(listing, "Boomer name", "The name used for the unstable bursting strain.", ref boomerName, "Boomer");
             DrawTextEntryCard(listing, "Sick name", "The name used for the plague spreading strain.", ref sickName, "Sick");
             DrawTextEntryCard(listing, "Drowned name", "The name used for the blue waterlogged strain.", ref drownedName, "Drowned");
-            DrawTextEntryCard(listing, "Brute name", "The name used for the large tank like strain.", ref heavyName, "Brute");
+            DrawTextEntryCard(listing, "Brute name", "The name used for the large brute like strain.", ref bruteName, "Brute");
             DrawTextEntryCard(listing, "Grabber name", "The name used for the grappling strain.", ref grabberName, "Grabber");
             DrawTextEntryCard(listing, "Lurker name", "The name used for the passive tameable strain.", ref lurkerName, "Lurker");
             DrawInfoCard(listing, "Example names", ZombieDefUtility.ExampleNames(zombiePrefix));
@@ -532,11 +532,11 @@ namespace CustomizableZombieHorde
             if (DrawActionCard(listing, "Enable every strain", "Restores the full special infected roster with one click."))
             {
                 allowBiters = true;
-                allowCrawlers = true;
+                allowRunts = true;
                 allowBoomers = true;
                 allowSick = true;
                 allowDrowned = true;
-                allowHeavies = true;
+                allowBrutes = true;
                 allowGrabbers = true;
             }
 
@@ -610,7 +610,7 @@ namespace CustomizableZombieHorde
                 DrawDebugActionButton(listing, component, "Force drowned grave now", "Forced a drowned grave.", "Could not force a drowned grave.");
                 DrawDebugActionButton(listing, component, "Force brute grave now", "Forced a brute grave.", "Could not force a brute grave.");
                 DrawDebugActionButton(listing, component, "Spawn Bone Biter now", "Spawned a Bone Biter.", "Could not spawn a Bone Biter.");
-                DrawDebugActionButton(listing, component, "Spawn crawler now", "Spawned a crawler.", "Could not spawn a crawler.");
+                DrawDebugActionButton(listing, component, "Spawn runt now", "Spawned a runt.", "Could not spawn a runt.");
                 DrawDebugActionButton(listing, component, "Spawn pregnant boomer now", "Spawned a pregnant boomer.", "Could not spawn a pregnant boomer.");
                 DrawDebugActionButton(listing, component, "Spawn lurker now", "Spawned a lurker.", "Could not spawn a lurker.");
                 DrawDebugActionButton(listing, component, "Force grabber grave now", "Forced a grabber grave.", "Could not force a grabber grave.");
@@ -835,7 +835,7 @@ namespace CustomizableZombieHorde
                 case "Force biter grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Biter);
                 case "Force runt grave now":
-                    return component.DebugForceVariantGraveEvent(ZombieVariant.Crawler);
+                    return component.DebugForceVariantGraveEvent(ZombieVariant.Runt);
                 case "Force boomer grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Boomer);
                 case "Force sick grave now":
@@ -843,10 +843,10 @@ namespace CustomizableZombieHorde
                 case "Force drowned grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Drowned);
                 case "Force brute grave now":
-                    return component.DebugForceVariantGraveEvent(ZombieVariant.Tank);
+                    return component.DebugForceVariantGraveEvent(ZombieVariant.Brute);
                 case "Spawn Bone Biter now":
                     return component.DebugSpawnBoneBiter();
-                case "Spawn crawler now":
+                case "Spawn runt now":
                     return component.DebugSpawnRunt();
                 case "Spawn pregnant boomer now":
                     return component.DebugSpawnPregnantBoomer();
@@ -1013,7 +1013,7 @@ namespace CustomizableZombieHorde
             listing.Label("Biter");
             biterName = listing.TextEntry(biterName ?? "Biter");
             listing.Label("Runt");
-            crawlerName = listing.TextEntry(crawlerName ?? "Runt");
+            runtName = listing.TextEntry(runtName ?? "Runt");
             listing.Label("Boomer");
             boomerName = listing.TextEntry(boomerName ?? "Boomer");
             listing.Label("Sick");
@@ -1021,7 +1021,7 @@ namespace CustomizableZombieHorde
             listing.Label("Drowned");
             drownedName = listing.TextEntry(drownedName ?? "Drowned");
             listing.Label("Brute");
-            heavyName = listing.TextEntry(heavyName ?? "Brute");
+            bruteName = listing.TextEntry(bruteName ?? "Brute");
             listing.Label("Grabber");
             grabberName = listing.TextEntry(grabberName ?? "Grabber");
             listing.Label("Lurker");
