@@ -51,8 +51,8 @@
 
   <BackstoryDef>
     <defName>CZH_BackstoryChild_Crawler</defName>
-    <title>Crawler</title>
-    <titleShort>Crawler</titleShort>
+    <title>Runt</title>
+    <titleShort>Runt</titleShort>
     <baseDesc>Broken and dragging, this corpse still claws forward with stubborn predatory focus.</baseDesc>
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
@@ -65,8 +65,8 @@
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_Crawler</defName>
-    <title>Crawler</title>
-    <titleShort>Crawler</titleShort>
+    <title>Runt</title>
+    <titleShort>Runt</titleShort>
     <baseDesc>Its limbs are ruined, but it keeps dragging itself onward with feral purpose.</baseDesc>
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
@@ -167,8 +167,8 @@
 
   <BackstoryDef>
     <defName>CZH_BackstoryChild_Heavy</defName>
-    <title>Heavy</title>
-    <titleShort>Heavy</titleShort>
+    <title>Brute</title>
+    <titleShort>Brute</titleShort>
     <baseDesc>A broad and brutal hulk that overcomes prey through mass, force, and relentless pressure.</baseDesc>
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
@@ -181,8 +181,8 @@
   </BackstoryDef>
   <BackstoryDef>
     <defName>CZH_BackstoryAdult_Heavy</defName>
-    <title>Heavy</title>
-    <titleShort>Heavy</titleShort>
+    <title>Brute</title>
+    <titleShort>Brute</titleShort>
     <baseDesc>It smashes through resistance with slow certainty, built more like a battering ram than a man.</baseDesc>
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>

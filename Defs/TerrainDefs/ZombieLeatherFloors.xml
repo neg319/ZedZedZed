@@ -8,7 +8,11 @@
     <texturePath>Terrain/RottenLeatherFloor</texturePath>
     <renderPrecedence>212</renderPrecedence>
     <constructEffect>ConstructDirt</constructEffect>
+    <layerable>true</layerable>
     <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    <affordances>
+      <li>Heavy</li>
+    </affordances>
     <designationCategory>Floors</designationCategory>
     <resourcesFractionWhenDeconstructed>0.5</resourcesFractionWhenDeconstructed>
     <pathCost>0</pathCost>
@@ -31,7 +35,11 @@
     <texturePath>Terrain/StitchedRottenLeatherFloor</texturePath>
     <renderPrecedence>213</renderPrecedence>
     <constructEffect>ConstructDirt</constructEffect>
+    <layerable>true</layerable>
     <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    <affordances>
+      <li>Heavy</li>
+    </affordances>
     <designationCategory>Floors</designationCategory>
     <resourcesFractionWhenDeconstructed>0.5</resourcesFractionWhenDeconstructed>
     <pathCost>0</pathCost>
@@ -54,7 +62,11 @@
     <texturePath>Terrain/PatchworkLeatherFloor</texturePath>
     <renderPrecedence>214</renderPrecedence>
     <constructEffect>ConstructDirt</constructEffect>
+    <layerable>true</layerable>
     <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    <affordances>
+      <li>Heavy</li>
+    </affordances>
     <designationCategory>Floors</designationCategory>
     <resourcesFractionWhenDeconstructed>0.5</resourcesFractionWhenDeconstructed>
     <pathCost>0</pathCost>
@@ -77,7 +89,11 @@
     <texturePath>Terrain/MottledHideFloor</texturePath>
     <renderPrecedence>211</renderPrecedence>
     <constructEffect>ConstructDirt</constructEffect>
+    <layerable>true</layerable>
     <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    <affordances>
+      <li>Heavy</li>
+    </affordances>
     <designationCategory>Floors</designationCategory>
     <resourcesFractionWhenDeconstructed>0.5</resourcesFractionWhenDeconstructed>
     <pathCost>0</pathCost>

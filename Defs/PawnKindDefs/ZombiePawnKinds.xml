@@ -29,7 +29,7 @@
 
   <PawnKindDef>
     <defName>CZH_Zombie_Crawler</defName>
-    <label>zombie crawler</label>
+    <label>zombie runt</label>
     <race>Human</race>
     <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
     <combatPower>30</combatPower>
@@ -133,7 +133,7 @@
 
   <PawnKindDef>
     <defName>CZH_Zombie_Tank</defName>
-    <label>zombie heavy</label>
+    <label>zombie brute</label>
     <race>Human</race>
     <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
     <combatPower>130</combatPower>

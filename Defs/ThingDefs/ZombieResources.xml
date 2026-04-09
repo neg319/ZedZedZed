@@ -64,6 +64,7 @@
       <stuffAdjective>rotten leather</stuffAdjective>
       <categories>
         <li>Leathery</li>
+        <li>CZH_RottenLeathery</li>
       </categories>
       <commonality>0.20</commonality>
       <color>(0.32,0.23,0.18)</color>
@@ -150,8 +151,8 @@
       <Cleanliness>-10</Cleanliness>
     </statBases>
     <graphicData>
-      <texPath>Things/Filth/ZombieBlood</texPath>
-      <graphicClass>Graphic_Single</graphicClass>
+      <texPath>Things/Filth/ZombieBloodVariants</texPath>
+      <graphicClass>Graphic_Random</graphicClass>
       <shaderType>Transparent</shaderType>
     </graphicData>
     <filth>
@@ -171,8 +172,8 @@
       <Cleanliness>-10</Cleanliness>
     </statBases>
     <graphicData>
-      <texPath>Things/Filth/SickZombieBlood</texPath>
-      <graphicClass>Graphic_Single</graphicClass>
+      <texPath>Things/Filth/SickZombieBloodVariants</texPath>
+      <graphicClass>Graphic_Random</graphicClass>
       <shaderType>Transparent</shaderType>
     </graphicData>
     <filth>
@@ -192,8 +193,8 @@
       <Cleanliness>-12</Cleanliness>
     </statBases>
     <graphicData>
-      <texPath>Things/Filth/ZombieAcid</texPath>
-      <graphicClass>Graphic_Single</graphicClass>
+      <texPath>Things/Filth/ZombieAcidVariants</texPath>
+      <graphicClass>Graphic_Random</graphicClass>
       <shaderType>Transparent</shaderType>
     </graphicData>
     <filth>

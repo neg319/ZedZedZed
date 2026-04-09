@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <ThingDef ParentName="Rat">
+    <defName>CZH_GraveRunt</defName>
+    <label>crawler</label>
+    <description>A tiny, frantic undead crawler left behind by the most grotesque boomer bursts. It moves fast, bites lightly, and scurries straight for the living.</description>
+    <graphicData>
+      <texPath>Things/Pawn/Animal/GraveRunt/GraveRunt</texPath>
+      <graphicClass>Graphic_Multi</graphicClass>
+      <drawSize>(0.80,0.80)</drawSize>
+      <shadowData>
+        <volume>(0.22,0.10,0.22)</volume>
+        <offset>(0,0,-0.05)</offset>
+      </shadowData>
+    </graphicData>
+    <statBases>
+      <MoveSpeed>5.4</MoveSpeed>
+      <MeleeHitChance>0.74</MeleeHitChance>
+      <MarketValue>0</MarketValue>
+      <ComfyTemperatureMin>-25</ComfyTemperatureMin>
+      <ComfyTemperatureMax>50</ComfyTemperatureMax>
+    </statBases>
+    <race>
+      <bloodDef>CZH_Filth_ZombieBlood</bloodDef>
+      <baseBodySize>0.18</baseBodySize>
+      <baseHealthScale>0.45</baseHealthScale>
+      <lifeExpectancy>4</lifeExpectancy>
+      <wildness>0</wildness>
+    </race>
+  </ThingDef>
+</Defs>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <PawnKindDef ParentName="Rat">
+    <defName>CZH_GraveRuntKind</defName>
+    <label>crawler</label>
+    <race>CZH_GraveRunt</race>
+    <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
+    <combatPower>18</combatPower>
+    <canArriveManhunter>true</canArriveManhunter>
+    <canBeSapper>false</canBeSapper>
+  </PawnKindDef>
+</Defs>

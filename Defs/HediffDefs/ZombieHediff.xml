@@ -176,7 +176,7 @@
   <HediffDef>
     <defName>CZH_ZombieCrawler</defName>
     <hediffClass>HediffWithComps</hediffClass>
-    <label>crawler body</label>
+    <label>runt body</label>
     <description>This zombie drags itself forward on ruined limbs.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
@@ -195,7 +195,7 @@
   <HediffDef>
     <defName>CZH_ZombieTank</defName>
     <hediffClass>HediffWithComps</hediffClass>
-    <label>heavy strain</label>
+    <label>brute strain</label>
     <description>This massive zombie strain is much stronger and larger than normal undead.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
@@ -388,4 +388,95 @@
       </li>
     </stages>
   </HediffDef>
+  <HediffDef>
+    <defName>CZH_ZombieAcidCorrosion</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>zombie acid corrosion</label>
+    <description>Caustic zombie acid is still eating at the flesh and causing ongoing burn damage.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <initialSeverity>0.35</initialSeverity>
+    <maxSeverity>1.0</maxSeverity>
+    <comps>
+      <li Class="CustomizableZombieHorde.HediffCompProperties_DamageOverTime">
+        <tickInterval>300</tickInterval>
+        <damageAmount>1.1</damageAmount>
+        <damageDef>Burn</damageDef>
+        <severityLossPerTick>0.06</severityLossPerTick>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>corroding</label>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieBloodSepsis</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>zombie blood exposure</label>
+    <description>Undead blood is seeping into cuts and causing a weak but lingering damage over time effect.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <initialSeverity>0.10</initialSeverity>
+    <maxSeverity>1.0</maxSeverity>
+    <comps>
+      <li Class="CustomizableZombieHorde.HediffCompProperties_DamageOverTime">
+        <tickInterval>900</tickInterval>
+        <damageAmount>0.35</damageAmount>
+        <damageDef>Cut</damageDef>
+        <severityLossPerTick>0.02</severityLossPerTick>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>contaminated</label>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_PregnantBoomer</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>pregnant boomer</label>
+    <description>This female boomer is swollen with a crawler. When it bursts, it is guaranteed to leave one behind.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>ready to burst</label>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_PukedOn</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>puked on</label>
+    <description>This pawn is coated in fresh zombie bile. The stench and dripping mess draw nearby zombies toward them.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <initialSeverity>1.0</initialSeverity>
+    <maxSeverity>1.0</maxSeverity>
+    <comps>
+      <li Class="CustomizableZombieHorde.HediffCompProperties_TemporaryStatus">
+        <durationTicks>1200</durationTicks>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>covered in bile</label>
+      </li>
+    </stages>
+  </HediffDef>
+
 </Defs>

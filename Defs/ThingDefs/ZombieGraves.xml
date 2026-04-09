@@ -44,8 +44,8 @@
 
   <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Crawler</defName>
-    <label>crawler grave</label>
-    <description>A collapsed grave that spits crawlers out through the dirt.</description>
+    <label>runt grave</label>
+    <description>A collapsed grave that spits runts out through the dirt.</description>
     <comps>
       <li Class="CustomizableZombieHorde.CompProperties_ZombieGraveSpawner">
         <compClass>CustomizableZombieHorde.CompZombieGraveSpawner</compClass>
@@ -112,8 +112,8 @@
 
   <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Tank</defName>
-    <label>heavy grave</label>
-    <description>A heaving grave that keeps forcing heavy zombies up from the dirt.</description>
+    <label>brute grave</label>
+    <description>A heaving grave that keeps forcing brute zombies up from the dirt.</description>
     <statBases>
       <MaxHitPoints>210</MaxHitPoints>
       <Flammability>0.10</Flammability>
