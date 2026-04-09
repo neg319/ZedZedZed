@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <PawnKindDef Name="CZH_CrawlerKindBase" Abstract="True">
+    <label>crawler</label>
+    <defaultFactionType>CZH_ZombieHorde</defaultFactionType>
+    <combatPower>18</combatPower>
+    <canArriveManhunter>true</canArriveManhunter>
+    <canBeSapper>false</canBeSapper>
+    <lifeStages>
+      <li>
+        <bodyGraphicData>
+          <texPath>Things/Pawn/Animal/Crawler/Crawler</texPath>
+          <graphicClass>Graphic_Multi</graphicClass>
+          <drawSize>(0.80,0.80)</drawSize>
+          <shadowData>
+            <volume>(0.22,0.10,0.22)</volume>
+            <offset>(0,0,-0.05)</offset>
+          </shadowData>
+        </bodyGraphicData>
+      </li>
+    </lifeStages>
+  </PawnKindDef>
+
+  <PawnKindDef ParentName="CZH_CrawlerKindBase">
+    <defName>CZH_CrawlerKind</defName>
+    <race>CZH_Crawler</race>
+  </PawnKindDef>
+
+  <PawnKindDef ParentName="CZH_CrawlerKindBase">
+    <defName>CZH_GraveRuntKind</defName>
+    <race>CZH_GraveRunt</race>
+  </PawnKindDef>
+
+  <PawnKindDef ParentName="CZH_CrawlerKindBase">
+    <defName>CZH_RuntKind</defName>
+    <race>CZH_Runt</race>
+  </PawnKindDef>
+</Defs>
