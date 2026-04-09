@@ -1,12 +1,14 @@
 ```text
- ______          _   ______          _   ______
-|___  /         | | |___  /         | | |___  /
-   / /  ___   __| |    / /  ___   __| |    / / 
-  / /  / _ \ / _` |   / /  / _ \ / _` |   / /  
-./ /__| (_) | (_| | ./ /__| (_) | (_| | ./ /__ 
-\_____/\___/ \__,_| \_____/\___/ \__,_| \_____|
-
-        R I M W O R L D   Z O M B I E   M O D
+▒███████▒▓█████ ▓█████▄    ▒███████▒▓█████ ▓█████▄    ▒███████▒▓█████ ▓█████▄ 
+▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌   ▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌   ▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌
+░ ▒ ▄▀▒░ ▒███   ░██   █▌   ░ ▒ ▄▀▒░ ▒███   ░██   █▌   ░ ▒ ▄▀▒░ ▒███   ░██   █▌
+  ▄▀▒   ░▒▓█  ▄ ░▓█▄   ▌     ▄▀▒   ░▒▓█  ▄ ░▓█▄   ▌     ▄▀▒   ░▒▓█  ▄ ░▓█▄   ▌
+▒███████▒░▒████▒░▒████▓    ▒███████▒░▒████▒░▒████▓    ▒███████▒░▒████▒░▒████▓ 
+░▒▒ ▓░▒░▒░░ ▒░ ░ ▒▒▓  ▒    ░▒▒ ▓░▒░▒░░ ▒░ ░ ▒▒▓  ▒    ░▒▒ ▓░▒░▒░░ ▒░ ░ ▒▒▓  ▒ 
+░░▒ ▒ ░ ▒ ░ ░  ░ ░ ▒  ▒    ░░▒ ▒ ░ ▒ ░ ░  ░ ░ ▒  ▒    ░░▒ ▒ ░ ▒ ░ ░  ░ ░ ▒  ▒ 
+░ ░ ░ ░ ░   ░    ░ ░  ░    ░ ░ ░ ░ ░   ░    ░ ░  ░    ░ ░ ░ ░ ░   ░    ░ ░  ░ 
+  ░ ░       ░  ░   ░         ░ ░       ░  ░   ░         ░ ░       ░  ░   ░    
+░                ░         ░                ░         ░                ░      
 ```
 
 # Zed Zed Zed
@@ -64,7 +66,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 33** of the active development cycle in this build set.
+This source package is currently at **iteration 36** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: initial compile fixes, XML cleanup, butchering fix, and the first sick spew overhaul
@@ -74,8 +76,26 @@ Iteration history:
 - Iteration 24 to 29: crawler creature added, boomer crawler spawning added, naming cleanup, and debug spawn support
 - Iteration 30 to 32: settings cleanup, leftover system cleanup, pregnant boomer natural spawn pass, and README documentation upgrades
 - Iteration 33: rotten leather furniture added, including a functional chair and bed with directional textures
+- Iteration 34: rotten leather bed art rebuilt with cleaner vanilla inspired north, east, and south textures
+- Iteration 35: rotten leather bed def locked to a standard 2 by 1 RimWorld bed footprint and matching draw size
+- Iteration 36: rotten leather bed north, east, and south textures rebuilt again to truly fit the new 2 by 1 bed footprint
 
 ## Major update changelog
+
+### 2026-04-08 - Rotten leather bed texture footprint alignment
+- Reworked the rotten leather bed north, east, and south sprites to actually fit the locked 2 by 1 single bed footprint
+- Narrowed the north and south views into a proper long single bed silhouette and widened the east view to read more like a standard RimWorld bed from the side
+- Kept the rotten leather patchwork look while improving footprint readability in world placement
+
+### 2026-04-08 - Rotten leather bed footprint correction
+- Set the rotten leather bed to an explicit **2 by 1** footprint so it behaves like a normal RimWorld single bed
+- Matched the bed graphic draw size to **2.0 by 1.0** so the sprite and placement are aligned more cleanly
+
+### 2026-04-08 - Rotten leather bed texture art pass
+- Repainted the rotten leather bed north, east, and south sprites with cleaner RimWorld style silhouettes
+- Improved frame readability, mattress volume, pillow placement, and stitched hide details
+- Kept the bed grimy and post apocalyptic while reducing the flat icon look
+
 
 Only major updates are listed here. Small single line tweaks are intentionally left out.
 

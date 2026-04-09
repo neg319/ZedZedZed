@@ -7,9 +7,10 @@
     <graphicData>
       <texPath>Things/Building/Furniture/RottenLeatherBed/RottenLeatherBed</texPath>
       <graphicClass>Graphic_Multi</graphicClass>
-      <drawSize>(2.0,2.0)</drawSize>
+      <drawSize>(2.0,1.0)</drawSize>
     </graphicData>
     <uiIconPath>Things/Building/Furniture/RottenLeatherBed/RottenLeatherBed_south</uiIconPath>
+    <size>(2,1)</size>
     <designationCategory>Furniture</designationCategory>
     <researchPrerequisites>
       <li>ComplexFurniture</li>
