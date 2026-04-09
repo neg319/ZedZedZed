@@ -129,7 +129,7 @@ namespace CustomizableZombieHorde
         {
             EnsureEmotionlessLurker(pawn);
 
-            if (!IsPassiveLurker(pawn) || pawn.Dead || pawn.Destroyed || !pawn.Spawned || pawn.jobs == null || pawn.Downed)
+            if (!IsPassiveLurker(pawn) || pawn.Dead || pawn.Destroyed || !pawn.Spawned || pawn.jobs == null || pawn.Downed || ZombieUtility.IsUnderColonyRestraint(pawn))
             {
                 return;
             }

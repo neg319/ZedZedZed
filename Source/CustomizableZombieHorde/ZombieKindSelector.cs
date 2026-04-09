@@ -40,7 +40,7 @@ namespace CustomizableZombieHorde
                 case ZombieVariant.Sick:
                     return CustomizableZombieHordeMod.Settings.allowSick;
                 case ZombieVariant.Drowned:
-                    return CustomizableZombieHordeMod.Settings.allowDrowned && ZombieSpecialUtility.MapHasWater(map);
+                    return CanSpawnDrowned(map);
                 case ZombieVariant.Brute:
                     return CustomizableZombieHordeMod.Settings.allowBrutes;
                 case ZombieVariant.Grabber:
@@ -61,7 +61,7 @@ namespace CustomizableZombieHorde
             AddIfAllowed(kinds, weights, "CZH_Zombie_Runt", CustomizableZombieHordeMod.Settings.allowRunts, 8f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Boomer", CustomizableZombieHordeMod.Settings.allowBoomers, 6f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Sick", CustomizableZombieHordeMod.Settings.allowSick, 5f);
-            AddIfAllowed(kinds, weights, "CZH_Zombie_Drowned", CustomizableZombieHordeMod.Settings.allowDrowned && ZombieSpecialUtility.MapHasWater(map), GetDrownedWeight(map));
+            AddIfAllowed(kinds, weights, "CZH_Zombie_Drowned", CanSpawnDrowned(map), GetDrownedWeight(map));
             AddIfAllowed(kinds, weights, "CZH_Zombie_Brute", CustomizableZombieHordeMod.Settings.allowBrutes, 2f);
             AddIfAllowed(kinds, weights, "CZH_Zombie_Grabber", CustomizableZombieHordeMod.Settings.allowGrabbers, 3f);
 
@@ -74,11 +74,18 @@ namespace CustomizableZombieHorde
         }
 
 
+        private static bool CanSpawnDrowned(Map map)
+        {
+            return CustomizableZombieHordeMod.Settings.allowDrowned
+                && map != null
+                && (ZombieSpecialUtility.MapHasWater(map) || ZombieSpecialUtility.IsRainActive(map));
+        }
+
         private static float GetDrownedWeight(Map map)
         {
             if (map != null && ZombieSpecialUtility.IsRainActive(map))
             {
-                return 12f;
+                return ZombieSpecialUtility.MapHasWater(map) ? 20f : 16f;
             }
 
             return 4f;

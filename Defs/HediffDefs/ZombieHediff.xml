@@ -18,7 +18,7 @@
             <label>tongue lash</label>
             <range>12</range>
             <warmupTime>0.15</warmupTime>
-            <defaultCooldownTime>4.8</defaultCooldownTime>
+            <defaultCooldownTime>6.24</defaultCooldownTime>
             <minRange>2.2</minRange>
             <hasStandardCommand>false</hasStandardCommand>
             <defaultProjectile>CZH_GrabberTongueProjectile</defaultProjectile>
@@ -40,7 +40,7 @@
             <range>1</range>
             <meleeDamageDef>Bite</meleeDamageDef>
             <meleeDamageBaseAmount>3</meleeDamageBaseAmount>
-            <defaultCooldownTime>3.4</defaultCooldownTime>
+            <defaultCooldownTime>4.42</defaultCooldownTime>
           </li>
           <li>
             <verbClass>CustomizableZombieHorde.ZombieVerb_MeleeAttack</verbClass>
@@ -48,7 +48,7 @@
             <range>1</range>
             <meleeDamageDef>Scratch</meleeDamageDef>
             <meleeDamageBaseAmount>1</meleeDamageBaseAmount>
-            <defaultCooldownTime>2.7</defaultCooldownTime>
+            <defaultCooldownTime>3.51</defaultCooldownTime>
           </li>
         </verbs>
       </li>

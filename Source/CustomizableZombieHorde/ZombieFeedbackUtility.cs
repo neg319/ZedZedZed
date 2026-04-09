@@ -137,7 +137,7 @@ namespace CustomizableZombieHorde
 
             if (ZombieInfectionUtility.HasReanimatedState(pawn))
             {
-                lines.Add("Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn has fully turned, can no longer be cured, and if killed will keep making hourly resurrection checks forever unless the head or skull is ruined.");
+                lines.Add("Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn has fully turned, can no longer be cured, and if killed will be handled by the global reanimation sweep every 1 to 3 in game hours unless the head or skull is ruined.");
             }
             else if (ZombieInfectionUtility.HasZombieInfection(pawn))
             {
@@ -173,7 +173,7 @@ namespace CustomizableZombieHorde
                 string infectionLine;
                 if (ZombieInfectionUtility.HasReanimatedState(innerPawn))
                 {
-                    infectionLine = "Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. Every in game hour this corpse checks whether the head and skull are intact. If they are, it has a 50% chance to rise. This never stops once the pawn has died. ";
+                    infectionLine = "Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. A global reanimation sweep checks this corpse every 1 to 3 in game hours. If the head and skull are still intact when that sweep happens, it will try to rise. ";
                 }
                 else
                 {
@@ -188,16 +188,16 @@ namespace CustomizableZombieHorde
                     int ticksLeft = wakeTick - Find.TickManager.TicksGame;
                     if (ticksLeft > 0)
                     {
-                        infectionLine += "The next hourly resurrection check is in about " + ticksLeft.ToStringTicksToPeriod() + ".";
+                        infectionLine += "The next global resurrection sweep is in about " + ticksLeft.ToStringTicksToPeriod() + ".";
                     }
                     else
                     {
-                        infectionLine += "The next hourly resurrection check is about to happen.";
+                        infectionLine += "The next global resurrection sweep is about to happen.";
                     }
                 }
                 else
                 {
-                    infectionLine += "It will keep checking every hour unless the corpse is destroyed or prevented from rising.";
+                    infectionLine += "It will keep being checked by the global reanimation sweep unless the corpse is destroyed or prevented from rising.";
                 }
 
                 lines.Add(infectionLine);

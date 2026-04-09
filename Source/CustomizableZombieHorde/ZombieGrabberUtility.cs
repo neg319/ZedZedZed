@@ -202,7 +202,7 @@ namespace CustomizableZombieHorde
         private static Pawn ResolveTarget(Pawn grabber, PullState state)
         {
             Pawn prey = FindThing(state.targetId) as Pawn;
-            if (prey == null || prey.Dead || prey.Destroyed || !prey.Spawned || ZombieUtility.ShouldZombiesIgnore(prey) || prey.Map != grabber.Map)
+            if (prey == null || prey.Dead || prey.Destroyed || !prey.Spawned || ZombieUtility.ShouldZombieIgnoreTarget(grabber, prey) || prey.Map != grabber.Map)
             {
                 return null;
             }
@@ -227,7 +227,7 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            if (!ZombieUtility.IsVariant(grabber, ZombieVariant.Grabber) || ZombieUtility.ShouldZombiesIgnore(prey) || prey.Downed)
+            if (!ZombieUtility.IsVariant(grabber, ZombieVariant.Grabber) || ZombieUtility.ShouldZombieIgnoreTarget(grabber, prey) || prey.Downed)
             {
                 return false;
             }

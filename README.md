@@ -52,7 +52,7 @@ This repository is the full source package for the mod, along with a GitHub Acti
 - **Bile med kits** can cure zombie infection before it reaches the terminal point.
 - **Terminal and reanimated states** keep the outbreak dangerous even after a pawn dies.
 - **Post death progression** means infection can keep climbing on a corpse after death instead of stopping there.
-- **Hourly resurrection checks** give reanimated corpses repeated chances to rise again if the head and skull are still intact.
+- **Global reanimation sweeps** handle dead reanimated corpses at the game level every 1 to 3 in game hours, so they can still rise again if the head and skull are intact.
 - **Zombie blood exposure** and **zombie acid corrosion** add lingering damage and contamination pressure on top of direct attacks.
 - **Puked On** makes a pawn stink so badly that nearby zombies are drawn toward them.
 
@@ -116,7 +116,7 @@ This is the running feature list for the mod. Dates are listed when they can be 
 - Runts were forced to use true child sized pawns instead of only looking smaller through visuals.
 - Pregnant boomers were added, first for debugging and then as a natural spawn feature.
 - Dead infection progression was reworked so corpses can keep advancing after death.
-- Reanimation rules were reworked around Terminal and Reanimated states with hourly corpse checks.
+- Reanimation rules were reworked around Terminal and Reanimated states with a global corpse sweep instead of constant pawn bound checking.
 - Zombie acid corrosion and zombie blood exposure were added as damage over time systems.
 - The Puked On debuff and its lure behavior were added.
 - Filth texture variation support was added for zombie blood, sick zombie blood, and zombie acid.
@@ -127,6 +127,8 @@ This is the running feature list for the mod. Dates are listed when they can be 
 - Rotten leather bed textures were rebuilt again to fit that footprint properly.
 
 ### 2026-04-09
+- Captured undead slavery rules added. Standard zombie strains can now be enslaved after capture, while only lurkers are recruitable as full colony members.
+
 
 - A pause menu shortcut was added so players can open Zed Zed Zed settings directly from the game menu.
 - The settings menu got more vertical breathing room to reduce clipping and overlap.
@@ -137,6 +139,9 @@ This is the running feature list for the mod. Dates are listed when they can be 
 - The counter was simplified into a cleaner two line format, such as `Zombies: 14` and `Danger: 117%`.
 - The README and About text were rewritten in a more natural workshop style voice and expanded to explain the mod's features more clearly.
 - The map counter HUD card was given a little more height so the lower line does not clip at the bottom.
+- Drowned zombies were updated to treat rain like water for spawning pressure and slow regeneration.
+- Zombie starting decay was cleaned up so newly spawned undead do not arrive covered in as many cosmetic wounds.
+- Drowned and restrained zombie behavior was stabilized so imprisoned undead stop fighting prison movement and bedrest jobs.
 
 ## Building the mod on GitHub
 
@@ -178,7 +183,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 45** of the active development cycle in this build set.
+This source package is currently at **iteration 52** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -200,12 +205,24 @@ Iteration history:
 - Iteration 43: the README and About text were rewritten to sound more natural, better explain the mod, and follow a cleaner workshop style structure.
 - Iteration 44: the map counter HUD card got a little more vertical room so the lower line no longer clips at the bottom.
 - Iteration 45: the rotten leather bed was corrected to use the exact wooden bed footprint and behavior, while keeping its custom rotten leather textures and material.
+- Iteration 46: the map counter HUD card was rebuilt again with a solid background and safer text spacing so the panel no longer shows texture holes or clips the Danger line.
+- Iteration 47: zombie starting wear and tear was cleaned up so health tabs stay less cluttered, and drowned zombies were updated to spawn and recover properly during rain.
+- Iteration 48: all zombie attack timings were slowed by 30 percent so colonists have a little more breathing room during close range fights.
+- Iteration 49: drowned and prisoner movement handling was stabilized so restrained undead stop fighting colony control jobs and snapping back while trying to path.
+- Iteration 50: captured zombie prison rules were expanded so standard strains can be enslaved, only lurkers remain recruitable, and colony aligned undead stop treating colonists as prey while still going after enemy raiders.
+- Iteration 51: zombie reanimation head checks were loosened so small head injuries no longer permanently block resurrection, while destroyed or badly ruined heads still keep a corpse down.
+- Iteration 52: zombie resurrection was moved into a global reanimation sweep that runs every random 1 to 3 in game hours and only revives dead pawns or zombies that already carry the Reanimated state.
 
 ## Changelog
 
 This changelog treats a **major update** as something that adds substantial new features, new items, or meaningful gameplay changes. Cleanup, build fixes, wording passes, layout fixes, art alignment work, and small UI improvements are listed as **minor updates**.
 
 ### Major updates
+
+#### 2026-04-09 - captured zombie slavery and colony alignment
+- Standard captured zombie strains now roll medium to high will so they can be broken into slavery instead of instantly folding once imprisoned.
+- Standard zombie strains are no longer recruitable through normal prisoner recruitment. Lurkers remain the only strain that can fully join the colony as people.
+- Colony aligned zombie slaves now treat colonists and other colony allies as friendly targets to ignore, while still hunting enemies of the colony.
 
 #### 2026-04-08 - outbreak expansion
 - Added the runt strain as a real new zombie type with debug spawning and rare natural spawns.
@@ -216,8 +233,34 @@ This changelog treats a **major update** as something that adds substantial new 
 
 ### Minor updates
 
+#### 2026-04-09 - global reanimation sweep
+- Moved zombie resurrection checks out of corpse bound timing and into a game level reanimation sweep.
+- The global sweep now looks for dead pawns and zombie corpses that already carry the Reanimated state, then tries to bring them back using the same core resurrection utility RimWorld uses for debug resurrection.
+- Reanimation sweeps now happen every random 1 to 3 in game hours instead of constant short interval polling.
+
+#### 2026-04-09 - drowned rain and wound cleanup
+- Reduced how many cosmetic decay entries and small starting wounds zombies get so the health tab stays cleaner.
+- Added cleanup for older spawned zombies so extra cosmetic limb decay and wound entries get trimmed back over time.
+- Updated drowned zombies so active rain counts like water for their rain fed state and slow regeneration.
+- Added rainy weather drowned trickles so drowned zombies actually show up during storms instead of only on water heavy maps.
+
+#### 2026-04-09 - zombie attack speed slowdown
+- All zombie attack timings were slowed by 30 percent.
+- Bite, scratch, grabber tongue lash, and sick spit all take longer to cycle, so colonists have a little more breathing room when a pack closes in.
+
+#### 2026-04-09 - zombie reanimation head check fix
+- Fixed a logic issue that treated any tiny head injury as a permanent no rise state for dead zombies.
+- Dead zombies can now get back up after ordinary combat wear and tear, while corpses with destroyed skulls, missing heads, brain trauma, or severe head ruin still stay down.
+
+#### 2026-04-09 - drowned movement stabilization
+- Stopped restrained zombies from constantly overriding prison and bedrest style jobs.
+- Stopped imprisoned passive lurkers from trying to shamble on their own while under colony control.
+- Stopped drowned behavior from repeatedly forcing water return logic on colony prisoners, which should reduce the step forward and snap back movement problem.
+
 #### 2026-04-09 - counter layout cleanup
 - Gave the map counter HUD card a little more height so the lower Danger line no longer clips at the bottom.
+- Rebuilt the counter card background with a solid themed base so map art no longer shows through as odd holes in the panel.
+- Adjusted the counter spacing again so the Danger line sits clear of the bottom accent strip.
 
 #### 2026-04-09 - rotten leather bed footprint fix
 - Corrected the rotten leather bed so it now uses the same single bed footprint and behavior as the standard wooden bed while keeping the rotten leather material and custom textures.

@@ -14,7 +14,6 @@ namespace CustomizableZombieHorde
         private static readonly HashSet<BodyPartDef> LimbPartDefs = new HashSet<BodyPartDef>
         {
             BodyPartDefOf.Arm,
-            BodyPartDefOf.Hand,
             BodyPartDefOf.Leg
         };
 
@@ -113,6 +112,121 @@ namespace CustomizableZombieHorde
             return ZombieRulesUtility.IsIgnoredByZombies(pawn);
         }
 
+        public static bool IsPlayerAlignedZombie(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn == null)
+            {
+                return false;
+            }
+
+            if (ZombieLurkerUtility.IsColonyLurker(pawn))
+            {
+                return true;
+            }
+
+            if (pawn.Faction == Faction.OfPlayer)
+            {
+                return true;
+            }
+
+            try
+            {
+                return pawn.IsSlaveOfColony;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static bool IsColonyAlly(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return false;
+            }
+
+            if (pawn.Faction == Faction.OfPlayer || pawn.HostFaction == Faction.OfPlayer)
+            {
+                return true;
+            }
+
+            try
+            {
+                if (pawn.IsSlaveOfColony || pawn.IsPrisonerOfColony)
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
+        }
+
+        public static bool IsEnemyOfColony(Pawn pawn)
+        {
+            if (pawn == null || pawn.Dead || pawn.Destroyed)
+            {
+                return false;
+            }
+
+            if (IsColonyAlly(pawn) || IsPlayerAlignedZombie(pawn) || ZombieLurkerUtility.IsPassiveLurker(pawn))
+            {
+                return false;
+            }
+
+            if (IsZombie(pawn))
+            {
+                return true;
+            }
+
+            Faction faction = pawn.Faction;
+            return faction != null && !faction.IsPlayer && faction.HostileTo(Faction.OfPlayer);
+        }
+
+        public static bool ShouldZombieIgnoreTarget(Pawn zombie, Pawn target)
+        {
+            if (target == null)
+            {
+                return true;
+            }
+
+            if (IsPlayerAlignedZombie(zombie))
+            {
+                if (IsColonyAlly(target) || IsPlayerAlignedZombie(target) || ZombieLurkerUtility.IsPassiveLurker(target))
+                {
+                    return true;
+                }
+
+                return !IsEnemyOfColony(target);
+            }
+
+            return ShouldZombiesIgnore(target);
+        }
+
+        public static bool IsUnderColonyRestraint(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                if (pawn.IsPrisonerOfColony)
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            return pawn.Downed || pawn.CurJob?.def == JobDefOf.LayDown;
+        }
+
         public static bool HasHeadDamageOrDestruction(Pawn pawn)
         {
             return ZombieRulesUtility.HasHeadDamageOrDestruction(pawn);
@@ -146,9 +260,23 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            foreach (BodyPartRecord part in GetZombieLimbParts(pawn))
+            List<BodyPartRecord> candidateParts = GetZombieLimbParts(pawn)
+                .Where(part => part != null && !pawn.health.hediffSet.PartIsMissing(part))
+                .ToList();
+            if (candidateParts.Count == 0)
             {
-                if (!pawn.health.hediffSet.PartIsMissing(part) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieLimbDecay, part))
+                return;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Runt))
+            {
+                candidateParts = candidateParts.Where(part => part.def == BodyPartDefOf.Leg).ToList();
+            }
+
+            int decayCount = GetInitialDecayPartCount(pawn, candidateParts.Count);
+            foreach (BodyPartRecord part in candidateParts.InRandomOrder().Take(decayCount))
+            {
+                if (!pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieLimbDecay, part))
                 {
                     pawn.health.AddHediff(ZombieDefOf.CZH_ZombieLimbDecay, part);
                 }
@@ -205,11 +333,16 @@ namespace CustomizableZombieHorde
             }
 
             List<BodyPartRecord> parts = GetZombieLimbParts(pawn)
-                .Where(part => !pawn.health.hediffSet.PartIsMissing(part))
+                .Where(part => part != null && !pawn.health.hediffSet.PartIsMissing(part))
                 .InRandomOrder()
                 .ToList();
 
-            int woundCount = Math.Min(parts.Count, IsVariant(pawn, ZombieVariant.Runt) ? Rand.RangeInclusive(1, 2) : Rand.RangeInclusive(1, 3));
+            if (IsVariant(pawn, ZombieVariant.Runt))
+            {
+                parts = parts.Where(part => part.def == BodyPartDefOf.Leg).ToList();
+            }
+
+            int woundCount = Math.Min(parts.Count, GetInitialVisibleWoundCount(pawn));
             for (int i = 0; i < woundCount; i++)
             {
                 BodyPartRecord part = parts[i];
@@ -222,7 +355,7 @@ namespace CustomizableZombieHorde
             }
 
             BodyPartRecord torso = pawn.RaceProps?.body?.corePart;
-            if (torso != null && !pawn.health.hediffSet.PartIsMissing(torso))
+            if (torso != null && !pawn.health.hediffSet.PartIsMissing(torso) && Rand.Chance(GetInitialTorsoWoundChance(pawn)))
             {
                 TryAddStartingDecayDamage(pawn, torso, torsoSeverity: true);
             }
@@ -243,7 +376,7 @@ namespace CustomizableZombieHorde
                     return;
                 }
 
-                float severity = torsoSeverity ? Rand.Range(1.6f, 3.0f) : Rand.Range(0.8f, 2.0f);
+                float severity = torsoSeverity ? Rand.Range(0.8f, 1.8f) : Rand.Range(0.35f, 1.10f);
                 if (IsVariant(pawn, ZombieVariant.Brute))
                 {
                     severity *= 0.30f;
@@ -258,6 +391,180 @@ namespace CustomizableZombieHorde
             }
             catch
             {
+            }
+        }
+
+        private static int GetInitialDecayPartCount(Pawn pawn, int availableCount)
+        {
+            if (availableCount <= 0)
+            {
+                return 0;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Runt))
+            {
+                return Math.Min(availableCount, 2);
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Brute) || IsVariant(pawn, ZombieVariant.Grabber))
+            {
+                return Math.Min(availableCount, 2);
+            }
+
+            return 1;
+        }
+
+        private static int GetInitialVisibleWoundCount(Pawn pawn)
+        {
+            if (IsVariant(pawn, ZombieVariant.Runt))
+            {
+                return 1;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Brute))
+            {
+                return Rand.Chance(0.50f) ? 1 : 0;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Drowned))
+            {
+                return Rand.Chance(0.35f) ? 1 : 0;
+            }
+
+            return Rand.Chance(0.60f) ? 1 : 0;
+        }
+
+        private static float GetInitialTorsoWoundChance(Pawn pawn)
+        {
+            if (IsVariant(pawn, ZombieVariant.Runt))
+            {
+                return 0.15f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Drowned))
+            {
+                return 0.20f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Brute))
+            {
+                return 0.30f;
+            }
+
+            return 0.45f;
+        }
+
+        public static void NormalizeZombieCosmeticDamage(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn?.health?.hediffSet == null)
+            {
+                return;
+            }
+
+            TrimExcessLimbDecay(pawn);
+            TrimExcessOpenWounds(pawn);
+        }
+
+        private static void TrimExcessLimbDecay(Pawn pawn)
+        {
+            List<Hediff> limbDecay = pawn.health.hediffSet.hediffs
+                .Where(hediff => hediff?.def == ZombieDefOf.CZH_ZombieLimbDecay && hediff.Part != null)
+                .ToList();
+            if (limbDecay.Count == 0)
+            {
+                return;
+            }
+
+            IEnumerable<Hediff> allowed = limbDecay.Where(hediff => LimbPartDefs.Contains(hediff.Part.def));
+            if (IsVariant(pawn, ZombieVariant.Runt))
+            {
+                allowed = allowed.Where(hediff => hediff.Part.def == BodyPartDefOf.Leg);
+            }
+
+            int keepCount = GetInitialDecayPartCount(pawn, allowed.Count());
+            HashSet<BodyPartRecord> keepParts = new HashSet<BodyPartRecord>(allowed
+                .OrderByDescending(hediff => GetCosmeticPartPriority(pawn, hediff.Part))
+                .Take(keepCount)
+                .Select(hediff => hediff.Part));
+
+            foreach (Hediff hediff in limbDecay)
+            {
+                if (!keepParts.Contains(hediff.Part))
+                {
+                    pawn.health.RemoveHediff(hediff);
+                }
+            }
+        }
+
+        private static void TrimExcessOpenWounds(Pawn pawn)
+        {
+            List<Hediff> openWounds = pawn.health.hediffSet.hediffs
+                .Where(hediff => hediff?.def == ZombieDefOf.CZH_ZombieOpenWound && hediff.Part != null)
+                .ToList();
+            if (openWounds.Count == 0)
+            {
+                return;
+            }
+
+            IEnumerable<Hediff> allowed = openWounds.Where(hediff => LimbPartDefs.Contains(hediff.Part.def));
+            int keepCount = IsVariant(pawn, ZombieVariant.Runt) ? 2 : 1;
+            if (IsVariant(pawn, ZombieVariant.Runt))
+            {
+                allowed = allowed.Where(hediff => hediff.Part.def == BodyPartDefOf.Leg);
+            }
+
+            HashSet<BodyPartRecord> keepParts = new HashSet<BodyPartRecord>(allowed
+                .OrderByDescending(hediff => GetCosmeticPartPriority(pawn, hediff.Part))
+                .Take(keepCount)
+                .Select(hediff => hediff.Part));
+
+            foreach (Hediff hediff in openWounds)
+            {
+                if (keepParts.Contains(hediff.Part))
+                {
+                    continue;
+                }
+
+                BodyPartRecord part = hediff.Part;
+                pawn.health.RemoveHediff(hediff);
+                RemoveCosmeticStartingInjuries(pawn, part);
+            }
+        }
+
+        private static float GetCosmeticPartPriority(Pawn pawn, BodyPartRecord part)
+        {
+            if (pawn?.health?.hediffSet == null || part == null)
+            {
+                return 0f;
+            }
+
+            float injurySeverity = pawn.health.hediffSet.hediffs
+                .OfType<Hediff_Injury>()
+                .Where(injury => injury.Part == part && !injury.IsPermanent())
+                .Sum(injury => injury.Severity);
+            float priority = injurySeverity;
+            if (part.def == BodyPartDefOf.Leg)
+            {
+                priority += 0.25f;
+            }
+
+            return priority;
+        }
+
+        private static void RemoveCosmeticStartingInjuries(Pawn pawn, BodyPartRecord part)
+        {
+            if (pawn?.health?.hediffSet == null || part == null)
+            {
+                return;
+            }
+
+            List<Hediff_Injury> removable = pawn.health.hediffSet.hediffs
+                .OfType<Hediff_Injury>()
+                .Where(injury => injury.Part == part && !injury.IsPermanent() && injury.Severity <= 1.20f)
+                .ToList();
+            foreach (Hediff_Injury injury in removable)
+            {
+                pawn.health.RemoveHediff(injury);
             }
         }
 
@@ -613,6 +920,15 @@ namespace CustomizableZombieHorde
                 || terrainName.IndexOf("marsh", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
+
+        private static bool IsExposedToRain(Pawn pawn)
+        {
+            return pawn?.Spawned == true
+                && pawn.MapHeld != null
+                && ZombieSpecialUtility.IsRainActive(pawn.MapHeld)
+                && !pawn.PositionHeld.Roofed(pawn.MapHeld);
+        }
+
         public static void RefreshDrownedState(Pawn pawn)
         {
             if (!IsVariant(pawn, ZombieVariant.Drowned) || pawn?.health?.hediffSet == null)
@@ -621,10 +937,11 @@ namespace CustomizableZombieHorde
             }
 
             bool inWater = pawn.Spawned && IsWaterCell(pawn.Position, pawn.Map);
+            bool rainFed = IsExposedToRain(pawn);
             bool hasWater = pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieDrownedWater);
             bool hasLand = pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieDrownedLand);
 
-            if (inWater)
+            if (inWater || rainFed)
             {
                 if (hasLand)
                 {
@@ -657,7 +974,9 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (!IsWaterCell(pawn.PositionHeld, pawn.MapHeld) || !pawn.IsHashIntervalTick(300))
+            bool inWater = IsWaterCell(pawn.PositionHeld, pawn.MapHeld);
+            bool inRain = IsExposedToRain(pawn);
+            if ((!inWater && !inRain) || !pawn.IsHashIntervalTick(300))
             {
                 return;
             }
@@ -672,7 +991,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            injury.Heal(0.40f);
+            injury.Heal(inWater ? 0.40f : 0.24f);
         }
 
         public static void EnsureZombieAggression(Pawn pawn)
@@ -688,7 +1007,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (ZombieLurkerUtility.IsColonyLurker(pawn))
+            if (ZombieLurkerUtility.IsColonyLurker(pawn) || IsUnderColonyRestraint(pawn))
             {
                 return;
             }
@@ -722,7 +1041,7 @@ namespace CustomizableZombieHorde
                 currentTarget = null;
             }
 
-            if (currentTarget != null && !currentTarget.Dead && !currentTarget.Destroyed && !ShouldZombiesIgnore(currentTarget))
+            if (currentTarget != null && !currentTarget.Dead && !currentTarget.Destroyed && !ShouldZombieIgnoreTarget(pawn, currentTarget))
             {
                 return;
             }

@@ -582,9 +582,9 @@ namespace CustomizableZombieHorde
             string countText = familyLabel + ": " + currentCount;
             string dangerText = cap > 0 ? $"Danger: {capPercent:0}%" : "Danger: off";
 
-            Rect rect = new Rect(UI.screenWidth - 176f, 6f, 166f, 40f);
+            Rect rect = new Rect(UI.screenWidth - 170f, 6f, 160f, 46f);
             Rect countRect = new Rect(rect.x + 8f, rect.y + 4f, rect.width - 16f, 16f);
-            Rect detailRect = new Rect(rect.x + 8f, rect.y + 21f, rect.width - 16f, 15f);
+            Rect detailRect = new Rect(rect.x + 8f, rect.y + 22f, rect.width - 16f, 13f);
 
             SettingsTheme.DrawCounterPanel(rect);
 
@@ -756,6 +756,11 @@ namespace CustomizableZombieHorde
             if (!ZombieUtility.IsZombie(possibleZombie))
             {
                 return false;
+            }
+
+            if (ZombieUtility.IsPlayerAlignedZombie(possibleZombie) && ZombieUtility.IsColonyAlly(otherPawn))
+            {
+                return true;
             }
 
             if (ZombieRulesUtility.IsIgnoredByZombies(otherPawn))
@@ -1016,5 +1021,27 @@ namespace CustomizableZombieHorde
         }
     }
 
+
+
+
+    [HarmonyPatch(typeof(Pawn_GuestTracker), "get_Recruitable")]
+    public static class Patch_PawnGuestTracker_Recruitable
+    {
+        public static void Postfix(Pawn_GuestTracker __instance, ref bool __result)
+        {
+            if (!__result || __instance == null)
+            {
+                return;
+            }
+
+            Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            if (pawn == null || !ZombieUtility.IsZombie(pawn) || ZombieLurkerUtility.IsLurker(pawn))
+            {
+                return;
+            }
+
+            __result = false;
+        }
+    }
 
 }

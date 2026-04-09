@@ -16,7 +16,7 @@ namespace CustomizableZombieHorde
         private static readonly Dictionary<int, PendingSickSpewState> PendingSickSpewsByPawn = new Dictionary<int, PendingSickSpewState>();
         private static readonly Dictionary<int, int> BoneBiterMealTargetByPawn = new Dictionary<int, int>();
         private static readonly Dictionary<int, int> BoneBiterDisturbedUntilTickByPawn = new Dictionary<int, int>();
-        private const int SickSpitCooldownTicks = 360;
+        private const int SickSpitCooldownTicks = 468;
         private const int BoneBiterDisturbedTicks = 900;
         private const float BoneBiterMealSearchRadius = 28f;
         private const float BoneBiterMealTouchRadius = 2.9f;
@@ -144,7 +144,14 @@ namespace CustomizableZombieHorde
                 }
 
                 bool hasPukedOn = HasPukedOn(other);
-                if (ZombieUtility.ShouldZombiesIgnore(other) && !hasPukedOn)
+                if (ZombieUtility.IsPlayerAlignedZombie(pawn))
+                {
+                    if (ZombieUtility.ShouldZombieIgnoreTarget(pawn, other))
+                    {
+                        continue;
+                    }
+                }
+                else if (ZombieUtility.ShouldZombiesIgnore(other) && !hasPukedOn)
                 {
                     continue;
                 }
@@ -1572,7 +1579,7 @@ namespace CustomizableZombieHorde
 
         public static bool ShouldDrownedHoldWater(Pawn pawn)
         {
-            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || ShouldDrownedRoamFreely(pawn))
+            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || ShouldDrownedRoamFreely(pawn) || ZombieUtility.IsUnderColonyRestraint(pawn))
             {
                 return false;
             }
@@ -1583,7 +1590,7 @@ namespace CustomizableZombieHorde
 
         public static void HandleDrownedBehavior(Pawn pawn)
         {
-            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || pawn.jobs == null)
+            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || pawn.jobs == null || ZombieUtility.IsUnderColonyRestraint(pawn))
             {
                 return;
             }
@@ -1599,7 +1606,7 @@ namespace CustomizableZombieHorde
 
             if (currentTarget != null)
             {
-                bool validTarget = !currentTarget.Dead && !currentTarget.Destroyed && !ZombieUtility.ShouldZombiesIgnore(currentTarget);
+                bool validTarget = !currentTarget.Dead && !currentTarget.Destroyed && !ZombieUtility.ShouldZombieIgnoreTarget(pawn, currentTarget);
                 if (!validTarget || pawn.PositionHeld.DistanceToSquared(currentTarget.PositionHeld) > 24f * 24f)
                 {
                     currentTarget = null;

@@ -67,9 +67,31 @@ namespace CustomizableZombieHorde
                 return true;
             }
 
-            return pawn.health.hediffSet.hediffs
+            var headRegionInjuries = pawn.health.hediffSet.hediffs
                 .OfType<Hediff_Injury>()
-                .Any(injury => injury.Part == head && injury.Severity > 0.01f);
+                .Where(injury => injury?.Part != null && ZombieInfectionUtility.IsHeadOrChildPart(injury.Part, pawn))
+                .ToList();
+
+            if (headRegionInjuries.Count == 0)
+            {
+                return false;
+            }
+
+            if (headRegionInjuries.Any(injury => string.Equals(injury.Part?.def?.defName, "Brain", StringComparison.OrdinalIgnoreCase) && injury.Severity > 0.01f))
+            {
+                return true;
+            }
+
+            float directHeadTrauma = headRegionInjuries
+                .Where(injury => injury.Part == head)
+                .Sum(injury => injury.Severity);
+            if (directHeadTrauma >= 8f)
+            {
+                return true;
+            }
+
+            float totalHeadRegionTrauma = headRegionInjuries.Sum(injury => injury.Severity);
+            return totalHeadRegionTrauma >= 12f;
         }
 
         private static bool IsHeadOrSkullPart(BodyPartRecord part)

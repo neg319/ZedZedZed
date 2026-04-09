@@ -124,16 +124,14 @@ namespace CustomizableZombieHorde
 
         public static void DrawCounterPanel(Rect rect)
         {
-            DrawTexturedRect(rect, CardTexture, new Color(0.18f, 0.20f, 0.18f, 0.98f));
-            DrawOverlay(rect, new Color(0f, 0f, 0f, 0.18f));
+            DrawOverlay(rect, new Color(0.07f, 0.08f, 0.07f, 0.98f));
+            DrawTexturedRect(rect, CardTexture, new Color(0.24f, 0.27f, 0.23f, 0.22f));
+            DrawOverlay(rect, new Color(0f, 0f, 0f, 0.22f));
             DrawBorder(rect, BorderBright, 1f);
             DrawBorder(rect.ContractedBy(2f), Border, 1f);
 
-            Rect accentStrip = new Rect(rect.x, rect.yMax - 4f, rect.width, 4f);
-            DrawTexturedRect(accentStrip, ValueInsetTexture, new Color(0.56f, 0.12f, 0.12f, 0.88f));
-
-            Rect watermarkRect = new Rect(rect.xMax - 30f, rect.y + 4f, 24f, 24f);
-            DrawTexturedRect(watermarkRect, ZombieIconTexture, new Color(1f, 1f, 1f, 0.06f));
+            Rect accentStrip = new Rect(rect.x, rect.yMax - 3f, rect.width, 3f);
+            DrawOverlay(accentStrip, new Color(0.56f, 0.12f, 0.12f, 0.92f));
         }
 
         private static void DrawTexturedRect(Rect rect, Texture2D texture, Color tint)

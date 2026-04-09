@@ -12,6 +12,7 @@ namespace CustomizableZombieHorde
         private int nextTrickleTick = -1;
         private int nextGroundBurstTick = -1;
         private int nextGraveEventTick = -1;
+        private int nextGlobalReanimationCheckTick = -1;
         private Dictionary<int, int> corpseWakeTicks = new Dictionary<int, int>();
         private Dictionary<int, int> infectionReanimationTicks = new Dictionary<int, int>();
         private Dictionary<int, int> infectionReanimationStartTicks = new Dictionary<int, int>();
@@ -31,6 +32,7 @@ namespace CustomizableZombieHorde
         private int bloodMoonActiveUntilTick = -1;
         private int nextBloodMoonRushTick = -1;
         private Dictionary<int, int> lastNightlySpawnDayByMap = new Dictionary<int, int>();
+        private Dictionary<int, int> lastRainDrownedSpawnTickByMap = new Dictionary<int, int>();
         private Dictionary<int, int> zombieBehaviorByPawnId = new Dictionary<int, int>();
         private List<int> infectionHeadFatalPawnIds = new List<int>();
         private List<int> infectionLurkerPawnIds = new List<int>();
@@ -44,6 +46,7 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref nextTrickleTick, "nextTrickleTick", -1);
             Scribe_Values.Look(ref nextGroundBurstTick, "nextGroundBurstTick", -1);
             Scribe_Values.Look(ref nextGraveEventTick, "nextGraveEventTick", -1);
+            Scribe_Values.Look(ref nextGlobalReanimationCheckTick, "nextGlobalReanimationCheckTick", -1);
             Scribe_Collections.Look(ref corpseWakeTicks, "corpseWakeTicks", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref infectionReanimationTicks, "infectionReanimationTicks", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref infectionReanimationStartTicks, "infectionReanimationStartTicks", LookMode.Value, LookMode.Value);
@@ -63,6 +66,7 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref bloodMoonActiveUntilTick, "bloodMoonActiveUntilTick", -1);
             Scribe_Values.Look(ref nextBloodMoonRushTick, "nextBloodMoonRushTick", -1);
             Scribe_Collections.Look(ref lastNightlySpawnDayByMap, "lastNightlySpawnDayByMap", LookMode.Value, LookMode.Value);
+            Scribe_Collections.Look(ref lastRainDrownedSpawnTickByMap, "lastRainDrownedSpawnTickByMap", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref zombieBehaviorByPawnId, "zombieBehaviorByPawnId", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref infectionHeadFatalPawnIds, "infectionHeadFatalPawnIds", LookMode.Value);
             Scribe_Collections.Look(ref infectionLurkerPawnIds, "infectionLurkerPawnIds", LookMode.Value);
@@ -77,6 +81,7 @@ namespace CustomizableZombieHorde
             deadInfectionProgressStartSeverity ??= new Dictionary<int, float>();
             pendingDeadInfectionSeverityByPawnId ??= new Dictionary<int, float>();
             lastNightlySpawnDayByMap ??= new Dictionary<int, int>();
+            lastRainDrownedSpawnTickByMap ??= new Dictionary<int, int>();
             zombieBehaviorByPawnId ??= new Dictionary<int, int>();
             infectionHeadFatalPawnIds ??= new List<int>();
             infectionLurkerPawnIds ??= new List<int>();
@@ -106,9 +111,15 @@ namespace CustomizableZombieHorde
                 ZombieSpecialUtility.TickPendingSickSpewWarmups();
             }
 
-            if (ticksGame % 120 == 0)
+            if (nextGlobalReanimationCheckTick < 0)
+            {
+                ScheduleNextGlobalReanimationCheck(ticksGame);
+            }
+
+            if (ticksGame >= nextGlobalReanimationCheckTick)
             {
                 HandleZombieReanimation();
+                ScheduleNextGlobalReanimationCheck(ticksGame);
             }
 
             if (ticksGame % 300 == 0)
@@ -126,11 +137,27 @@ namespace CustomizableZombieHorde
                 HandleGuaranteedNightlySpawns(ticksGame);
             }
 
+            if (ticksGame % 600 == 0)
+            {
+                HandleRainDrownedSpawns(ticksGame);
+            }
+
             HandleTrickleSpawns(ticksGame);
             HandleGroundBursts(ticksGame);
             HandleGraveEvents(ticksGame);
             HandleActiveBloodMoon(ticksGame);
             HandleMoonCycle();
+        }
+
+        private void ScheduleNextGlobalReanimationCheck(int currentTick)
+        {
+            nextGlobalReanimationCheckTick = currentTick + Rand.RangeInclusive(GenDate.TicksPerHour, GenDate.TicksPerHour * 3);
+        }
+
+        public bool TryGetNextGlobalReanimationCheckTick(out int wakeTick)
+        {
+            wakeTick = nextGlobalReanimationCheckTick;
+            return wakeTick >= 0;
         }
 
         public int GetCurrentMapZombieCount()
@@ -1073,6 +1100,72 @@ namespace CustomizableZombieHorde
             Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.ThreatBig, new TargetInfo(map.Center, map));
         }
 
+        private void HandleRainDrownedSpawns(int ticksGame)
+        {
+            if (!(CustomizableZombieHordeMod.Settings?.allowDrowned ?? false))
+            {
+                return;
+            }
+
+            lastRainDrownedSpawnTickByMap ??= new Dictionary<int, int>();
+            HashSet<int> liveMapIds = new HashSet<int>();
+            foreach (Map map in Find.Maps)
+            {
+                if (map == null || !map.IsPlayerHome)
+                {
+                    continue;
+                }
+
+                liveMapIds.Add(map.uniqueID);
+                if (!ZombieSpecialUtility.IsRainActive(map))
+                {
+                    continue;
+                }
+
+                if (lastRainDrownedSpawnTickByMap.TryGetValue(map.uniqueID, out int lastSpawnTick) && ticksGame - lastSpawnTick < GenDate.TicksPerHour)
+                {
+                    continue;
+                }
+
+                int remainingCapacity = ZombieSpawnHelper.GetRemainingCapacity(map);
+                if (remainingCapacity <= 0)
+                {
+                    continue;
+                }
+
+                int existingDrowned = map.mapPawns?.AllPawnsSpawned?.Count(pawn => ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned)) ?? 0;
+                int desiredDrowned = ZombieSpecialUtility.MapHasWater(map) ? 3 : 2;
+                if (existingDrowned >= desiredDrowned)
+                {
+                    continue;
+                }
+
+                int spawnCount = Mathf.Min(remainingCapacity, existingDrowned == 0 ? 2 : 1);
+                if (spawnCount <= 0)
+                {
+                    continue;
+                }
+
+                IntVec3 anchor = ZombieSpecialUtility.FindInteriorNearEdgeCell(map, map.Center);
+                if (!anchor.IsValid)
+                {
+                    anchor = map.Center;
+                }
+
+                if (ZombieSpawnHelper.SpawnVariantPackAround(map, anchor, ZombieVariant.Drowned, spawnCount, ZombieSpawnEventType.EdgeWander, ignoreCap: false))
+                {
+                    lastRainDrownedSpawnTickByMap[map.uniqueID] = ticksGame;
+                    RefreshCurrentMapCount();
+                }
+            }
+
+            List<int> staleMapIds = lastRainDrownedSpawnTickByMap.Keys.Where(id => !liveMapIds.Contains(id)).ToList();
+            foreach (int staleMapId in staleMapIds)
+            {
+                lastRainDrownedSpawnTickByMap.Remove(staleMapId);
+            }
+        }
+
         private void SanitizeLivingZombies()
         {
             HashSet<int> liveZombieIds = new HashSet<int>();
@@ -1118,6 +1211,7 @@ namespace CustomizableZombieHorde
 
                     ZombieUtility.StripAllUsableItems(pawn);
                     ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: false);
+                    ZombieUtility.NormalizeZombieCosmeticDamage(pawn);
                     ZombieUtility.RefreshDrownedState(pawn);
                     ZombieUtility.HandleDrownedRegeneration(pawn);
                     ZombieUtility.EnsureZombieAggression(pawn);
@@ -1155,125 +1249,48 @@ namespace CustomizableZombieHorde
 
         private void HandleZombieReanimation()
         {
-            int ticksGame = Find.TickManager.TicksGame;
-            HashSet<int> seenZombieCorpseIds = new HashSet<int>();
-            HashSet<int> seenReanimatedCorpseIds = new HashSet<int>();
-
             foreach (Map map in Find.Maps)
             {
                 List<Corpse> corpses = map.listerThings.ThingsInGroup(ThingRequestGroup.Corpse).OfType<Corpse>().ToList();
                 foreach (Corpse corpse in corpses)
                 {
-                    Pawn pawn = corpse.InnerPawn;
-                    if (pawn == null)
+                    Pawn pawn = corpse?.InnerPawn;
+                    if (pawn == null || !pawn.Dead || pawn.Destroyed)
                     {
                         continue;
                     }
 
-                    int corpseId = corpse.thingIDNumber;
                     bool isZombie = ZombieUtility.IsZombie(pawn);
-                    bool hasReanimated = ZombieInfectionUtility.HasReanimatedState(pawn);
-
-                    if (isZombie && !hasReanimated)
+                    if (isZombie && !ZombieInfectionUtility.HasReanimatedState(pawn))
                     {
                         ZombieInfectionUtility.ApplyReanimatedState(pawn);
-                        hasReanimated = ZombieInfectionUtility.HasReanimatedState(pawn);
                     }
 
-                    if (hasReanimated)
+                    if (!ZombieInfectionUtility.HasReanimatedState(pawn))
                     {
-                        seenZombieCorpseIds.Add(corpseId);
-                        seenReanimatedCorpseIds.Add(corpseId);
-                        corpseWakeTicks.Remove(corpseId);
+                        continue;
+                    }
 
-                        if (!infectionReanimationTicks.TryGetValue(corpseId, out int reanimatedWakeTick))
-                        {
-                            ScheduleInfectionReanimation(corpse, fixedDelayTicks: GenDate.TicksPerHour);
-                            continue;
-                        }
-
-                        if (ticksGame < reanimatedWakeTick)
-                        {
-                            continue;
-                        }
-
-                        bool canAttemptResurrection = ZombieInfectionUtility.CanReanimateFromReanimatedState(pawn);
-                        bool shouldRiseThisHour = canAttemptResurrection && Rand.Chance(0.50f);
-                        if (shouldRiseThisHour)
-                        {
-                            infectionReanimationTicks.Remove(corpseId);
-                            infectionReanimationStartTicks?.Remove(corpseId);
-                            infectionReanimationStartSeverity?.Remove(corpseId);
-
-                            if (isZombie)
-                            {
-                                if (ZombieUtility.TryResurrectZombie(pawn))
-                                {
-                                    ZombieUtility.PrepareZombieForReanimation(pawn);
-                                    ZombiePawnFactory.FinalizeZombie(pawn, initialSpawn: false);
-                                    ZombieUtility.EnsureZombieAggression(pawn);
-                                    ZombieFeedbackUtility.TrySendReanimationWarning(pawn);
-                                }
-                                else
-                                {
-                                    ScheduleInfectionReanimation(corpse, forceReschedule: true, fixedDelayTicks: GenDate.TicksPerHour);
-                                }
-                            }
-                            else if (!ZombieInfectionUtility.TryTurnDeadInfectedPawn(pawn, this))
-                            {
-                                ScheduleInfectionReanimation(corpse, forceReschedule: true, fixedDelayTicks: GenDate.TicksPerHour);
-                            }
-                        }
-                        else
-                        {
-                            ScheduleInfectionReanimation(corpse, forceReschedule: true, fixedDelayTicks: GenDate.TicksPerHour);
-                        }
-
+                    if (!ZombieInfectionUtility.CanReanimateFromReanimatedState(pawn))
+                    {
                         continue;
                     }
 
                     if (isZombie)
                     {
-                        seenZombieCorpseIds.Add(corpseId);
+                        if (ZombieUtility.TryResurrectZombie(pawn))
+                        {
+                            ZombieUtility.PrepareZombieForReanimation(pawn);
+                            ZombiePawnFactory.FinalizeZombie(pawn, initialSpawn: false);
+                            ZombieUtility.EnsureZombieAggression(pawn);
+                            ZombieFeedbackUtility.TrySendReanimationWarning(pawn);
+                        }
 
-                        if (!ZombieUtility.CanReanimate(pawn))
-                        {
-                            corpseWakeTicks.Remove(corpseId);
-                        }
-                        else
-                        {
-                            if (!corpseWakeTicks.TryGetValue(corpseId, out int wakeTick))
-                            {
-                                corpseWakeTicks[corpseId] = ticksGame + HoursToTicks(CustomizableZombieHordeMod.Settings.resurrectionDelayHours * Rand.Range(0.8f, 1.25f));
-                            }
-                            else if (ticksGame >= wakeTick)
-                            {
-                                corpseWakeTicks.Remove(corpseId);
-                                if (ZombieUtility.TryResurrectZombie(pawn))
-                                {
-                                    ZombieUtility.PrepareZombieForReanimation(pawn);
-                                    ZombiePawnFactory.FinalizeZombie(pawn, initialSpawn: false);
-                                    ZombieUtility.EnsureZombieAggression(pawn);
-                                    ZombieFeedbackUtility.TrySendReanimationWarning(pawn);
-                                }
-                            }
-                        }
+                        continue;
                     }
+
+                    ZombieInfectionUtility.TryTurnDeadInfectedPawn(pawn, this);
                 }
-            }
-
-            List<int> staleZombieIds = corpseWakeTicks.Keys.Where(key => !seenZombieCorpseIds.Contains(key)).ToList();
-            foreach (int staleId in staleZombieIds)
-            {
-                corpseWakeTicks.Remove(staleId);
-            }
-
-            List<int> staleInfectionIds = infectionReanimationTicks.Keys.Where(key => !seenReanimatedCorpseIds.Contains(key)).ToList();
-            foreach (int staleId in staleInfectionIds)
-            {
-                infectionReanimationTicks.Remove(staleId);
-                infectionReanimationStartTicks?.Remove(staleId);
-                infectionReanimationStartSeverity?.Remove(staleId);
             }
         }
 
@@ -1519,19 +1536,12 @@ namespace CustomizableZombieHorde
 
         public void RegisterDeadPawnForRecurringReanimation(Pawn pawn)
         {
-            if (pawn == null || !pawn.Dead || pawn.Destroyed || Find.TickManager == null)
-            {
-                return;
-            }
-
-            Corpse corpse = FindCorpseForPawn(pawn);
-            if (corpse == null || corpse.Destroyed)
+            if (pawn == null || !pawn.Dead || pawn.Destroyed)
             {
                 return;
             }
 
             ZombieInfectionUtility.ApplyReanimatedState(pawn);
-            ScheduleInfectionReanimation(corpse, forceReschedule: true, fixedDelayTicks: GenDate.TicksPerHour);
         }
 
         private static Corpse FindCorpseForPawn(Pawn pawn)
@@ -1614,26 +1624,24 @@ namespace CustomizableZombieHorde
         public bool TryGetInfectionReanimationTick(Corpse corpse, out int wakeTick)
         {
             wakeTick = -1;
-            return corpse != null
-                && infectionReanimationTicks != null
-                && infectionReanimationTicks.TryGetValue(corpse.thingIDNumber, out wakeTick);
+            if (corpse?.InnerPawn == null || !ZombieInfectionUtility.HasReanimatedState(corpse.InnerPawn))
+            {
+                return false;
+            }
+
+            return TryGetNextGlobalReanimationCheckTick(out wakeTick);
         }
 
         public bool TryGetInfectionReanimationWindow(Corpse corpse, out int startTick, out int wakeTick)
         {
             startTick = -1;
             wakeTick = -1;
-            if (corpse == null || infectionReanimationTicks == null || !infectionReanimationTicks.TryGetValue(corpse.thingIDNumber, out wakeTick))
+            if (!TryGetInfectionReanimationTick(corpse, out wakeTick))
             {
                 return false;
             }
 
-            if (infectionReanimationStartTicks != null && infectionReanimationStartTicks.TryGetValue(corpse.thingIDNumber, out startTick))
-            {
-                return true;
-            }
-
-            startTick = wakeTick - GenDate.TicksPerHour;
+            startTick = wakeTick - (GenDate.TicksPerHour * 3);
             return true;
         }
 
