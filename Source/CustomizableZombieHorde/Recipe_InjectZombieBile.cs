@@ -6,12 +6,11 @@ namespace CustomizableZombieHorde
 {
     public class Recipe_InjectZombieBile : Recipe_Surgery
     {
-        public override AcceptanceReport AvailableOnNow(Thing thing, BodyPartRecord part = null)
+        public override bool AvailableOnNow(Thing thing, BodyPartRecord part = null)
         {
-            AcceptanceReport baseReport = base.AvailableOnNow(thing, part);
-            if (!baseReport.Accepted)
+            if (!base.AvailableOnNow(thing, part))
             {
-                return baseReport;
+                return false;
             }
 
             Pawn patient = thing as Pawn;
@@ -22,22 +21,22 @@ namespace CustomizableZombieHorde
 
             if (patient.Dead)
             {
-                return "Patient is dead.";
+                return false;
             }
 
             if (patient.RaceProps?.Humanlike != true)
             {
-                return "Requires a humanlike patient.";
+                return false;
             }
 
             if (ZombieLurkerUtility.IsLurker(patient))
             {
-                return "Already a lurker.";
+                return false;
             }
 
             if (ZombieRulesUtility.IsZombie(patient))
             {
-                return "Already undead.";
+                return false;
             }
 
             return true;

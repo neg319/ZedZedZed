@@ -186,7 +186,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 63** of the active development cycle in this build set.
+This source package is currently at **iteration 65** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -233,6 +233,7 @@ Iteration history:
 - Iteration 62: added a medical bill that lets a doctor inject zombie bile into a living patient and deliberately turn them into a colony lurker.
 - Iteration 63: added a settings toggle that makes fresh zombie corpses start out allowed by default so colonists can haul, butcher, or double tap them without manual clicks.
 - Iteration 64: the settings menu was reorganized so the most used controls sit in Overview, colony cleanup tools are grouped together, debug only spawn sizing moved into Debug, moon buttons got their own debug section, and event tabs now hide extra controls when the parent feature is off.
+- Iteration 65: fixed the zombie bile surgery worker compile error by matching the current RimWorld Recipe_Surgery AvailableOnNow return type so GitHub builds can complete again.
 
 ## Changelog
 
@@ -258,6 +259,9 @@ This changelog treats a **major update** as something that adds substantial new 
 - Added rotten leather furniture and expanded rotten leather floors with multiple variants.
 
 ### Minor updates
+
+#### 2026-04-09 - zombie bile surgery build fix
+- Fixed the Recipe_InjectZombieBile surgery worker so its AvailableOnNow override matches the current RimWorld API and no longer breaks the GitHub build.
 
 #### 2026-04-09 - allowed zombie corpses by default
 - Added a new settings toggle that makes fresh zombie corpses start out allowed instead of forbidden.
