@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <TraitDef>
+    <defName>CZH_Trait_ZombieSickImmune</defName>
+    <description>This pawn is naturally resistant to the sickness spread by diseased zombies and their blood.</description>
+    <commonality>0.28</commonality>
+    <degreeDatas>
+      <li>
+        <label>zombie-plague immune</label>
+        <description>This pawn cannot catch the sickness spread by sick zombies or their blood.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>CZH_Trait_HeadHunter</defName>
+    <description>This pawn instinctively goes for the head in combat and tries to put enemies down with precise cranial strikes.</description>
+    <commonality>0.18</commonality>
+    <degreeDatas>
+      <li>
+        <label>head hunter</label>
+        <description>This pawn always aims for the head in combat when the target has one.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>CZH_Trait_DeadScent</defName>
+    <description>This pawn carries a corpse-like scent and presence that leaves zombies strangely uninterested.</description>
+    <commonality>0.08</commonality>
+    <degreeDatas>
+      <li>
+        <label>dead scent</label>
+        <description>Zombies do not treat this pawn as hostile and usually ignore them unless caught in collateral damage.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+
+  <TraitDef>
+    <defName>CZH_Trait_HardToKill</defName>
+    <description>This pawn is unnaturally resilient in a zombie outbreak and is much harder to put down.</description>
+    <commonality>0.16</commonality>
+    <degreeDatas>
+      <li>
+        <label>hard to kill</label>
+        <description>This pawn takes less damage from zombies, is harder to pain-shock, and is less likely to catch zombie sickness.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>CZH_Trait_SteadyHands</defName>
+    <description>This pawn keeps calm under pressure and can put accurate ranged fire into the undead.</description>
+    <commonality>0.20</commonality>
+    <degreeDatas>
+      <li>
+        <label>steady hands</label>
+        <description>This pawn shoots more accurately and deals more ranged damage to zombies.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+  <TraitDef>
+    <defName>CZH_Trait_QuickEscape</defName>
+    <description>This pawn has a survival instinct for slipping away before the dead can drag them down.</description>
+    <commonality>0.18</commonality>
+    <degreeDatas>
+      <li>
+        <label>quick escape</label>
+        <description>This pawn moves faster, dodges better in close combat, and tries to break away when zombies hit them.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+
+
+  <!-- Legacy compatibility trait kept only so older saves that already contain CZH_Trait_ZombiePassive can still load cleanly.
+       New code now uses CZH_Trait_DeadScent everywhere instead. -->
+  <TraitDef>
+    <defName>CZH_Trait_ZombiePassive</defName>
+    <description>Legacy compatibility alias for dead scent.</description>
+    <commonality>0.0</commonality>
+    <degreeDatas>
+      <li>
+        <label>dead scent</label>
+        <description>Legacy compatibility alias for dead scent.</description>
+        <degree>0</degree>
+      </li>
+    </degreeDatas>
+  </TraitDef>
+</Defs>

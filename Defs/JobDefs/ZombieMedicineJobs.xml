@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <JobDef>
+    <defName>CZH_AdministerBileTreatment</defName>
+    <driverClass>CustomizableZombieHorde.JobDriver_AdministerBileTreatment</driverClass>
+    <reportString>administering a bile med kit.</reportString>
+    <casualInterruptible>false</casualInterruptible>
+  </JobDef>
+</Defs>

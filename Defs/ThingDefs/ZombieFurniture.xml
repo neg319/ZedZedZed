@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <ThingDef ParentName="Bed">
+    <defName>CZH_RottenLeatherBed</defName>
+    <label>rotten leather bed</label>
+    <description>A standard single bed rebuilt with rotten leather instead of wood. It uses the normal wooden bed footprint, the normal wooden bed behavior, and custom rotten leather textures.</description>
+    <graphicData>
+      <texPath>Things/Building/Furniture/RottenLeatherBed/RottenLeatherBed</texPath>
+      <graphicClass>Graphic_Multi</graphicClass>
+      <drawSize>(1.0,2.0)</drawSize>
+    </graphicData>
+    <uiIconPath>Things/Building/Furniture/RottenLeatherBed/RottenLeatherBed_south</uiIconPath>
+    <size>(1,2)</size>
+    <stuffCategories Inherit="False">
+      <li>CZH_RottenLeathery</li>
+    </stuffCategories>
+    <costStuffCount>45</costStuffCount>
+  </ThingDef>
+
+  <ThingDef ParentName="ArtableFurnitureBase">
+    <defName>CZH_RottenLeatherChair</defName>
+    <label>rotten leather chair</label>
+    <description>A patched chair wrapped in strips of treated rotten leather. It works like a proper chair, even if it looks like it came from the end of the world.</description>
+    <graphicData>
+      <texPath>Things/Building/Furniture/RottenLeatherChair/RottenLeatherChair</texPath>
+      <graphicClass>Graphic_Multi</graphicClass>
+      <drawSize>(1.0,1.0)</drawSize>
+    </graphicData>
+    <uiIconPath>Things/Building/Furniture/RottenLeatherChair/RottenLeatherChair_south</uiIconPath>
+    <altitudeLayer>Building</altitudeLayer>
+    <designationCategory>Furniture</designationCategory>
+    <researchPrerequisites>
+      <li>ComplexFurniture</li>
+    </researchPrerequisites>
+    <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
+    <costList>
+      <CZH_RottenLeather>45</CZH_RottenLeather>
+    </costList>
+    <pathCost>30</pathCost>
+    <fillPercent>0.35</fillPercent>
+    <building>
+      <isSittable>true</isSittable>
+    </building>
+    <statBases Inherit="False">
+      <MaxHitPoints>75</MaxHitPoints>
+      <Mass>4.5</Mass>
+      <Beauty>2</Beauty>
+      <Flammability>0.70</Flammability>
+      <WorkToBuild>8000</WorkToBuild>
+      <MarketValue>24</MarketValue>
+      <Comfort>0.62</Comfort>
+    </statBases>
+  </ThingDef>
+</Defs>
