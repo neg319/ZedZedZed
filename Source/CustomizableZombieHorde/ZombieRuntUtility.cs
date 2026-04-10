@@ -33,6 +33,18 @@ namespace CustomizableZombieHorde
             }
         }
 
+
+        public static void NormalizeRuntCorpseForButchering(Pawn pawn)
+        {
+            if (pawn?.ageTracker == null || !ZombieUtility.IsVariant(pawn, ZombieVariant.Runt))
+            {
+                return;
+            }
+
+            RemoveExistingAgeMarkers(pawn);
+            SetAdultCorpseAge(pawn);
+        }
+
         public static int GetDisplayedMonths(Pawn pawn)
         {
             if (pawn?.health?.hediffSet == null)
@@ -62,6 +74,38 @@ namespace CustomizableZombieHorde
         {
             int months = GetDisplayedMonths(pawn);
             return months > 0 ? months + " Months" : null;
+        }
+
+
+        private static void SetAdultCorpseAge(Pawn pawn)
+        {
+            if (pawn?.ageTracker == null)
+            {
+                return;
+            }
+
+            const int adultYears = 20;
+            long biologicalTicks = adultYears * TicksPerYear;
+            long chronologicalTicks = biologicalTicks;
+            long currentTicks = Find.TickManager?.TicksGame ?? 0;
+            long birthAbsTicks = currentTicks - chronologicalTicks;
+
+            SetAgeTrackerValue(pawn.ageTracker, "AgeBiologicalTicks", biologicalTicks);
+            SetAgeTrackerValue(pawn.ageTracker, "AgeChronologicalTicks", chronologicalTicks);
+            SetAgeTrackerValue(pawn.ageTracker, "ageBiologicalTicksInt", biologicalTicks);
+            SetAgeTrackerValue(pawn.ageTracker, "ageChronologicalTicksInt", chronologicalTicks);
+            SetAgeTrackerValue(pawn.ageTracker, "BirthAbsTicks", birthAbsTicks);
+            SetAgeTrackerValue(pawn.ageTracker, "birthAbsTicksInt", birthAbsTicks);
+
+            try
+            {
+                HarmonyLib.AccessTools.Method(pawn.ageTracker.GetType(), "RecalculateLifeStageIndex")?.Invoke(pawn.ageTracker, null);
+                HarmonyLib.AccessTools.Method(pawn.ageTracker.GetType(), "PostResolveLifeStageChange")?.Invoke(pawn.ageTracker, null);
+                HarmonyLib.AccessTools.Method(pawn.ageTracker.GetType(), "CalculateInitialGrowth")?.Invoke(pawn.ageTracker, null);
+            }
+            catch
+            {
+            }
         }
 
         private static void SetVisualChildAge(Pawn pawn, int displayedMonths)

@@ -1216,7 +1216,20 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(pawn, ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) ? 26f : 10f);
+            ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
+            ZombieSpawnEventType behavior = component?.GetAssignedBehavior(pawn) ?? ZombieSpawnEventType.AssaultBase;
+            float preyRadius = ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) ? 26f : 12f;
+            if (behavior == ZombieSpawnEventType.AssaultBase || behavior == ZombieSpawnEventType.GroundBurst)
+            {
+                preyRadius = Mathf.Max(preyRadius, 28f);
+            }
+
+            if (component?.IsBloodMoonVisualActive(pawn.MapHeld) == true)
+            {
+                preyRadius = Mathf.Max(preyRadius, 34f);
+            }
+
+            Pawn prey = ZombieSpecialUtility.FindClosestLivingPrey(pawn, preyRadius);
             if (prey != null)
             {
                 if (IsVariant(pawn, ZombieVariant.Grabber))

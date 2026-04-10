@@ -113,7 +113,7 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref trickleMinGroupSize, "trickleMinGroupSize", 1);
             Scribe_Values.Look(ref trickleMaxGroupSize, "trickleMaxGroupSize", 2);
 
-            Scribe_Values.Look(ref outbreakIntensity, "outbreakIntensity", -1f);
+            Scribe_Values.Look(ref outbreakIntensity, "outbreakIntensity", 4f);
             Scribe_Values.Look(ref difficultyLevel, "difficultyLevel", -999);
 
             Scribe_Values.Look(ref enableGroundBursts, "enableGroundBursts", true);
@@ -173,6 +173,88 @@ namespace CustomizableZombieHorde
         public float DaytimeTargetMultiplier => Mathf.Max(0.5f, outbreakIntensity);
 
         public float NighttimeTargetMultiplier => DaytimeTargetMultiplier * 1.5f;
+
+        public float OutbreakIntensityScale => Mathf.Max(0.25f, outbreakIntensity / 4f);
+
+        public float InverseOutbreakIntensityScale => 4f / Mathf.Max(0.5f, outbreakIntensity);
+
+        public int ScaleSpawnCountByOutbreak(int baseCount, int minimum = 1)
+        {
+            return Mathf.Max(minimum, Mathf.RoundToInt(baseCount * OutbreakIntensityScale));
+        }
+
+        public float ScaleHoursByOutbreak(float baseHours, float minimumHours = 0.25f, float maximumHours = 24f)
+        {
+            return Mathf.Clamp(baseHours * InverseOutbreakIntensityScale, minimumHours, maximumHours);
+        }
+
+        public float ScaleDaysByOutbreak(float baseDays, float minimumDays = 1f, float maximumDays = 30f)
+        {
+            return Mathf.Clamp(baseDays * InverseOutbreakIntensityScale, minimumDays, maximumDays);
+        }
+
+        public int GetEffectiveTrickleMinGroupSize()
+        {
+            return ScaleSpawnCountByOutbreak(trickleMinGroupSize, 1);
+        }
+
+        public int GetEffectiveTrickleMaxGroupSize()
+        {
+            return Mathf.Max(GetEffectiveTrickleMinGroupSize(), ScaleSpawnCountByOutbreak(trickleMaxGroupSize, GetEffectiveTrickleMinGroupSize()));
+        }
+
+        public float GetEffectiveTrickleIntervalHours()
+        {
+            return ScaleHoursByOutbreak(trickleIntervalHours, 0.25f, 24f);
+        }
+
+        public float GetEffectiveGroundBurstMinDays()
+        {
+            return ScaleDaysByOutbreak(groundBurstMinDays, 1f, 20f);
+        }
+
+        public float GetEffectiveGroundBurstMaxDays()
+        {
+            return Mathf.Max(GetEffectiveGroundBurstMinDays(), ScaleDaysByOutbreak(groundBurstMaxDays, GetEffectiveGroundBurstMinDays(), 30f));
+        }
+
+        public int GetEffectiveGroundBurstMinGroupSize()
+        {
+            return ScaleSpawnCountByOutbreak(groundBurstMinGroupSize, 1);
+        }
+
+        public int GetEffectiveGroundBurstMaxGroupSize()
+        {
+            return Mathf.Max(GetEffectiveGroundBurstMinGroupSize(), ScaleSpawnCountByOutbreak(groundBurstMaxGroupSize, GetEffectiveGroundBurstMinGroupSize()));
+        }
+
+        public float GetEffectiveGraveEventMinDays()
+        {
+            return ScaleDaysByOutbreak(graveEventMinDays, 3f, 30f);
+        }
+
+        public float GetEffectiveGraveEventMaxDays()
+        {
+            return Mathf.Max(GetEffectiveGraveEventMinDays(), ScaleDaysByOutbreak(graveEventMaxDays, GetEffectiveGraveEventMinDays(), 40f));
+        }
+
+        public float GetPopulationTopUpIntervalHours(float deficitFraction)
+        {
+            float urgency = Mathf.Lerp(1f, 0.45f, Mathf.Clamp01(deficitFraction));
+            return Mathf.Clamp(GetEffectiveTrickleIntervalHours() * urgency, 0.35f, 6f);
+        }
+
+        public int GetPopulationTopUpCount(int deficit)
+        {
+            if (deficit <= 0)
+            {
+                return 0;
+            }
+
+            int scaled = Mathf.Max(1, Mathf.CeilToInt(deficit * 0.35f));
+            int maxChunk = Mathf.Max(2, ScaleSpawnCountByOutbreak(3, 2));
+            return Mathf.Clamp(scaled, 1, Mathf.Max(1, maxChunk));
+        }
 
         public void DoWindowContents(Rect inRect)
         {
@@ -519,7 +601,7 @@ namespace CustomizableZombieHorde
             DrawToggleCard(listing, "Show zombie HUD", "Shows a compact readout for active zombies and current danger on your home map.", ref showZombieCounter);
             DrawInfoCard(listing, "How Danger is calculated", "Danger compares active zombies to your current target population. Daytime target = colonists × outbreak intensity. Night target = daytime target × 1.5. Example: 4 colonists at 2.0 intensity gives a daytime target of 8 zombies. If 6 are active, Danger is 75%.");
 
-            DrawSectionLabel(listing, "Core outbreak feel", "These shape how quickly pressure builds and how often bodies get a chance to come back.");
+            DrawSectionLabel(listing, "Core outbreak feel", "These shape how quickly pressure builds, how fast fresh groups refill the map, and how often bodies get a chance to come back.");
             DrawFloatStepperCard(listing, "Reanimation delay", "How long a fresh corpse stays down before it can get back up.", ref resurrectionDelayHours, 0.5f, 24f, 0.5f, "hours");
             DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a fresh zombie to become a fast runner.", ref fastZombieChance, 0f, 0.20f, 0.01f);
 
@@ -533,8 +615,8 @@ namespace CustomizableZombieHorde
             BeginScrollableListing(rect, ref eventsScrollPosition, ref eventsViewHeight, out Listing_Standard listing, out Rect viewRect);
 
             DrawInfoCard(listing, "About this tab", "This tab controls when zombie pressure shows up and what form it takes, from steady trickles to moon hordes, ground bursts, and graves.");
-            DrawSectionLabel(listing, "Constant edge trickle", "Small groups drifting in from the map edge keep pressure on the colony between major events.");
-            DrawToggleCard(listing, "Enable edge trickle", "Lets small zombie groups keep wandering in from the map edge.", ref enableEdgeTrickle);
+            DrawSectionLabel(listing, "Constant edge trickle", "Small groups drifting in from the map edge keep pressure on the colony between major events. Outbreak intensity automatically speeds this up when you raise it.");
+            DrawToggleCard(listing, "Enable edge trickle", "Lets small zombie groups keep wandering in from the map edge. Higher outbreak intensity shortens the gap between trickles and helps the map refill faster toward its target population.", ref enableEdgeTrickle);
             if (enableEdgeTrickle)
             {
                 DrawFloatStepperCard(listing, "Time between trickles", "Lower values make edge groups show up more often.", ref trickleIntervalHours, 0.5f, 24f, 0.25f, "hours");
@@ -574,7 +656,7 @@ namespace CustomizableZombieHorde
                 DrawInfoCard(listing, "Moon events are off", "Full moon and blood moon attacks will stay out of the normal event rotation until you turn them back on.");
             }
 
-            DrawSectionLabel(listing, "Ground bursts", "These are the surprise eruptions that can pop up inside your base.");
+            DrawSectionLabel(listing, "Ground bursts", "These are the surprise eruptions that can pop up inside your base. Outbreak intensity also squeezes their timing and group size upward.");
             DrawToggleCard(listing, "Enable ground bursts", "Lets small zombie groups erupt from the ground inside your colony.", ref enableGroundBursts);
             if (enableGroundBursts)
             {
@@ -588,7 +670,7 @@ namespace CustomizableZombieHorde
                 DrawInfoCard(listing, "Ground bursts are off", "No buried eruptions will fire until you turn this back on.");
             }
 
-            DrawSectionLabel(listing, "Grave events", "These rare events create a spawning grave that keeps causing trouble until you destroy it.");
+            DrawSectionLabel(listing, "Grave events", "These rare events create a spawning grave that keeps causing trouble until you destroy it. Higher outbreak intensity also makes them roll around sooner.");
             DrawToggleCard(listing, "Enable grave events", "Lets rare grave events appear and keep spawning more bodies.", ref enableGraveEvents);
             if (enableGraveEvents)
             {
@@ -767,26 +849,36 @@ namespace CustomizableZombieHorde
         private void DrawDoubleTapWorkTypeChecklist(Listing_Standard listing)
         {
             List<WorkTypeDef> workTypes = GetAvailableDoubleTapWorkTypes();
-            if (workTypes == null || workTypes.Count == 0)
+            if (workTypes == null)
             {
-                DrawWarningCard(listing, "No valid work types were found for prioritized double tapping.");
-                return;
+                workTypes = new List<WorkTypeDef>();
             }
 
-            float descriptionHeight = CalculateWrappedTextHeight("Checked jobs will break away and head straight for fresh reanimation risks on their current map.", Mathf.Max(220f, listing.ColumnWidth - 28f));
+            float descriptionHeight = CalculateWrappedTextHeight("Every loaded work type is listed here so the player can decide which jobs should break away and double tap fresh zombie corpses.", Mathf.Max(220f, listing.ColumnWidth - 28f));
             float rowHeight = 28f;
-            float cardHeight = Mathf.Max(132f, 50f + descriptionHeight + (workTypes.Count * rowHeight) + 22f);
+            float rowsHeight = Mathf.Max(rowHeight, workTypes.Count * rowHeight);
+            float cardHeight = Mathf.Max(160f, 56f + descriptionHeight + rowsHeight + 24f);
             Rect row = DrawCard(listing, cardHeight);
 
             Rect titleRect = new Rect(row.x + 12f, row.y + 10f, row.width - 24f, 22f);
-            Rect descRect = new Rect(row.x + 12f, row.y + 34f, row.width - 24f, descriptionHeight + 4f);
+            Rect descRect = new Rect(row.x + 12f, row.y + 34f, row.width - 24f, descriptionHeight + 6f);
 
             Text.Font = GameFont.Small;
             GUI.color = SettingsTheme.Ink;
-            Widgets.Label(titleRect, "Checked job types");
+            Widgets.Label(titleRect, "Checked work types");
             GUI.color = SettingsTheme.MutedInk;
-            Widgets.Label(descRect, "Checked jobs will break away and head straight for fresh reanimation risks on their current map.");
+            Widgets.Label(descRect, "Every loaded work type is listed here so the player can decide which jobs should break away and double tap fresh zombie corpses.");
             GUI.color = Color.white;
+
+            if (workTypes.Count == 0)
+            {
+                Rect emptyRect = new Rect(row.x + 12f, descRect.yMax + 10f, row.width - 24f, 24f);
+                GUI.color = SettingsTheme.Warning;
+                Widgets.Label(emptyRect, "No work types are loaded right now.");
+                GUI.color = Color.white;
+                TooltipHandler.TipRegion(row, "Selected jobs will treat zombie double tapping as a top cleanup task while the feature is enabled.");
+                return;
+            }
 
             float startY = descRect.yMax + 10f;
             for (int i = 0; i < workTypes.Count; i++)
@@ -799,7 +891,7 @@ namespace CustomizableZombieHorde
                 SetDoubleTapWorkTypeSelected(workType, selected);
 
                 GUI.color = SettingsTheme.Ink;
-                Widgets.Label(new Rect(itemRect.x + 30f, itemRect.y + 2f, itemRect.width - 120f, 22f), (workType.label ?? workType.defName).CapitalizeFirst());
+                Widgets.Label(new Rect(itemRect.x + 30f, itemRect.y + 2f, itemRect.width - 120f, 22f), ZombieDoubleTapUtility.GetWorkTypeDisplayLabel(workType));
                 GUI.color = SettingsTheme.MutedInk;
                 Text.Anchor = TextAnchor.MiddleRight;
                 Widgets.Label(new Rect(itemRect.x, itemRect.y + 1f, itemRect.width - 4f, 22f), selected ? "Checked" : "Unchecked");
@@ -913,7 +1005,7 @@ namespace CustomizableZombieHorde
 
         private void DrawDifficultyCard(Listing_Standard listing)
         {
-            string description = "Sets the normal daytime target population. Daytime target = colonists × outbreak intensity. At night, the target rises by 50 percent. Default 4.0 means the mod tries to keep about four times your colonist count on the map during the day and about six times at night.";
+            string description = "Sets the normal daytime target population. Daytime target = colonists × outbreak intensity. At night, the target rises by 50 percent. This setting also speeds up trickles, refill pressure, bursts, and grave timing so the rest of the outbreak keeps pace automatically. Default 4.0 means the mod tries to keep about four times your colonist count on the map during the day and about six times at night.";
             float cardHeight = CalculateStepperCardHeight(listing, description);
             Rect row = DrawCard(listing, cardHeight);
             DrawCardText(row, "Outbreak intensity", description, null, 236f);

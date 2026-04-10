@@ -608,14 +608,27 @@ namespace CustomizableZombieHorde
             }
 
             IntVec3 targetCenter = GetPlayerBaseCenter(map);
-            IntVec3 from = pawn.PositionHeld;
-            IntVec3 anchor = new IntVec3((from.x + targetCenter.x) / 2, 0, (from.z + targetCenter.z) / 2);
-            List<IntVec3> options = GenRadial.RadialCellsAround(anchor, 8f, true)
-                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 6)
-                .ToList();
-            if (options.Count > 0)
+            if (targetCenter.IsValid && targetCenter.InBounds(map) && targetCenter.Standable(map))
             {
-                return options.RandomElement();
+                return targetCenter;
+            }
+
+            List<IntVec3> innerOptions = GenRadial.RadialCellsAround(targetCenter, 10f, true)
+                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 4)
+                .OrderBy(cell => cell.DistanceToSquared(targetCenter))
+                .ToList();
+            if (innerOptions.Count > 0)
+            {
+                return innerOptions.First();
+            }
+
+            List<IntVec3> fallbackOptions = GenRadial.RadialCellsAround(targetCenter, 18f, true)
+                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 4)
+                .OrderBy(cell => cell.DistanceToSquared(targetCenter))
+                .ToList();
+            if (fallbackOptions.Count > 0)
+            {
+                return fallbackOptions.First();
             }
 
             return targetCenter;

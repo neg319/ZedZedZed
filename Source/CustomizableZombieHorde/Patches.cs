@@ -483,6 +483,11 @@ namespace CustomizableZombieHorde
 
             if (ZombieUtility.IsZombie(__instance))
             {
+                if (ZombieUtility.IsVariant(__instance, ZombieVariant.Runt))
+                {
+                    ZombieRuntUtility.NormalizeRuntCorpseForButchering(__instance);
+                }
+
                 ZombieSpecialUtility.HandleZombieDeathEffects(__instance);
                 component?.RegisterDeadPawnForRecurringReanimation(__instance);
             }
@@ -554,6 +559,36 @@ namespace CustomizableZombieHorde
         }
     }
 
+    [HarmonyPatch(typeof(Corpse), nameof(Corpse.SpawnSetup))]
+    public static class Patch_Corpse_SpawnSetup_RuntButchering
+    {
+        public static void Postfix(Corpse __instance)
+        {
+            if (__instance?.InnerPawn == null || !ZombieUtility.IsVariant(__instance.InnerPawn, ZombieVariant.Runt))
+            {
+                return;
+            }
+
+            ZombieRuntUtility.NormalizeRuntCorpseForButchering(__instance.InnerPawn);
+        }
+    }
+
+
+    [HarmonyPatch(typeof(Corpse), nameof(Corpse.SpawnSetup))]
+    public static class Patch_Corpse_SpawnSetup_ScheduleZombieReanimation
+    {
+        public static void Postfix(Corpse __instance)
+        {
+            Pawn innerPawn = __instance?.InnerPawn;
+            if (innerPawn == null || !innerPawn.Dead || !ZombieUtility.IsZombie(innerPawn) || ZombieUtility.IsVariant(innerPawn, ZombieVariant.Boomer))
+            {
+                return;
+            }
+
+            Current.Game?.GetComponent<ZombieGameComponent>()?.ScheduleZombieCorpseWake(__instance);
+        }
+    }
+
     [HarmonyPatch(typeof(GlobalControls), nameof(GlobalControls.GlobalControlsOnGUI))]
     public static class Patch_GlobalControls_GlobalControlsOnGUI
     {
@@ -582,7 +617,7 @@ namespace CustomizableZombieHorde
             string countText = familyLabel + ": " + currentCount;
             string dangerText = cap > 0 ? $"Danger: {capPercent:0}%" : "Danger: off";
 
-            Rect rect = new Rect(UI.screenWidth - 178f, 6f, 168f, 62f);
+            Rect rect = new Rect(UI.screenWidth - 362f, 6f, 168f, 62f);
             Rect countRect = new Rect(rect.x + 8f, rect.y + 5f, rect.width - 16f, 24f);
             Rect detailRect = new Rect(rect.x + 8f, rect.y + 32f, rect.width - 16f, 22f);
 

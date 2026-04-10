@@ -16,12 +16,65 @@ namespace CustomizableZombieHorde
             "Clean"
         };
 
+
+        public static string GetWorkTypeDisplayLabel(WorkTypeDef workType)
+        {
+            if (workType == null)
+            {
+                return string.Empty;
+            }
+
+            if (!workType.labelShort.NullOrEmpty())
+            {
+                return workType.labelShort.CapitalizeFirst();
+            }
+
+            if (!workType.label.NullOrEmpty())
+            {
+                return workType.label.CapitalizeFirst();
+            }
+
+            return workType.defName;
+        }
+
         public static IEnumerable<WorkTypeDef> GetAvailableWorkTypes()
         {
-            return DefDatabase<WorkTypeDef>.AllDefsListForReading
-                .Where(def => def != null && !def.label.NullOrEmpty())
-                .OrderBy(def => def.naturalPriority)
-                .ThenBy(def => def.label);
+            List<WorkTypeDef> workTypes = new List<WorkTypeDef>();
+
+            if (DefDatabase<WorkTypeDef>.AllDefsListForReading != null)
+            {
+                workTypes.AddRange(DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(def => def != null));
+            }
+
+            foreach (System.Reflection.FieldInfo field in typeof(WorkTypeDefOf).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
+            {
+                if (field.FieldType != typeof(WorkTypeDef))
+                {
+                    continue;
+                }
+
+                WorkTypeDef def = field.GetValue(null) as WorkTypeDef;
+                if (def != null)
+                {
+                    workTypes.Add(def);
+                }
+            }
+
+            foreach (string defName in RecommendedWorkTypeNames)
+            {
+                WorkTypeDef def = DefDatabase<WorkTypeDef>.GetNamedSilentFail(defName);
+                if (def != null)
+                {
+                    workTypes.Add(def);
+                }
+            }
+
+            return workTypes
+                .Where(def => def != null && !def.defName.NullOrEmpty())
+                .Distinct()
+                .OrderByDescending(def => def.naturalPriority)
+                .ThenBy(def => GetWorkTypeDisplayLabel(def))
+                .ToList();
         }
 
         public static List<string> GetDefaultWorkTypeDefNames()

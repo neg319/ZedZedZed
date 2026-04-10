@@ -11,10 +11,9 @@
     </graphicData>
     <uiIconPath>Things/Building/Furniture/RottenLeatherBed/RottenLeatherBed_south</uiIconPath>
     <size>(1,2)</size>
-    <stuffCategories Inherit="False">
-      <li>CZH_RottenLeathery</li>
-    </stuffCategories>
-    <costStuffCount>45</costStuffCount>
+    <costList>
+      <CZH_RottenLeather>45</CZH_RottenLeather>
+    </costList>
   </ThingDef>
 
   <ThingDef ParentName="ArtableFurnitureBase">

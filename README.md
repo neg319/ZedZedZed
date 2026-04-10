@@ -186,7 +186,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 70** of the active development cycle in this build set.
+This source package is currently at **iteration 73** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -230,6 +230,10 @@ Iteration history:
 - Reorganized the settings menu so the most used everyday controls stay in Overview, colony response tools live together in Colony, and debug only spawn sizing moved into Debug where it belongs.
 - Grouped the debug tab into event, moon, grave, and spawn sections so forced testing is easier to follow mid save.
 - Simplified tab wording, moved the Danger explanation next to the zombie HUD toggle, and hid extra event controls whenever the parent event type is turned off so the menu stays cleaner and easier to read.
+
+#### 2026-04-09 - double tap work type list cleanup
+- Changed the prioritized double tapping checklist to list every loaded work type instead of only showing a narrow fallback set.
+- Sorted the list by importance first, then by label, so the most recognizable jobs stay near the top while still allowing any loaded work type to be selected.
 - Iteration 62: added a medical bill that lets a doctor inject zombie bile into a living patient and deliberately turn them into a colony lurker.
 - Iteration 63: added a settings toggle that makes fresh zombie corpses start out allowed by default so colonists can haul, butcher, or double tap them without manual clicks.
 - Iteration 64: the settings menu was reorganized so the most used controls sit in Overview, colony cleanup tools are grouped together, debug only spawn sizing moved into Debug, moon buttons got their own debug section, and event tabs now hide extra controls when the parent feature is off.
@@ -238,8 +242,12 @@ Iteration history:
 - Iteration 67: fixed zombie corpse auto allow compilation by switching the corpse allow logic over to CompForbiddable instead of relying on a missing SetForbidden method on Corpse.
 - Iteration 69: outbreak intensity now directly sets the normal daytime target zombie population, nighttime danger rises to 150 percent of that target, and the settings menu now explains the Danger formula in plain language with a worked example.
 - Iteration 70: naming controls now live together on their own Names tab, the settings order was cleaned up by importance, and the prioritized double tapping job checklist was rebuilt to stay visible and obvious in the Colony tab.
+- Iteration 71: hardened the prioritized double tapping work type list so it falls back to vanilla work type defs more safely instead of showing an empty state.
+- Iteration 72: changed prioritized double tapping to list every loaded work type in settings so the player can choose any job that should break away and finish fresh zombie corpses.
 
 ## Changelog
+- 2026-04-09: Minor update. Removed stuffed tinting from the rotten leather bed so the placed bed uses its custom texture color instead of being darkened by stuff coloring.
+- 2026-04-09 - Minor update - iteration 76: Reworked zombie corpse reanimation so standard zombie corpses no longer depend on a corpse-side Reanimated marker to get back up. Fresh zombie corpses now schedule their wake on spawn and the global sweep raises any valid zombie corpse unless the head or skull has been ruined.
 
 This changelog treats a **major update** as something that adds substantial new features, new items, or meaningful gameplay changes. Cleanup, build fixes, wording passes, layout fixes, art alignment work, and small UI improvements are listed as **minor updates**.
 
@@ -371,3 +379,20 @@ This changelog treats a **major update** as something that adds substantial new 
 - Reorganized the settings menu so the most used everyday controls stay in Overview, colony response tools live together in Colony, and debug only spawn sizing moved into Debug where it belongs.
 - Grouped the debug tab into event, moon, grave, and spawn sections so forced testing is easier to follow mid save.
 - Simplified tab wording, moved the Danger explanation next to the zombie HUD toggle, and hid extra event controls whenever the parent event type is turned off so the menu stays cleaner and easier to read.
+
+#### 2026-04-09 - double tap work type list cleanup
+- Changed the prioritized double tapping checklist to list every loaded work type instead of only showing a narrow fallback set.
+- Sorted the list by importance first, then by label, so the most recognizable jobs stay near the top while still allowing any loaded work type to be selected.
+
+
+#### 2026-04-09 - outbreak intensity scaling cleanup
+- Kept outbreak intensity defaulted at 4.0 and tightened the code paths that repair older saved values back into the new target population system.
+- Made outbreak intensity automatically speed up edge trickles, refill pressure, ground burst timing, and grave event timing so the rest of the outbreak actually scales with the target population.
+- Added a new quiet top up pass that keeps home maps climbing back toward their current zombie target instead of waiting too long for the next random event.
+
+#### 2026-04-09 - assault pressure and runt salvage cleanup
+- Normalized runt corpses for salvage so colonists can butcher them cleanly instead of stalling at the butcher spot.
+- Moved the zombie counter HUD farther left so alerts and messages stop covering it.
+- Made trickles and refill pressure choose direct settlement attacks more often when the map is under target or nighttime pressure is high.
+- Tightened assault pathing so attacking zombies push deeper toward the colony instead of milling around too far from the base.
+- Reduced blood moon command spam so zombies stop constantly having their jobs reset, which should make blood moon movement much smoother.

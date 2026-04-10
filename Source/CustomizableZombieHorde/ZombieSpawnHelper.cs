@@ -20,7 +20,8 @@ namespace CustomizableZombieHorde
     {
         public static int ApplyDifficultyMultiplier(int baseCount)
         {
-            float multiplier = CustomizableZombieHordeMod.Settings?.DaytimeTargetMultiplier ?? 4f;
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            float multiplier = settings?.DaytimeTargetMultiplier ?? 4f;
             return baseCount < 1 ? 1 : GenMath.RoundRandom(baseCount * Mathf.Max(0.25f, multiplier / 4f));
         }
 
@@ -118,12 +119,12 @@ namespace CustomizableZombieHorde
             ZombiePopulationState resolvedState = ResolvePopulationState(map, populationState);
             if (resolvedState == ZombiePopulationState.FullMoon)
             {
-                return settings?.fullMoonBaseCount ?? 12;
+                return settings != null ? settings.ScaleSpawnCountByOutbreak(settings.fullMoonBaseCount, 6) : 12;
             }
 
             if (resolvedState == ZombiePopulationState.BloodMoon)
             {
-                return settings?.bloodMoonBaseCount ?? 24;
+                return settings != null ? settings.ScaleSpawnCountByOutbreak(settings.bloodMoonBaseCount, 12) : 24;
             }
 
             int colonists = map.mapPawns?.FreeColonistsSpawnedCount ?? 0;
@@ -337,7 +338,10 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            int count = forcedCount ?? Rand.RangeInclusive(CustomizableZombieHordeMod.Settings.groundBurstMinGroupSize, CustomizableZombieHordeMod.Settings.groundBurstMaxGroupSize);
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            int groundBurstMin = settings?.GetEffectiveGroundBurstMinGroupSize() ?? 2;
+            int groundBurstMax = settings?.GetEffectiveGroundBurstMaxGroupSize() ?? groundBurstMin;
+            int count = forcedCount ?? Rand.RangeInclusive(groundBurstMin, groundBurstMax);
             count = FinalizeSpawnCount(map, count, applyDifficulty: true, applyTimeOfDay: !ignoreTimeOfDay, ignoreCap: ignoreCap, populationState: populationState);
             if (count < 1)
             {
