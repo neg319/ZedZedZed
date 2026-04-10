@@ -40,6 +40,12 @@ namespace CustomizableZombieHorde
             Messages.Message(doctorName + " administers a bile med kit and cures zombie sickness in " + patient.LabelShortCap + ".", patient, MessageTypeDefOf.PositiveEvent);
         }
 
+        public static void SendBileInjectionMessage(Pawn patient, Pawn doctor)
+        {
+            string doctorName = doctor?.LabelShortCap ?? "A colonist";
+            Messages.Message(doctorName + " injects zombie bile into " + patient.LabelShortCap + ". They survive the procedure and become a colony lurker.", patient, MessageTypeDefOf.NeutralEvent);
+        }
+
         public static void SendZombieSicknessMessage(Pawn pawn)
         {
             if (pawn == null)

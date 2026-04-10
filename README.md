@@ -13,7 +13,7 @@
 
 # Zed Zed Zed
 
-Zed Zed Zed is a RimWorld zombie mod built around pressure, atmosphere, and the feeling that the colony is never quite finished cleaning up the last mess before the next one starts. This is not just a single raid that shows up, dies, and goes away. The dead can drift in from the edge of the map, bunch up in quiet packs, push straight at your base, erupt inside the colony, or keep crawling out of graves until you smash the source.
+Zed Zed Zed is a RimWorld zombie mod built around pressure, atmosphere, and the feeling that the colony is never quite finished cleaning up the last mess before the next one starts. This is not just a single raid that shows up, dies, and goes away. The dead can drift in from the edge of the map, bunch up in quiet packs, push straight at your base, erupt inside the colony, or keep crawling out of graves until you smash the source. If you really want to lean into the horror, you can also use a medical bill to inject zombie bile into a living patient and deliberately turn them into a colony lurker.
 
 The whole mod is built to be tuned to your taste. You can rename the zombie family, rename each strain, decide which strains are allowed, control how often events fire, scale danger to colony size, change infection timing, open the settings directly from the pause menu, and use debug tools when you want to test something fast.
 
@@ -50,6 +50,7 @@ This repository is the full source package for the mod, along with a GitHub Acti
 - **Zombie infection** builds over time instead of ending the moment somebody is scratched.
 - **Visible infection stages** make it easier to tell how bad things are getting.
 - **Bile med kits** can cure zombie infection before it reaches the terminal point.
+- **Zombie bile injection bills** can deliberately turn a living humanlike patient into a colony lurker through the medical bill system.
 - **Terminal and reanimated states** keep the outbreak dangerous even after a pawn dies.
 - **Post death progression** means infection can keep climbing on a corpse after death instead of stopping there.
 - **Global reanimation sweeps** handle dead reanimated corpses at the game level every 1 to 3 in game hours, so they can still rise again if the head and skull are intact.
@@ -142,6 +143,8 @@ This is the running feature list for the mod. Dates are listed when they can be 
 - Drowned zombies were updated to treat rain like water for spawning pressure and slow regeneration.
 - Zombie starting decay was cleaned up so newly spawned undead do not arrive covered in as many cosmetic wounds.
 - Drowned and restrained zombie behavior was stabilized so imprisoned undead stop fighting prison movement and bedrest jobs.
+- Corpse rise handling was corrected so reanimation clears the old corpse before placing the risen zombie, with a safer nearby fallback cell if the death spot is blocked.
+- A medical bill was added so a doctor can inject zombie bile into a living patient and turn them into a colony lurker.
 
 ## Building the mod on GitHub
 
@@ -183,7 +186,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 58** of the active development cycle in this build set.
+This source package is currently at **iteration 63** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -218,6 +221,18 @@ Iteration history:
 - Iteration 56: all active code paths that used the old zombie passive trait were unified onto dead scent, while the old trait def was kept only as a legacy save compatibility alias.
 - Iteration 57: the settings menu headers got more breathing room so section titles and subtext sit cleaner with less clipping and overlap.
 - Iteration 58: added prioritized double tapping with a settings toggle, a job type checklist, and a colony side corpse finishing job that damages zombie heads so they stay down.
+- Iteration 59: fixed the missing double tap cleanup job load, restored the job checklist, filled in the last missing rename fields, and expanded the debug tab so every major zombie type can be spawned directly.
+#### 2026-04-09 - reanimation spawn and chair color cleanup
+- Fixed zombie corpse reanimation so the old corpse is cleared before the risen zombie is spawned, and the reanimation code now picks a safer fallback cell if the original spot cannot be used.
+- Fixed the rotten leather chair so it keeps its intended custom color in game instead of getting darkened by stuffed tinting.
+
+#### 2026-04-09 - settings layout cleanup
+- Reorganized the settings menu so the most used everyday controls stay in Overview, colony response tools live together in Colony, and debug only spawn sizing moved into Debug where it belongs.
+- Grouped the debug tab into event, moon, grave, and spawn sections so forced testing is easier to follow mid save.
+- Simplified tab wording, moved the Danger explanation next to the zombie HUD toggle, and hid extra event controls whenever the parent event type is turned off so the menu stays cleaner and easier to read.
+- Iteration 62: added a medical bill that lets a doctor inject zombie bile into a living patient and deliberately turn them into a colony lurker.
+- Iteration 63: added a settings toggle that makes fresh zombie corpses start out allowed by default so colonists can haul, butcher, or double tap them without manual clicks.
+- Iteration 64: the settings menu was reorganized so the most used controls sit in Overview, colony cleanup tools are grouped together, debug only spawn sizing moved into Debug, moon buttons got their own debug section, and event tabs now hide extra controls when the parent feature is off.
 
 ## Changelog
 
@@ -230,6 +245,11 @@ This changelog treats a **major update** as something that adds substantial new 
 - Standard zombie strains are no longer recruitable through normal prisoner recruitment. Lurkers remain the only strain that can fully join the colony as people.
 - Colony aligned zombie slaves now treat colonists and other colony allies as friendly targets to ignore, while still hunting enemies of the colony.
 
+#### 2026-04-09 - zombie bile lurker conversion
+- Added a medical bill that lets a doctor inject zombie bile into a living humanlike patient.
+- The procedure turns the patient into a colony lurker instead of killing them first, giving the colony a deliberate way to make a controllable lurker.
+- The conversion preserves the patient as a colony aligned lurker so they do not come back hostile to the colony.
+
 #### 2026-04-08 - outbreak expansion
 - Added the runt strain as a real new zombie type with debug spawning and rare natural spawns.
 - Added pregnant boomers as a gameplay feature instead of leaving them as a debug only idea.
@@ -238,6 +258,10 @@ This changelog treats a **major update** as something that adds substantial new 
 - Added rotten leather furniture and expanded rotten leather floors with multiple variants.
 
 ### Minor updates
+
+#### 2026-04-09 - allowed zombie corpses by default
+- Added a new settings toggle that makes fresh zombie corpses start out allowed instead of forbidden.
+- Zombie corpses are now automatically switched to allowed when they spawn, and a light background cleanup pass keeps existing zombie corpses in sync while the toggle is on.
 
 #### 2026-04-09 - prioritized double tapping
 - Added a new settings toggle for prioritized double tapping so selected colony workers can treat corpse finishing as a top cleanup task.
@@ -322,3 +346,20 @@ This changelog treats a **major update** as something that adds substantial new 
 - Improved visible infection feedback.
 - Improved lurker conversion handling.
 - Reworked sick zombie spew presentation inside the custom zombie attack system.
+
+
+#### 2026-04-09 - settings and debug coverage cleanup
+- Fixed the double tap job XML so the new colony cleanup job can load properly instead of failing during def parsing.
+- Added the missing prioritized double tapping work type checklist back into settings once the job def was loading cleanly again.
+- Added rename fields for Bone Biter and Pregnant Boomer so every named zombie type used by the mod can now be customized from settings.
+- Expanded the debug tab so every major zombie type can be spawned directly for testing, including biter, boomer, sick, drowned, brute, grabber, runt, bone biter, pregnant boomer, and lurker.
+- Added a plain language explanation of the Danger percentage to the settings menu so the HUD is easier to understand.
+
+#### 2026-04-09 - reanimation spawn and chair color cleanup
+- Fixed zombie corpse reanimation so the old corpse is cleared before the risen zombie is spawned, and the reanimation code now picks a safer fallback cell if the original spot cannot be used.
+- Fixed the rotten leather chair so it keeps its intended custom color in game instead of getting darkened by stuffed tinting.
+
+#### 2026-04-09 - settings layout cleanup
+- Reorganized the settings menu so the most used everyday controls stay in Overview, colony response tools live together in Colony, and debug only spawn sizing moved into Debug where it belongs.
+- Grouped the debug tab into event, moon, grave, and spawn sections so forced testing is easier to follow mid save.
+- Simplified tab wording, moved the Danger explanation next to the zombie HUD toggle, and hid extra event controls whenever the parent event type is turned off so the menu stays cleaner and easier to read.

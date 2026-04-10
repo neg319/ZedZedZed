@@ -33,10 +33,9 @@
       <li>ComplexFurniture</li>
     </researchPrerequisites>
     <constructionSkillPrerequisite>4</constructionSkillPrerequisite>
-    <stuffCategories Inherit="False">
-      <li>CZH_RottenLeathery</li>
-    </stuffCategories>
-    <costStuffCount>45</costStuffCount>
+    <costList>
+      <CZH_RottenLeather>45</CZH_RottenLeather>
+    </costList>
     <pathCost>30</pathCost>
     <fillPercent>0.35</fillPercent>
     <building>

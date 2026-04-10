@@ -85,4 +85,39 @@
     <workSkillLearnFactor>0.30</workSkillLearnFactor>
   </RecipeDef>
 
+  <RecipeDef ParentName="SurgeryFlesh">
+    <defName>CZH_InjectZombieBile</defName>
+    <label>inject zombie bile</label>
+    <description>Inject zombie bile into a living humanlike patient. The patient survives, but the procedure turns them into a colony lurker.</description>
+    <jobString>injecting zombie bile.</jobString>
+    <workerClass>CustomizableZombieHorde.Recipe_InjectZombieBile</workerClass>
+    <workAmount>900</workAmount>
+    <workSkill>Medicine</workSkill>
+    <targetsBodyPart>false</targetsBodyPart>
+    <anesthetize>false</anesthetize>
+    <surgerySuccessChanceFactor>1.0</surgerySuccessChanceFactor>
+    <recipeUsers Inherit="False">
+      <li>Bed</li>
+      <li>HospitalBed</li>
+      <li>SleepingSpot</li>
+      <li>MedicalSleepingSpot</li>
+      <li>CZH_RottenLeatherBed</li>
+    </recipeUsers>
+    <ingredients>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>CZH_ZombieBile</li>
+          </thingDefs>
+        </filter>
+        <count>1</count>
+      </li>
+    </ingredients>
+    <defaultIngredientFilter>
+      <thingDefs>
+        <li>CZH_ZombieBile</li>
+      </thingDefs>
+    </defaultIngredientFilter>
+  </RecipeDef>
+
 </Defs>

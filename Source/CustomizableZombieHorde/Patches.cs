@@ -1006,6 +1006,20 @@ namespace CustomizableZombieHorde
         }
     }
 
+    [HarmonyPatch(typeof(Corpse), nameof(Corpse.SpawnSetup))]
+    public static class Patch_Corpse_SpawnSetup_AutoAllowZombieCorpses
+    {
+        public static void Postfix(Corpse __instance, Map map)
+        {
+            if (map == null || __instance == null)
+            {
+                return;
+            }
+
+            ZombieCorpseUtility.ApplyDefaultAllowState(__instance);
+        }
+    }
+
     [HarmonyPatch(typeof(Corpse), nameof(Corpse.GetInspectString))]
     public static class Patch_Corpse_GetInspectString
     {

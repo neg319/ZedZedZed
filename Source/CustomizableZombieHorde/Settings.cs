@@ -25,11 +25,11 @@ namespace CustomizableZombieHorde
         private Vector2 advancedScrollPosition;
         private Vector2 debugScrollPosition;
 
-        private float overviewViewHeight = 1100f;
-        private float eventsViewHeight = 2200f;
-        private float variantsViewHeight = 1500f;
-        private float advancedViewHeight = 1350f;
-        private float debugViewHeight = 1400f;
+        private float overviewViewHeight = 1200f;
+        private float eventsViewHeight = 2400f;
+        private float variantsViewHeight = 1850f;
+        private float advancedViewHeight = 1450f;
+        private float debugViewHeight = 2200f;
 
         public string zombiePrefix = "Zombie";
         public int minGroupSize = 3;
@@ -73,6 +73,7 @@ namespace CustomizableZombieHorde
         public bool showZombieCounter = true;
         public bool enableDebugControls = false;
         public bool enablePrioritizedDoubleTap = false;
+        public bool autoAllowZombieCorpses = true;
         public List<string> prioritizedDoubleTapWorkTypeDefs = new List<string>();
 
         public bool allowBiters = true;
@@ -91,6 +92,8 @@ namespace CustomizableZombieHorde
         public string bruteName = "Brute";
         public string grabberName = "Grabber";
         public string lurkerName = "Lurker";
+        public string boneBiterName = "Bone Biter";
+        public string pregnantBoomerName = "Pregnant Boomer";
 
         public override void ExposeData()
         {
@@ -136,6 +139,7 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref showZombieCounter, "showZombieCounter", true);
             Scribe_Values.Look(ref enableDebugControls, "enableDebugControls", false);
             Scribe_Values.Look(ref enablePrioritizedDoubleTap, "enablePrioritizedDoubleTap", false);
+            Scribe_Values.Look(ref autoAllowZombieCorpses, "autoAllowZombieCorpses", true);
             Scribe_Collections.Look(ref prioritizedDoubleTapWorkTypeDefs, "prioritizedDoubleTapWorkTypeDefs", LookMode.Value);
 
             Scribe_Values.Look(ref allowBiters, "allowBiters", true);
@@ -154,6 +158,8 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref bruteName, "bruteName", "Brute");
             Scribe_Values.Look(ref grabberName, "grabberName", "Grabber");
             Scribe_Values.Look(ref lurkerName, "lurkerName", "Lurker");
+            Scribe_Values.Look(ref boneBiterName, "boneBiterName", "Bone Biter");
+            Scribe_Values.Look(ref pregnantBoomerName, "pregnantBoomerName", "Pregnant Boomer");
 
             base.ExposeData();
             ClampAndRepair();
@@ -249,6 +255,7 @@ namespace CustomizableZombieHorde
             showZombieCounter = true;
             enableDebugControls = false;
             enablePrioritizedDoubleTap = false;
+            autoAllowZombieCorpses = true;
             prioritizedDoubleTapWorkTypeDefs = GetDefaultDoubleTapWorkTypes();
 
             allowBiters = true;
@@ -267,6 +274,8 @@ namespace CustomizableZombieHorde
             bruteName = "Brute";
             grabberName = "Grabber";
             lurkerName = "Lurker";
+            boneBiterName = "Bone Biter";
+            pregnantBoomerName = "Pregnant Boomer";
         }
 
         private void ApplyCasualPreset()
@@ -322,6 +331,8 @@ namespace CustomizableZombieHorde
             bruteName = MigrateLegacyVariantName(MigrateLegacyVariantName(NormalizeVariantName(bruteName, "Brute"), "Heavy", "Brute"), "Tank", "Brute");
             grabberName = NormalizeVariantName(grabberName, "Grabber");
             lurkerName = NormalizeVariantName(lurkerName, "Lurker");
+            boneBiterName = NormalizeVariantName(boneBiterName, "Bone Biter");
+            pregnantBoomerName = NormalizeVariantName(pregnantBoomerName, "Pregnant Boomer");
             difficultyLevel = Mathf.Clamp(difficultyLevel, 0, 8);
 
             minGroupSize = Mathf.Clamp(minGroupSize, 1, 60);
@@ -439,8 +450,8 @@ namespace CustomizableZombieHorde
             Widgets.Label(titleRect, "Zed Zed Zed Settings");
             Text.Font = GameFont.Small;
             GUI.color = SettingsTheme.MutedInk;
-            Widgets.Label(subtitleRect, "Outbreak pacing, strain control, debug tools, and colony-side safety tuning.");
-            Widgets.Label(hintRect, "A clean panel with a grimy colony-horror finish.");
+            Widgets.Label(subtitleRect, "Outbreak pacing, strain control, colony cleanup, and grim little debug tools.");
+            Widgets.Label(hintRect, "Built to stay stylish, readable, and quick to use mid save.");
             GUI.color = Color.white;
 
             SettingsTheme.DrawStatusPill(badgeRect, true);
@@ -453,7 +464,7 @@ namespace CustomizableZombieHorde
 
         private void DrawTabButtons(Rect rect)
         {
-            string[] labels = { "Overview", "Events", "Variants", "Advanced", "Debug" };
+            string[] labels = { "Overview", "Events", "Variants", "Colony", "Debug" };
             SettingsTab[] tabs =
             {
                 SettingsTab.Overview,
@@ -481,22 +492,21 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref overviewScrollPosition, ref overviewViewHeight, out Listing_Standard listing, out Rect viewRect);
 
-            DrawInfoCard(listing, "About this tab", "Start here for the main feel of the mod. This tab covers presets, naming, the map counter, difficulty, and a few core pacing settings.");
-            DrawSectionLabel(listing, "Quick setup", "Use these first if you want the mod to feel good without hand tuning every little thing.");
+            DrawInfoCard(listing, "About this tab", "Start here for the main feel of the mod. This tab keeps the important everyday controls in one place so you can tune the outbreak without digging.");
+            DrawSectionLabel(listing, "Quick setup", "These are the first settings most players will want to touch.");
             DrawPresetButtons(listing);
-            DrawTextEntryCard(listing, "Family name", "Sets the shared name used in zombie labels and event text.", ref zombiePrefix, "Zombie");
-            DrawToggleCard(listing, "Show map counter", "Shows how many active zombies are on your current home map.", ref showZombieCounter);
+            DrawTextEntryCard(listing, "Zombie family name", "Sets the shared family name used in zombie labels, letters, and other outbreak text.", ref zombiePrefix, "Zombie");
             DrawDifficultyCard(listing);
+            DrawToggleCard(listing, "Show zombie HUD", "Shows a compact readout for active zombies and current danger on your home map.", ref showZombieCounter);
+            DrawInfoCard(listing, "What Danger means", "Danger compares the number of active zombies on your home map to that map's current spawn cap. 100% means the map is at its usual cap. Higher than 100% means special events, debug spawns, or leftover zombies pushed it over.");
             DrawInfoCard(listing, "Example names", ZombieDefUtility.ExampleNames(zombiePrefix));
 
-            DrawSectionLabel(listing, "At a glance", "These are the big picture settings that shape how the outbreak feels.");
-            DrawIntStepperCard(listing, "Manual horde minimum size", "Smallest group size used by manual spawns and forced events.", ref minGroupSize, 1, 60, 1);
-            DrawIntStepperCard(listing, "Manual horde maximum size", "Largest group size used by manual spawns and forced events.", ref maxGroupSize, minGroupSize, 120, 1);
+            DrawSectionLabel(listing, "Outbreak feel", "These shape how often corpses get back up and how often fresh zombies turn out faster than normal.");
             DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a fresh zombie to become a fast runner.", ref fastZombieChance, 0f, 0.20f, 0.01f);
             DrawFloatStepperCard(listing, "Reanimation delay", "How long a fresh corpse stays down before it can get back up.", ref resurrectionDelayHours, 0.5f, 24f, 0.5f, "hours");
 
             listing.End();
-            overviewViewHeight = Mathf.Max(1100f, listing.CurHeight + 24f);
+            overviewViewHeight = Mathf.Max(1200f, listing.CurHeight + 24f);
             Widgets.EndScrollView();
         }
 
@@ -504,47 +514,82 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref eventsScrollPosition, ref eventsViewHeight, out Listing_Standard listing, out Rect viewRect);
 
-            DrawInfoCard(listing, "About this tab", "This tab controls when zombie pressure shows up and what form it takes, from steady trickles to moon hordes and grave events.");
+            DrawInfoCard(listing, "About this tab", "This tab controls when zombie pressure shows up and what form it takes, from steady trickles to moon hordes, ground bursts, and graves.");
             DrawSectionLabel(listing, "Constant edge trickle", "Small groups drifting in from the map edge keep pressure on the colony between major events.");
             DrawToggleCard(listing, "Enable edge trickle", "Lets small zombie groups keep wandering in from the map edge.", ref enableEdgeTrickle);
-            DrawFloatStepperCard(listing, "Time between trickles", "Lower values make edge groups show up more often.", ref trickleIntervalHours, 0.5f, 24f, 0.25f, "hours");
-            DrawIntStepperCard(listing, "Trickle minimum group size", "Smallest group size the edge trickle can send.", ref trickleMinGroupSize, 1, 12, 1);
-            DrawIntStepperCard(listing, "Trickle maximum group size", "Largest group size the edge trickle can send.", ref trickleMaxGroupSize, trickleMinGroupSize, 24, 1);
+            if (enableEdgeTrickle)
+            {
+                DrawFloatStepperCard(listing, "Time between trickles", "Lower values make edge groups show up more often.", ref trickleIntervalHours, 0.5f, 24f, 0.25f, "hours");
+                DrawIntStepperCard(listing, "Trickle minimum group size", "Smallest group size the edge trickle can send.", ref trickleMinGroupSize, 1, 12, 1);
+                DrawIntStepperCard(listing, "Trickle maximum group size", "Largest group size the edge trickle can send.", ref trickleMaxGroupSize, trickleMinGroupSize, 24, 1);
+            }
+            else
+            {
+                DrawInfoCard(listing, "Edge trickle is off", "Only larger events and manual spawns will add new pressure from off map while this is disabled.");
+            }
 
-            DrawSectionLabel(listing, "Colony scaled population", "Scale zombie pressure to your current colonist count instead of using only fixed caps.");
+            DrawSectionLabel(listing, "Colony scaled population", "Scale zombie pressure to your current colonist count instead of leaning on fixed moon counts.");
             DrawToggleCard(listing, "Scale zombie population to colonists", "Uses your colonist count to scale daytime, nighttime, full moon, and blood moon pressure.", ref useColonistScaledPopulation);
-            DrawIntStepperCard(listing, "Daytime minimum multiplier", "Smallest daytime cap, based on your free colonist count.", ref dayColonistMultiplierMin, 1, 20, 1);
-            DrawIntStepperCard(listing, "Daytime maximum multiplier", "Largest daytime cap, based on your free colonist count.", ref dayColonistMultiplierMax, dayColonistMultiplierMin, 20, 1);
-            DrawIntStepperCard(listing, "Night minimum multiplier", "Smallest nighttime cap, based on your free colonist count.", ref nightColonistMultiplierMin, 1, 24, 1);
-            DrawIntStepperCard(listing, "Night maximum multiplier", "Largest nighttime cap, based on your free colonist count.", ref nightColonistMultiplierMax, nightColonistMultiplierMin, 24, 1);
-            DrawIntStepperCard(listing, "Full moon minimum multiplier", "Smallest full moon target, based on your free colonist count.", ref fullMoonColonistMultiplierMin, 1, 30, 1);
-            DrawIntStepperCard(listing, "Full moon maximum multiplier", "Largest full moon target, based on your free colonist count.", ref fullMoonColonistMultiplierMax, fullMoonColonistMultiplierMin, 30, 1);
-            DrawIntStepperCard(listing, "Blood moon minimum multiplier", "Smallest blood moon target, based on your free colonist count.", ref bloodMoonColonistMultiplierMin, 1, 40, 1);
-            DrawIntStepperCard(listing, "Blood moon maximum multiplier", "Largest blood moon target, based on your free colonist count.", ref bloodMoonColonistMultiplierMax, bloodMoonColonistMultiplierMin, 40, 1);
+            if (useColonistScaledPopulation)
+            {
+                DrawIntStepperCard(listing, "Daytime minimum multiplier", "Smallest daytime cap, based on your free colonist count.", ref dayColonistMultiplierMin, 1, 20, 1);
+                DrawIntStepperCard(listing, "Daytime maximum multiplier", "Largest daytime cap, based on your free colonist count.", ref dayColonistMultiplierMax, dayColonistMultiplierMin, 20, 1);
+                DrawIntStepperCard(listing, "Night minimum multiplier", "Smallest nighttime cap, based on your free colonist count.", ref nightColonistMultiplierMin, 1, 24, 1);
+                DrawIntStepperCard(listing, "Night maximum multiplier", "Largest nighttime cap, based on your free colonist count.", ref nightColonistMultiplierMax, nightColonistMultiplierMin, 24, 1);
+                DrawIntStepperCard(listing, "Full moon minimum multiplier", "Smallest full moon target, based on your free colonist count.", ref fullMoonColonistMultiplierMin, 1, 30, 1);
+                DrawIntStepperCard(listing, "Full moon maximum multiplier", "Largest full moon target, based on your free colonist count.", ref fullMoonColonistMultiplierMax, fullMoonColonistMultiplierMin, 30, 1);
+                DrawIntStepperCard(listing, "Blood moon minimum multiplier", "Smallest blood moon target, based on your free colonist count.", ref bloodMoonColonistMultiplierMin, 1, 40, 1);
+                DrawIntStepperCard(listing, "Blood moon maximum multiplier", "Largest blood moon target, based on your free colonist count.", ref bloodMoonColonistMultiplierMax, bloodMoonColonistMultiplierMin, 40, 1);
+            }
+            else
+            {
+                DrawInfoCard(listing, "Colonist scaling is off", "Moon hordes will use the fixed counts below instead of scaling to your colony size.");
+            }
 
             DrawSectionLabel(listing, "Moon events", "Big attacks tied to the moon cycle. Blood moons are rarer and much nastier.");
             DrawToggleCard(listing, "Enable moon events", "Roughly every 30 days, a larger horde can show up. Blood moons send an even bigger one.", ref enableMoonEvents);
-            if (!useColonistScaledPopulation)
+            if (enableMoonEvents)
             {
-                DrawIntStepperCard(listing, "Full moon base horde size", "Base horde size for a full moon when colonist scaling is off.", ref fullMoonBaseCount, 6, 80, 2);
-                DrawIntStepperCard(listing, "Blood moon base horde size", "Base horde size for a blood moon when colonist scaling is off.", ref bloodMoonBaseCount, fullMoonBaseCount, 140, 2);
+                if (!useColonistScaledPopulation)
+                {
+                    DrawIntStepperCard(listing, "Full moon base horde size", "Base horde size for a full moon when colonist scaling is off.", ref fullMoonBaseCount, 6, 80, 2);
+                    DrawIntStepperCard(listing, "Blood moon base horde size", "Base horde size for a blood moon when colonist scaling is off.", ref bloodMoonBaseCount, fullMoonBaseCount, 140, 2);
+                }
+                DrawPercentStepperCard(listing, "Blood moon chance", "Chance for a full moon to turn into a blood moon.", ref bloodMoonChance, 0.01f, 0.50f, 0.01f);
             }
-            DrawPercentStepperCard(listing, "Blood moon chance", "Chance for a full moon to turn into a blood moon.", ref bloodMoonChance, 0.01f, 0.50f, 0.01f);
+            else
+            {
+                DrawInfoCard(listing, "Moon events are off", "Full moon and blood moon attacks will stay out of the normal event rotation until you turn them back on.");
+            }
 
             DrawSectionLabel(listing, "Ground bursts", "These are the surprise eruptions that can pop up inside your base.");
             DrawToggleCard(listing, "Enable ground bursts", "Lets small zombie groups erupt from the ground inside your colony.", ref enableGroundBursts);
-            DrawFloatStepperCard(listing, "Minimum days between bursts", "Shortest possible gap between ground burst events.", ref groundBurstMinDays, 1f, 20f, 0.5f, "days");
-            DrawFloatStepperCard(listing, "Maximum days between bursts", "Longest possible gap between ground burst events.", ref groundBurstMaxDays, groundBurstMinDays, 30f, 0.5f, "days");
-            DrawIntStepperCard(listing, "Ground burst minimum group size", "Smallest group a ground burst can send.", ref groundBurstMinGroupSize, 1, 12, 1);
-            DrawIntStepperCard(listing, "Ground burst maximum group size", "Largest group a ground burst can send.", ref groundBurstMaxGroupSize, groundBurstMinGroupSize, 18, 1);
+            if (enableGroundBursts)
+            {
+                DrawFloatStepperCard(listing, "Minimum days between bursts", "Shortest possible gap between ground burst events.", ref groundBurstMinDays, 1f, 20f, 0.5f, "days");
+                DrawFloatStepperCard(listing, "Maximum days between bursts", "Longest possible gap between ground burst events.", ref groundBurstMaxDays, groundBurstMinDays, 30f, 0.5f, "days");
+                DrawIntStepperCard(listing, "Ground burst minimum group size", "Smallest group a ground burst can send.", ref groundBurstMinGroupSize, 1, 12, 1);
+                DrawIntStepperCard(listing, "Ground burst maximum group size", "Largest group a ground burst can send.", ref groundBurstMaxGroupSize, groundBurstMinGroupSize, 18, 1);
+            }
+            else
+            {
+                DrawInfoCard(listing, "Ground bursts are off", "No buried eruptions will fire until you turn this back on.");
+            }
 
             DrawSectionLabel(listing, "Grave events", "These rare events create a spawning grave that keeps causing trouble until you destroy it.");
             DrawToggleCard(listing, "Enable grave events", "Lets rare grave events appear and keep spawning more bodies.", ref enableGraveEvents);
-            DrawFloatStepperCard(listing, "Minimum days between grave events", "Shortest possible gap between grave events.", ref graveEventMinDays, 3f, 30f, 0.5f, "days");
-            DrawFloatStepperCard(listing, "Maximum days between grave events", "Longest possible gap between grave events.", ref graveEventMaxDays, graveEventMinDays, 40f, 0.5f, "days");
+            if (enableGraveEvents)
+            {
+                DrawFloatStepperCard(listing, "Minimum days between grave events", "Shortest possible gap between grave events.", ref graveEventMinDays, 3f, 30f, 0.5f, "days");
+                DrawFloatStepperCard(listing, "Maximum days between grave events", "Longest possible gap between grave events.", ref graveEventMaxDays, graveEventMinDays, 40f, 0.5f, "days");
+            }
+            else
+            {
+                DrawInfoCard(listing, "Grave events are off", "No spawning graves will appear from the event system while this is disabled.");
+            }
 
             listing.End();
-            eventsViewHeight = Mathf.Max(2200f, listing.CurHeight + 24f);
+            eventsViewHeight = Mathf.Max(2400f, listing.CurHeight + 24f);
             Widgets.EndScrollView();
         }
 
@@ -553,8 +598,8 @@ namespace CustomizableZombieHorde
             BeginScrollableListing(rect, ref variantsScrollPosition, ref variantsViewHeight, out Listing_Standard listing, out Rect viewRect);
 
             DrawInfoCard(listing, "About this tab", "Turn special zombie types on or off, and rename them so the mod better fits your playthrough.");
-            DrawSectionLabel(listing, "Variant roster", "Turn each strain on or off. Disabled strains will stay out of normal waves and grave events.");
-            DrawVariantCard(listing, "Standard Biters", "Your basic zombies. These make up most packs and hordes.", ref allowBiters);
+            DrawSectionLabel(listing, "Main strain roster", "Turn each core strain on or off. Disabled strains will stay out of normal waves and grave events.");
+            DrawVariantCard(listing, "Standard biters", "Your basic zombies. These make up most packs and hordes.", ref allowBiters);
             DrawVariantCard(listing, "Runts", "Small dragging zombies that clog choke points and feel creepy.", ref allowRunts);
             DrawVariantCard(listing, "Boomers", "Bloated zombies that burst with acid and punish tight groups.", ref allowBoomers);
             DrawVariantCard(listing, "Sick", "Infected zombies that spread filth and can pass the sickness to colonists.", ref allowSick);
@@ -564,10 +609,10 @@ namespace CustomizableZombieHorde
 
             if (!allowBiters && !allowRunts && !allowBoomers && !allowSick && !allowDrowned && !allowBrutes && !allowGrabbers)
             {
-                DrawWarningCard(listing, "No strains are enabled. Standard Biters will be used as a safe fallback.");
+                DrawWarningCard(listing, "No strains are enabled. Standard biters will be used as a safe fallback.");
             }
 
-            DrawSectionLabel(listing, "Custom variant names", "These names replace the built in strain names in labels, letters, grave warnings, and other in game text.");
+            DrawSectionLabel(listing, "Main strain names", "These names replace the built in names used in labels, letters, grave warnings, and other in game text.");
             DrawTextEntryCard(listing, "Biter name", "The in game name used for your basic zombie strain.", ref biterName, "Biter");
             DrawTextEntryCard(listing, "Runt name", "The in game name used for the dragging runt strain.", ref runtName, "Runt");
             DrawTextEntryCard(listing, "Boomer name", "The in game name used for the acid bursting strain.", ref boomerName, "Boomer");
@@ -575,7 +620,11 @@ namespace CustomizableZombieHorde
             DrawTextEntryCard(listing, "Drowned name", "The in game name used for the waterlogged strain.", ref drownedName, "Drowned");
             DrawTextEntryCard(listing, "Brute name", "The in game name used for the heavy brute strain.", ref bruteName, "Brute");
             DrawTextEntryCard(listing, "Grabber name", "The in game name used for the grabbing strain.", ref grabberName, "Grabber");
+
+            DrawSectionLabel(listing, "Special labels", "These rename special case zombies that still show up in debug tools, letters, or special reanimation paths.");
             DrawTextEntryCard(listing, "Lurker name", "The in game name used for the passive capturable strain.", ref lurkerName, "Lurker");
+            DrawTextEntryCard(listing, "Bone biter name", "The in game name used for the skeletal biter variant.", ref boneBiterName, "Bone Biter");
+            DrawTextEntryCard(listing, "Pregnant boomer name", "The in game name used for the boomer variant that can burst into runts.", ref pregnantBoomerName, "Pregnant Boomer");
             DrawInfoCard(listing, "Example names", ZombieDefUtility.ExampleNames(zombiePrefix));
 
             DrawSectionLabel(listing, "Recommended setup", "Most players will want every strain enabled. Turn one off only if you do not like what it adds.");
@@ -591,7 +640,7 @@ namespace CustomizableZombieHorde
             }
 
             listing.End();
-            variantsViewHeight = Mathf.Max(1500f, listing.CurHeight + 24f);
+            variantsViewHeight = Mathf.Max(1850f, listing.CurHeight + 24f);
             Widgets.EndScrollView();
         }
 
@@ -599,11 +648,7 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref advancedScrollPosition, ref advancedViewHeight, out Listing_Standard listing, out Rect viewRect);
 
-            DrawInfoCard(listing, "About this tab", "Use this tab for deeper tuning after the basics feel right. It is for balancing pressure, timing, and manual event sizes.");
-            DrawSectionLabel(listing, "Population tuning", "Fine tune the outbreak here if presets are not enough.");
-            DrawDifficultyCard(listing);
-            DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a fresh zombie to become a fast runner.", ref fastZombieChance, 0f, 0.20f, 0.01f);
-            DrawFloatStepperCard(listing, "Reanimation delay", "How long a fresh corpse stays down before it can get back up.", ref resurrectionDelayHours, 0.5f, 24f, 0.5f, "hours");
+            DrawInfoCard(listing, "About this tab", "Use this tab for colony side response, cleanup, and safety. It is where you decide how your people deal with infected pawns and fresh bodies.");
 
             DrawSectionLabel(listing, "Zombie infection", "Controls how long infected pawns have before the infection fully turns them.");
             DrawIntStepperCard(listing, "Days until infection reaches 100%", "How many in game days it takes an untreated zombie infection to fully turn a pawn. It gets worse in daily steps.", ref infectionDaysToTurn, 1, 30, 1);
@@ -614,11 +659,13 @@ namespace CustomizableZombieHorde
             {
                 DrawDoubleTapWorkTypeChecklist(listing);
             }
+            else
+            {
+                DrawInfoCard(listing, "Double tapping is off", "Turn this on if you want selected colony jobs to walk corpse to corpse and keep fresh zombie bodies from rising again.");
+            }
 
-            DrawSectionLabel(listing, "Manual controls and safety", "These settings matter most when you are forcing events, testing balance, or comparing setups.");
-            DrawIntStepperCard(listing, "Manual horde minimum size", "Smallest group size used by manual spawns and forced events.", ref minGroupSize, 1, 60, 1);
-            DrawIntStepperCard(listing, "Manual horde maximum size", "Largest group size used by manual spawns and forced events.", ref maxGroupSize, minGroupSize, 120, 1);
-            DrawToggleCard(listing, "Show map counter", "Shows how many active zombies are on your current home map.", ref showZombieCounter);
+            DrawSectionLabel(listing, "Corpse handling", "Control how fresh zombie corpses are flagged when they hit the ground.");
+            DrawToggleCard(listing, "Allow zombie corpses by default", "Fresh zombie corpses start out allowed so colonists can haul, butcher, or double tap them without manual clicks.", ref autoAllowZombieCorpses);
 
             DrawSectionLabel(listing, "Reset", "Use this if things get messy and you want to go back to a known good setup.");
             if (DrawActionCard(listing, "Reset settings to recommended defaults", "Puts every setting back to the recommended values."))
@@ -627,7 +674,7 @@ namespace CustomizableZombieHorde
             }
 
             listing.End();
-            advancedViewHeight = Mathf.Max(1350f, listing.CurHeight + 24f);
+            advancedViewHeight = Mathf.Max(1450f, listing.CurHeight + 24f);
             Widgets.EndScrollView();
         }
 
@@ -638,6 +685,9 @@ namespace CustomizableZombieHorde
             DrawInfoCard(listing, "About this tab", "Use this tab to force events and test behavior in a live colony. It is meant for testing, not normal play.");
             DrawSectionLabel(listing, "Debug mode", "Use this for testing and screenshots. It is best left off during normal play.");
             DrawToggleCard(listing, "Enable debug controls", "Shows manual buttons for forced waves, moon events, grave events, and test spawns while a colony is loaded.", ref enableDebugControls);
+            DrawSectionLabel(listing, "Debug spawn sizing", "These sizes are only used by manual debug spawns and forced test events.");
+            DrawIntStepperCard(listing, "Debug spawn minimum", "Smallest group size used by manual spawns and forced events.", ref minGroupSize, 1, 60, 1);
+            DrawIntStepperCard(listing, "Debug spawn maximum", "Largest group size used by manual spawns and forced events.", ref maxGroupSize, minGroupSize, 120, 1);
 
             ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
             bool canUseDebug = enableDebugControls && component != null && component.HasUsableDebugMap();
@@ -659,6 +709,12 @@ namespace CustomizableZombieHorde
                 DrawDebugActionButton(listing, component, "Force base push now", "Forced a base push.", "Could not force a base push.");
                 DrawDebugActionButton(listing, component, "Force edge wanderers now", "Forced edge wanderers.", "Could not force edge wanderers.");
                 DrawDebugActionButton(listing, component, "Force ground burst now", "Forced a ground burst.", "Could not force a ground burst.");
+
+                DrawSectionLabel(listing, "Moon buttons", "Use these to force moon hordes right away while you test night pressure.");
+                DrawDebugActionButton(listing, component, "Force full moon horde now", "Forced a full moon horde.", "Could not force a full moon horde.");
+                DrawDebugActionButton(listing, component, "Force blood moon horde now", "Forced a blood moon horde.", "Could not force a blood moon horde.");
+
+                DrawSectionLabel(listing, "Grave buttons", "Use these to test random graves or a specific grave strain.");
                 DrawDebugActionButton(listing, component, "Force random grave event now", "Forced a grave event.", "Could not force a grave event.");
                 DrawDebugActionButton(listing, component, "Force biter grave now", "Forced a biter grave.", "Could not force a biter grave.");
                 DrawDebugActionButton(listing, component, "Force runt grave now", "Forced a runt grave.", "Could not force a runt grave.");
@@ -666,17 +722,23 @@ namespace CustomizableZombieHorde
                 DrawDebugActionButton(listing, component, "Force sick grave now", "Forced a sick grave.", "Could not force a sick grave.");
                 DrawDebugActionButton(listing, component, "Force drowned grave now", "Forced a drowned grave.", "Could not force a drowned grave.");
                 DrawDebugActionButton(listing, component, "Force brute grave now", "Forced a brute grave.", "Could not force a brute grave.");
-                DrawDebugActionButton(listing, component, "Spawn Bone Biter now", "Spawned a Bone Biter.", "Could not spawn a Bone Biter.");
-                DrawDebugActionButton(listing, component, "Spawn runt now", "Spawned a runt.", "Could not spawn a runt.");
-                DrawDebugActionButton(listing, component, "Spawn pregnant boomer now", "Spawned a pregnant boomer.", "Could not spawn a pregnant boomer.");
-                DrawDebugActionButton(listing, component, "Spawn lurker now", "Spawned a lurker.", "Could not spawn a lurker.");
                 DrawDebugActionButton(listing, component, "Force grabber grave now", "Forced a grabber grave.", "Could not force a grabber grave.");
-                DrawDebugActionButton(listing, component, "Force full moon horde now", "Forced a full moon horde.", "Could not force a full moon horde.");
-                DrawDebugActionButton(listing, component, "Force blood moon horde now", "Forced a blood moon horde.", "Could not force a blood moon horde.");
+
+                DrawSectionLabel(listing, "Manual spawn buttons", "Use these to drop in one of each strain for direct testing.");
+                DrawDebugActionButton(listing, component, "Spawn biter now", "Spawned a biter.", "Could not spawn a biter.");
+                DrawDebugActionButton(listing, component, "Spawn Bone Biter now", "Spawned a bone biter.", "Could not spawn a bone biter.");
+                DrawDebugActionButton(listing, component, "Spawn runt now", "Spawned a runt.", "Could not spawn a runt.");
+                DrawDebugActionButton(listing, component, "Spawn boomer now", "Spawned a boomer.", "Could not spawn a boomer.");
+                DrawDebugActionButton(listing, component, "Spawn pregnant boomer now", "Spawned a pregnant boomer.", "Could not spawn a pregnant boomer.");
+                DrawDebugActionButton(listing, component, "Spawn sick now", "Spawned a sick zombie.", "Could not spawn a sick zombie.");
+                DrawDebugActionButton(listing, component, "Spawn drowned now", "Spawned a drowned zombie.", "Could not spawn a drowned zombie.");
+                DrawDebugActionButton(listing, component, "Spawn brute now", "Spawned a brute.", "Could not spawn a brute.");
+                DrawDebugActionButton(listing, component, "Spawn grabber now", "Spawned a grabber.", "Could not spawn a grabber.");
+                DrawDebugActionButton(listing, component, "Spawn lurker now", "Spawned a lurker.", "Could not spawn a lurker.");
             }
 
             listing.End();
-            debugViewHeight = Mathf.Max(1400f, listing.CurHeight + 24f);
+            debugViewHeight = Mathf.Max(2200f, listing.CurHeight + 24f);
             Widgets.EndScrollView();
         }
 
@@ -825,10 +887,10 @@ namespace CustomizableZombieHorde
 
         private void DrawDifficultyCard(Listing_Standard listing)
         {
-            string description = "Global pressure setting for major spawns. Higher levels mean bigger dangerous events.";
+            string description = "Global pressure setting for major spawns. Higher levels mean bigger and meaner outbreaks.";
             float cardHeight = CalculateStepperCardHeight(listing, description);
             Rect row = DrawCard(listing, cardHeight);
-            DrawCardText(row, "Difficulty", description, null, 236f);
+            DrawCardText(row, "Outbreak intensity", description, null, 236f);
             DrawStepperControls(row, ref difficultyLevel, 0, 8, 1, $"Level {difficultyLevel}  |  {DifficultyMultiplier:0.00}x");
         }
 
@@ -947,12 +1009,24 @@ namespace CustomizableZombieHorde
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Drowned);
                 case "Force brute grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Brute);
+                case "Spawn biter now":
+                    return component.DebugSpawnVariant(ZombieVariant.Biter);
                 case "Spawn Bone Biter now":
                     return component.DebugSpawnBoneBiter();
                 case "Spawn runt now":
                     return component.DebugSpawnRunt();
+                case "Spawn boomer now":
+                    return component.DebugSpawnVariant(ZombieVariant.Boomer);
                 case "Spawn pregnant boomer now":
                     return component.DebugSpawnPregnantBoomer();
+                case "Spawn sick now":
+                    return component.DebugSpawnVariant(ZombieVariant.Sick);
+                case "Spawn drowned now":
+                    return component.DebugSpawnVariant(ZombieVariant.Drowned);
+                case "Spawn brute now":
+                    return component.DebugSpawnVariant(ZombieVariant.Brute);
+                case "Spawn grabber now":
+                    return component.DebugSpawnVariant(ZombieVariant.Grabber);
                 case "Force grabber grave now":
                     return component.DebugForceVariantGraveEvent(ZombieVariant.Grabber);
                 case "Spawn lurker now":
@@ -1112,9 +1186,9 @@ namespace CustomizableZombieHorde
             Text.Font = GameFont.Small;
             listing.GapLine();
 
-            listing.Label("Family name");
+            listing.Label("Zombie family name");
             zombiePrefix = listing.TextEntry(zombiePrefix ?? "Zombie");
-            listing.CheckboxLabeled("Show map counter", ref showZombieCounter, "Shows the active zombie count on your current home map.");
+            listing.CheckboxLabeled("Show zombie HUD", ref showZombieCounter, "Shows the active zombie count and danger on your current home map.");
             listing.CheckboxLabeled("Enable edge trickle", ref enableEdgeTrickle, "Lets small zombie groups keep wandering in from the map edge.");
             listing.CheckboxLabeled("Enable moon events", ref enableMoonEvents, "Lets full moon and blood moon attacks happen.");
             listing.CheckboxLabeled("Scale zombie population to colonists", ref useColonistScaledPopulation, "Uses your colonist count to scale day, night, full moon, and blood moon pressure.");
@@ -1141,11 +1215,11 @@ namespace CustomizableZombieHorde
             lurkerName = listing.TextEntry(lurkerName ?? "Lurker");
 
             listing.GapLine();
-            listing.Label($"Difficulty: {difficultyLevel}");
+            listing.Label($"Outbreak intensity: {difficultyLevel}");
             difficultyLevel = (int)listing.Slider(difficultyLevel, 0, 8);
-            listing.Label($"Min group size: {minGroupSize}");
+            listing.Label($"Debug spawn minimum: {minGroupSize}");
             minGroupSize = (int)listing.Slider(minGroupSize, 1, 60);
-            listing.Label($"Max group size: {maxGroupSize}");
+            listing.Label($"Debug spawn maximum: {maxGroupSize}");
             maxGroupSize = (int)listing.Slider(maxGroupSize, 1, 120);
             listing.Label($"Runner strain chance: {fastZombieChance:P0}");
             fastZombieChance = listing.Slider(fastZombieChance, 0f, 0.20f);

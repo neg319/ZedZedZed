@@ -67,7 +67,12 @@ namespace CustomizableZombieHorde
 
             if (ZombieUtility.IsSkeletonBiter(pawn) || ZombieUtility.ShouldSpawnAsSkeletonBiter(pawn))
             {
-                return "Bone Biter";
+                return GetBoneBiterLabel();
+            }
+
+            if (pawn.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_PregnantBoomer) == true)
+            {
+                return GetPregnantBoomerLabel();
             }
 
             return GetDisplayLabelForKind(pawn.kindDef);
@@ -100,6 +105,17 @@ namespace CustomizableZombieHorde
         }
 
 
+        public static string GetBoneBiterLabel()
+        {
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            return CleanVariantName(settings?.boneBiterName, "Bone Biter");
+        }
+
+        public static string GetPregnantBoomerLabel()
+        {
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            return CleanVariantName(settings?.pregnantBoomerName, "Pregnant Boomer");
+        }
 
         public static string GetChildhoodBackstoryDefName(ZombieVariant variant)
         {
@@ -143,8 +159,10 @@ namespace CustomizableZombieHorde
             string clean = CleanPrefix(prefix);
             return string.Join(", ",
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Biter)),
+                BuildDisplayName(clean, GetBoneBiterLabel()),
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Runt)),
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Boomer)),
+                BuildDisplayName(clean, GetPregnantBoomerLabel()),
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Sick)),
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Drowned)),
                 BuildDisplayName(clean, GetVariantLabel(ZombieVariant.Brute)),

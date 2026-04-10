@@ -101,6 +101,40 @@ namespace CustomizableZombieHorde
             return true;
         }
 
+
+        public static bool TryInjectZombieBile(Pawn patient, Pawn doctor = null)
+        {
+            if (patient == null || patient.Dead || patient.RaceProps?.Humanlike != true)
+            {
+                return false;
+            }
+
+            if (ZombieRulesUtility.IsZombie(patient) || ZombieLurkerUtility.IsLurker(patient))
+            {
+                return false;
+            }
+
+            Map map = patient.MapHeld ?? doctor?.MapHeld;
+            PawnKindDef lurkerKind = ZombieKindSelector.GetKindForVariant(ZombieVariant.Lurker, map);
+            if (lurkerKind == null)
+            {
+                return false;
+            }
+
+            ZombieInfectionUtility.RemoveZombieInfection(patient, Current.Game?.GetComponent<ZombieGameComponent>());
+            ZombiePawnFactory.ConvertExistingPawnToZombie(patient, lurkerKind, Faction.OfPlayer, preserveName: true, preserveSkills: true, preserveRelations: true, initialSpawn: false);
+            ZombieLurkerUtility.EnsureColonyLurkerState(patient, emergencyStabilize: true, stopCurrentJobs: true);
+            ZombieUtility.MarkPawnGraphicsDirty(patient);
+
+            if (doctor?.skills != null)
+            {
+                doctor.skills.Learn(SkillDefOf.Medicine, 300f);
+            }
+
+            ZombieFeedbackUtility.SendBileInjectionMessage(patient, doctor);
+            return true;
+        }
+
         public static bool CureZombieSickness(Pawn patient, Pawn doctor = null)
         {
             if (patient?.health?.hediffSet == null)

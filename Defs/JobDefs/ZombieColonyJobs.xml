@@ -6,6 +6,6 @@
     <reportString>double tapping a zombie corpse.</reportString>
     <casualInterruptible>true</casualInterruptible>
     <playerInterruptible>true</playerInterruptible>
-    <checkOverrideOnDamage>true</checkOverrideOnDamage>
+    <checkOverrideOnDamage>Always</checkOverrideOnDamage>
   </JobDef>
 </Defs>

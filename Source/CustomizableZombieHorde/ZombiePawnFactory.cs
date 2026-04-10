@@ -88,16 +88,28 @@ namespace CustomizableZombieHorde
             Map map = corpse?.MapHeld;
             if (sourcePawn == null || map == null || kindDef == null)
             {
+                if (Prefs.DevMode)
+                {
+                    Log.Warning("[Zed Zed Zed] Reanimation aborted because the corpse, source pawn, map, or pawn kind was missing.");
+                }
+
                 return false;
             }
 
             Faction generationFaction = desiredFaction ?? ZombieFactionUtility.GetOrCreateZombieFaction();
             Pawn generatedPawn = null;
+            IntVec3 originalCorpseCell = corpse.PositionHeld;
+            bool corpseWasSpawned = corpse.Spawned;
             try
             {
                 generatedPawn = GenerateZombie(kindDef, generationFaction, initialSpawn: false);
                 if (generatedPawn == null)
                 {
+                    if (Prefs.DevMode)
+                    {
+                        Log.Warning("[Zed Zed Zed] Reanimation failed because a new zombie pawn could not be generated.");
+                    }
+
                     return false;
                 }
 
@@ -107,10 +119,11 @@ namespace CustomizableZombieHorde
                     ZombieLurkerUtility.ClearFaction(generatedPawn);
                 }
 
-                IntVec3 spawnCell = corpse.PositionHeld;
-                if (!spawnCell.IsValid || !spawnCell.InBounds(map))
+                IntVec3 spawnCell = FindBestReanimationCell(originalCorpseCell, map);
+
+                if (corpseWasSpawned && !corpse.Destroyed)
                 {
-                    spawnCell = CellFinder.RandomClosewalkCellNear(map.Center, map, 8);
+                    corpse.Destroy(DestroyMode.Vanish);
                 }
 
                 GenSpawn.Spawn(generatedPawn, spawnCell, map, WipeMode.Vanish);
@@ -139,11 +152,10 @@ namespace CustomizableZombieHorde
                 }
 
                 ZombieUtility.MarkPawnGraphicsDirty(generatedPawn);
-                corpse.Destroy(DestroyMode.Vanish);
                 newPawn = generatedPawn;
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
                 try
                 {
@@ -153,8 +165,39 @@ namespace CustomizableZombieHorde
                 {
                 }
 
+                if (Prefs.DevMode)
+                {
+                    Log.Warning("[Zed Zed Zed] Reanimation spawn failed: " + ex);
+                }
+
                 return false;
             }
+        }
+
+        private static IntVec3 FindBestReanimationCell(IntVec3 preferredCell, Map map)
+        {
+            if (map == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            if (preferredCell.IsValid && preferredCell.InBounds(map) && preferredCell.Standable(map))
+            {
+                return preferredCell;
+            }
+
+            if (preferredCell.IsValid && preferredCell.InBounds(map))
+            {
+                foreach (IntVec3 cell in GenRadial.RadialCellsAround(preferredCell, 2.9f, useCenter: true))
+                {
+                    if (cell.InBounds(map) && cell.Standable(map))
+                    {
+                        return cell;
+                    }
+                }
+            }
+
+            return CellFinder.RandomClosewalkCellNear(preferredCell.IsValid && preferredCell.InBounds(map) ? preferredCell : map.Center, map, 8);
         }
 
         public static void ConvertExistingPawnToZombie(Pawn pawn, PawnKindDef newKind, Faction desiredFaction, bool preserveName, bool preserveSkills, bool preserveRelations, bool initialSpawn)

@@ -126,6 +126,7 @@ namespace CustomizableZombieHorde
             {
                 RefreshCurrentMapCount();
                 ZombieDoubleTapUtility.HandlePrioritizedDoubleTap();
+                EnsureZombieCorpsesAllowed();
             }
 
             if (ticksGame % 900 == 0)
@@ -148,6 +149,19 @@ namespace CustomizableZombieHorde
             HandleGraveEvents(ticksGame);
             HandleActiveBloodMoon(ticksGame);
             HandleMoonCycle();
+        }
+
+        private void EnsureZombieCorpsesAllowed()
+        {
+            if (!ZombieCorpseUtility.ShouldAutoAllowZombieCorpses || Find.Maps == null)
+            {
+                return;
+            }
+
+            foreach (Map map in Find.Maps)
+            {
+                ZombieCorpseUtility.EnsureZombieCorpsesAllowed(map);
+            }
         }
 
         private void ScheduleNextGlobalReanimationCheck(int currentTick)
@@ -394,6 +408,54 @@ namespace CustomizableZombieHorde
             return result;
         }
 
+        public bool DebugSpawnVariant(ZombieVariant variant)
+        {
+            Map map = GetDebugTargetMap();
+            if (map == null)
+            {
+                return false;
+            }
+
+            if (variant == ZombieVariant.Lurker)
+            {
+                return DebugSpawnLurker();
+            }
+
+            PawnKindDef kind = DefDatabase<PawnKindDef>.GetNamedSilentFail(ZombieVariantUtility.GetKindDefName(variant));
+            Faction faction = ZombieFactionUtility.GetOrCreateZombieFaction();
+            if (kind == null || faction == null)
+            {
+                return false;
+            }
+
+            IntVec3 spawnCell;
+            if (!CellFinder.TryFindRandomCellNear(map.Center, map, 12, c => c.Walkable(map) && !c.Fogged(map), out spawnCell))
+            {
+                spawnCell = CellFinder.RandomClosewalkCellNear(map.Center, map, 12);
+            }
+
+            if (!spawnCell.IsValid)
+            {
+                spawnCell = map.Center;
+            }
+
+            Pawn zombie = ZombiePawnFactory.GenerateZombie(kind, faction);
+            if (zombie == null)
+            {
+                return false;
+            }
+
+            GenSpawn.Spawn(zombie, spawnCell, map);
+            RegisterBehavior(zombie, ZombieSpawnEventType.AssaultBase);
+            ZombieUtility.PrepareSpawnedZombie(zombie);
+            ZombieUtility.AssignInitialShambleJob(zombie, ZombieSpawnEventType.AssaultBase);
+            ZombieUtility.EnsureZombieAggression(zombie);
+            string label = ZombieDefUtility.GetDisplayLabelForPawn(zombie).ToLowerInvariant();
+            Messages.Message("A debug " + label + " has been spawned.", zombie, MessageTypeDefOf.NeutralEvent);
+            RefreshCurrentMapCount();
+            return true;
+        }
+
         public bool DebugSpawnLurker()
         {
             Map map = GetDebugTargetMap();
@@ -472,7 +534,7 @@ namespace CustomizableZombieHorde
             ZombieUtility.SetZombieDisplayName(boneBiter);
             ZombieUtility.MarkPawnGraphicsDirty(boneBiter);
             GenSpawn.Spawn(boneBiter, spawnCell, map);
-            Messages.Message("A debug Bone Biter has been spawned.", boneBiter, MessageTypeDefOf.NeutralEvent);
+            Messages.Message("A debug " + ZombieDefUtility.GetBoneBiterLabel().ToLowerInvariant() + " has been spawned.", boneBiter, MessageTypeDefOf.NeutralEvent);
             RefreshCurrentMapCount();
             return true;
         }
@@ -563,7 +625,7 @@ namespace CustomizableZombieHorde
             ZombieUtility.PrepareSpawnedZombie(boomer);
             ZombieUtility.AssignInitialShambleJob(boomer, ZombieSpawnEventType.AssaultBase);
             ZombieUtility.EnsureZombieAggression(boomer);
-            Messages.Message("A debug pregnant boomer has been spawned.", boomer, MessageTypeDefOf.NeutralEvent);
+            Messages.Message("A debug " + ZombieDefUtility.GetPregnantBoomerLabel().ToLowerInvariant() + " has been spawned.", boomer, MessageTypeDefOf.NeutralEvent);
             RefreshCurrentMapCount();
             return true;
         }
