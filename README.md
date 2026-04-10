@@ -69,7 +69,7 @@ This repository is the full source package for the mod, along with a GitHub Acti
 
 ### Settings and testing tools
 
-- **Themed settings menu** with Overview, Events, Variants, Advanced, and Debug tabs.
+- **Themed settings menu** with Overview, Events, Variants, Names, Colony, and Debug tabs.
 - **Pause menu shortcut** so you can open Zed Zed Zed settings directly from the in game menu.
 - **Naming controls** for the family name and every strain name.
 - **Event controls** for trickles, pushes, huddles, bursts, graves, full moons, and blood moons.
@@ -84,7 +84,7 @@ This is the running feature list for the mod. Dates are listed when they can be 
 ### Date not confirmed, but present before 2026-04-07
 
 - The base zombie horde incident was already in place.
-- The settings window already had Overview, Events, Variants, Advanced, and Debug tabs.
+- The settings window already had Overview, Events, Variants, Names, Colony, and Debug tabs.
 - Family naming and per strain naming were already supported.
 - Difficulty tuning for group size, runner chance, resurrection timing, and infection timing was already supported.
 - Event tuning for edge trickles, colony pushes, huddled packs, ground bursts, grave events, full moons, and blood moons was already in place.
@@ -186,7 +186,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 68** of the active development cycle in this build set.
+This source package is currently at **iteration 70** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -236,6 +236,8 @@ Iteration history:
 - Iteration 65: fixed the zombie bile surgery worker compile error by matching the current RimWorld Recipe_Surgery AvailableOnNow return type so GitHub builds can complete again.
 - Iteration 66: fixed the zombie bile surgery worker compile error by matching the current RimWorld Recipe_Surgery AvailableOnNow return type so GitHub builds can complete again.
 - Iteration 67: fixed zombie corpse auto allow compilation by switching the corpse allow logic over to CompForbiddable instead of relying on a missing SetForbidden method on Corpse.
+- Iteration 69: outbreak intensity now directly sets the normal daytime target zombie population, nighttime danger rises to 150 percent of that target, and the settings menu now explains the Danger formula in plain language with a worked example.
+- Iteration 70: naming controls now live together on their own Names tab, the settings order was cleaned up by importance, and the prioritized double tapping job checklist was rebuilt to stay visible and obvious in the Colony tab.
 
 ## Changelog
 

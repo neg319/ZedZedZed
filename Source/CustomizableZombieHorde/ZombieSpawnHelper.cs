@@ -20,8 +20,8 @@ namespace CustomizableZombieHorde
     {
         public static int ApplyDifficultyMultiplier(int baseCount)
         {
-            float multiplier = CustomizableZombieHordeMod.Settings?.DifficultyMultiplier ?? 1f;
-            return baseCount < 1 ? 1 : GenMath.RoundRandom(baseCount * multiplier);
+            float multiplier = CustomizableZombieHordeMod.Settings?.DaytimeTargetMultiplier ?? 4f;
+            return baseCount < 1 ? 1 : GenMath.RoundRandom(baseCount * Mathf.Max(0.25f, multiplier / 4f));
         }
 
         public static int ApplyTimeOfDayMultiplier(Map map, int baseCount)
@@ -92,15 +92,24 @@ namespace CustomizableZombieHorde
             int colonists = map.mapPawns?.FreeColonistsSpawnedCount ?? 0;
             colonists = colonists < 1 ? 1 : colonists;
             ZombiePopulationState resolvedState = ResolvePopulationState(map, populationState);
-            GetMultiplierRange(settings, resolvedState, out int minMultiplier, out int maxMultiplier);
 
-            int currentDay = (Find.TickManager?.TicksGame ?? 0) / GenDate.TicksPerDay;
-            int seed = (map.uniqueID * 397) ^ currentDay ^ (((int)resolvedState + 1) * 92821);
-            System.Random random = new System.Random(seed);
-            int multiplier = random.Next(minMultiplier, maxMultiplier + 1);
-            int cap = colonists * multiplier;
-            int hardCap = colonists * 20;
-            return cap > hardCap ? hardCap : cap;
+            float multiplier = settings.DaytimeTargetMultiplier;
+            switch (resolvedState)
+            {
+                case ZombiePopulationState.Night:
+                    multiplier = settings.NighttimeTargetMultiplier;
+                    break;
+                case ZombiePopulationState.FullMoon:
+                    multiplier = Mathf.Max(settings.NighttimeTargetMultiplier, Mathf.Max(1f, (settings.fullMoonColonistMultiplierMin + settings.fullMoonColonistMultiplierMax) * 0.5f));
+                    break;
+                case ZombiePopulationState.BloodMoon:
+                    multiplier = Mathf.Max(settings.NighttimeTargetMultiplier, Mathf.Max(1f, (settings.bloodMoonColonistMultiplierMin + settings.bloodMoonColonistMultiplierMax) * 0.5f));
+                    break;
+            }
+
+            int cap = Mathf.Max(1, Mathf.RoundToInt(colonists * multiplier));
+            int hardCap = Mathf.Max(colonists, Mathf.RoundToInt(colonists * Mathf.Max(multiplier, settings.NighttimeTargetMultiplier) * 2f));
+            return Mathf.Min(cap, hardCap);
         }
 
         private static int GetLegacyDynamicZombieCap(Map map, ZombiePopulationState populationState)
@@ -133,12 +142,6 @@ namespace CustomizableZombieHorde
             if (populationState != ZombiePopulationState.Auto)
             {
                 return populationState;
-            }
-
-            ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
-            if (component != null && component.IsBloodMoonActive)
-            {
-                return ZombiePopulationState.BloodMoon;
             }
 
             return IsNight(map) ? ZombiePopulationState.Night : ZombiePopulationState.Day;
