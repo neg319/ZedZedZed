@@ -247,7 +247,7 @@ Iteration history:
 
 ## Changelog
 - 2026-04-09: Minor update. Removed stuffed tinting from the rotten leather bed so the placed bed uses its custom texture color instead of being darkened by stuff coloring.
-- 2026-04-09 - Minor update - iteration 76: Reworked zombie corpse reanimation so standard zombie corpses no longer depend on a corpse-side Reanimated marker to get back up. Fresh zombie corpses now schedule their wake on spawn and the global sweep raises any valid zombie corpse unless the head or skull has been ruined.
+- 2026-04-09 - Minor update - iteration 77: Reworked zombie corpse reanimation so standard zombie corpses no longer depend on a corpse-side Reanimated marker to get back up. Fresh zombie corpses now schedule their wake on spawn and the global sweep raises any valid zombie corpse unless the head or skull has been ruined.
 
 This changelog treats a **major update** as something that adds substantial new features, new items, or meaningful gameplay changes. Cleanup, build fixes, wording passes, layout fixes, art alignment work, and small UI improvements are listed as **minor updates**.
 

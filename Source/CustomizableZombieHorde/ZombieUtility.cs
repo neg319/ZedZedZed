@@ -1236,8 +1236,8 @@ namespace CustomizableZombieHorde
                 {
                     if (Current.Game != null)
                     {
-                        var component = Current.Game.GetComponent<ZombieGameComponent>();
-                        if (component != null && component.HasActiveGrabberTongue(pawn))
+                        var gameComponent = Current.Game.GetComponent<ZombieGameComponent>();
+                        if (gameComponent != null && gameComponent.HasActiveGrabberTongue(pawn))
                         {
                             return;
                         }
@@ -1281,8 +1281,8 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            ZombieSpawnEventType behavior = Current.Game?.GetComponent<ZombieGameComponent>()?.GetAssignedBehavior(pawn) ?? ZombieSpawnEventType.AssaultBase;
-            IntVec3 shambleCell = ZombieSpecialUtility.FindBehaviorCell(pawn, behavior);
+            ZombieSpawnEventType fallbackBehavior = Current.Game?.GetComponent<ZombieGameComponent>()?.GetAssignedBehavior(pawn) ?? ZombieSpawnEventType.AssaultBase;
+            IntVec3 shambleCell = ZombieSpecialUtility.FindBehaviorCell(pawn, fallbackBehavior);
             if (!shambleCell.IsValid || shambleCell == pawn.PositionHeld)
             {
                 return;
@@ -1291,7 +1291,7 @@ namespace CustomizableZombieHorde
             try
             {
                 Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, shambleCell);
-                moveJob.expiryInterval = behavior == ZombieSpawnEventType.HuddledPack ? 1500 : 900;
+                moveJob.expiryInterval = fallbackBehavior == ZombieSpawnEventType.HuddledPack ? 1500 : 900;
                 moveJob.checkOverrideOnExpire = true;
                 moveJob.locomotionUrgency = GetZombieUrgency(pawn);
                 pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);

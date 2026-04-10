@@ -873,7 +873,7 @@ namespace CustomizableZombieHorde
             if (workTypes.Count == 0)
             {
                 Rect emptyRect = new Rect(row.x + 12f, descRect.yMax + 10f, row.width - 24f, 24f);
-                GUI.color = SettingsTheme.Warning;
+                GUI.color = SettingsTheme.WarningTint;
                 Widgets.Label(emptyRect, "No work types are loaded right now.");
                 GUI.color = Color.white;
                 TooltipHandler.TipRegion(row, "Selected jobs will treat zombie double tapping as a top cleanup task while the feature is enabled.");
