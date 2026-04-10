@@ -186,7 +186,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 65** of the active development cycle in this build set.
+This source package is currently at **iteration 66** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -234,6 +234,7 @@ Iteration history:
 - Iteration 63: added a settings toggle that makes fresh zombie corpses start out allowed by default so colonists can haul, butcher, or double tap them without manual clicks.
 - Iteration 64: the settings menu was reorganized so the most used controls sit in Overview, colony cleanup tools are grouped together, debug only spawn sizing moved into Debug, moon buttons got their own debug section, and event tabs now hide extra controls when the parent feature is off.
 - Iteration 65: fixed the zombie bile surgery worker compile error by matching the current RimWorld Recipe_Surgery AvailableOnNow return type so GitHub builds can complete again.
+- Iteration 66: fixed zombie corpse auto allow compilation by restoring the missing Verse.AI import so corpse forbidding can be cleared through the proper extension method.
 
 ## Changelog
 
