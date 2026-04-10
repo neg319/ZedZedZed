@@ -186,7 +186,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 67** of the active development cycle in this build set.
+This source package is currently at **iteration 68** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.

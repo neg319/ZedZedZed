@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Verse;
 
 namespace CustomizableZombieHorde
@@ -22,10 +23,29 @@ namespace CustomizableZombieHorde
 
             try
             {
-                CompForbiddable forbiddable = corpse.TryGetComp<CompForbiddable>();
-                if (forbiddable != null)
+                MethodInfo setForbiddenMethod = corpse.GetType().GetMethod("SetForbidden", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new[] { typeof(bool), typeof(bool) }, null);
+                if (setForbiddenMethod != null)
                 {
-                    forbiddable.Forbidden = false;
+                    setForbiddenMethod.Invoke(corpse, new object[] { false, false });
+                    return;
+                }
+
+                if (corpse.AllComps != null)
+                {
+                    foreach (ThingComp comp in corpse.AllComps)
+                    {
+                        if (comp == null || comp.GetType().Name != "CompForbiddable")
+                        {
+                            continue;
+                        }
+
+                        PropertyInfo forbiddenProperty = comp.GetType().GetProperty("Forbidden", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                        if (forbiddenProperty != null && forbiddenProperty.CanWrite)
+                        {
+                            forbiddenProperty.SetValue(comp, false, null);
+                            return;
+                        }
+                    }
                 }
             }
             catch
