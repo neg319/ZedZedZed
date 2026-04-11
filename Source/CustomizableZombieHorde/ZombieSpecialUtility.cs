@@ -721,6 +721,32 @@ namespace CustomizableZombieHorde
                 packCenter = FindInteriorNearEdgeCell(map, pawn.PositionHeld);
             }
 
+            int packEdgeDistance = DistanceToNearestEdge(packCenter, map);
+            IntVec3 deeperCell = IntVec3.Invalid;
+            if (packEdgeDistance < 10)
+            {
+                deeperCell = FindDeeperHuddleCell(pawn, packCenter, minExtraEdgeDistance: 5, minEdgeDistance: 12, maxEdgeDistance: 26, searchRadius: 20f);
+            }
+            else if (packEdgeDistance < 18)
+            {
+                deeperCell = FindDeeperHuddleCell(pawn, packCenter, minExtraEdgeDistance: 4, minEdgeDistance: 18, maxEdgeDistance: 34, searchRadius: 26f);
+            }
+            else if (packEdgeDistance < 26)
+            {
+                deeperCell = FindDeeperHuddleCell(pawn, packCenter, minExtraEdgeDistance: 3, minEdgeDistance: 24, maxEdgeDistance: 42, searchRadius: 30f);
+            }
+
+            if (deeperCell.IsValid)
+            {
+                return deeperCell;
+            }
+
+            IntVec3 threatCell = FindDeepHuddleThreatCell(pawn, packCenter);
+            if (threatCell.IsValid)
+            {
+                return threatCell;
+            }
+
             for (int i = 0; i < 12; i++)
             {
                 IntVec3 candidate = CellFinder.RandomClosewalkCellNear(packCenter, map, 4);
@@ -731,6 +757,88 @@ namespace CustomizableZombieHorde
             }
 
             return FindInteriorNearEdgeCell(map, packCenter);
+        }
+
+        private static IntVec3 FindDeeperHuddleCell(Pawn pawn, IntVec3 anchor, int minExtraEdgeDistance, int minEdgeDistance, int maxEdgeDistance, float searchRadius)
+        {
+            Map map = pawn?.MapHeld;
+            if (map == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            int currentEdgeDistance = DistanceToNearestEdge(anchor, map);
+            int requiredEdgeDistance = Mathf.Max(minEdgeDistance, currentEdgeDistance + minExtraEdgeDistance);
+            List<IntVec3> options = GenRadial.RadialCellsAround(anchor, searchRadius, true)
+                .Where(cell => cell.InBounds(map)
+                    && cell.Standable(map)
+                    && cell != pawn.PositionHeld
+                    && cell.DistanceToSquared(anchor) >= 36f)
+                .Where(cell =>
+                {
+                    int edgeDistance = DistanceToNearestEdge(cell, map);
+                    return edgeDistance >= requiredEdgeDistance && edgeDistance <= maxEdgeDistance;
+                })
+                .OrderBy(cell => cell.x)
+                .ThenBy(cell => cell.z)
+                .ToList();
+
+            if (options.Count == 0)
+            {
+                return IntVec3.Invalid;
+            }
+
+            return PickRollingCellForPawn(pawn, options, 1800);
+        }
+
+        private static IntVec3 FindDeepHuddleThreatCell(Pawn pawn, IntVec3 packCenter)
+        {
+            Map map = pawn?.MapHeld;
+            if (map == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            IntVec3 baseCenter = GetPlayerBaseCenter(map);
+            List<IntVec3> baseOptions = new List<IntVec3>();
+            if (baseCenter.IsValid)
+            {
+                baseOptions = GenRadial.RadialCellsAround(baseCenter, 18f, true)
+                    .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 12)
+                    .OrderBy(cell => cell.x)
+                    .ThenBy(cell => cell.z)
+                    .ToList();
+            }
+
+            if (baseOptions.Count > 0)
+            {
+                return PickRollingCellForPawn(pawn, baseOptions, 2400);
+            }
+
+            List<IntVec3> interiorOptions = GenRadial.RadialCellsAround(map.Center, 28f, true)
+                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 12)
+                .OrderBy(cell => cell.x)
+                .ThenBy(cell => cell.z)
+                .ToList();
+            if (interiorOptions.Count > 0)
+            {
+                return PickRollingCellForPawn(pawn, interiorOptions, 2400);
+            }
+
+            return FindAssaultCell(pawn);
+        }
+
+        private static IntVec3 PickRollingCellForPawn(Pawn pawn, List<IntVec3> options, int ticksPerStep)
+        {
+            if (pawn == null || options == null || options.Count == 0)
+            {
+                return IntVec3.Invalid;
+            }
+
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            int step = ticksPerStep <= 0 ? 0 : ticksGame / ticksPerStep;
+            int index = Mathf.Abs((pawn.thingIDNumber / 7) + step) % options.Count;
+            return options[index];
         }
 
         public static IntVec3 FindEdgePatrolCell(Pawn pawn)

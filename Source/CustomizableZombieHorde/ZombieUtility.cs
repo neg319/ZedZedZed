@@ -59,7 +59,7 @@ namespace CustomizableZombieHorde
 
             if (IsVariant(pawn, ZombieVariant.Biter))
             {
-                return 6f;
+                return 9f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Runt))
@@ -93,6 +93,105 @@ namespace CustomizableZombieHorde
             }
 
             return 1.60f;
+        }
+
+        public static float GetZombieOutgoingDamageMultiplier(Pawn attacker, Pawn victim)
+        {
+            if (!IsZombie(attacker) || victim == null || IsZombie(victim))
+            {
+                return 1f;
+            }
+
+            if (IsVariant(attacker, ZombieVariant.Runt))
+            {
+                return 0.18f;
+            }
+
+            if (IsSkeletonBiter(attacker))
+            {
+                return 0.32f;
+            }
+
+            if (IsVariant(attacker, ZombieVariant.Biter))
+            {
+                return 0.25f;
+            }
+
+            if (IsVariant(attacker, ZombieVariant.Boomer))
+            {
+                return 0.22f;
+            }
+
+            if (IsVariant(attacker, ZombieVariant.Sick))
+            {
+                return 0.25f;
+            }
+
+            if (IsVariant(attacker, ZombieVariant.Drowned))
+            {
+                return 0.30f;
+            }
+
+            if (IsVariant(attacker, ZombieVariant.Grabber))
+            {
+                return 0.20f;
+            }
+
+            if (IsVariant(attacker, ZombieVariant.Brute))
+            {
+                return 0.42f;
+            }
+
+            return 0.35f;
+        }
+
+        public static float GetZombieMeleeMissChance(Pawn attacker, Pawn victim)
+        {
+            if (!IsZombie(attacker) || victim == null || victim.Dead || victim.Downed || IsZombie(victim))
+            {
+                return 0f;
+            }
+
+            float missChance = 0.16f;
+            float dodgeChance = 0f;
+
+            try
+            {
+                dodgeChance = Mathf.Max(0f, victim.GetStatValue(StatDefOf.MeleeDodgeChance, true));
+            }
+            catch
+            {
+            }
+
+            missChance += dodgeChance * 0.60f;
+
+            if (victim.stances?.stunner?.Stunned == true)
+            {
+                missChance -= 0.10f;
+            }
+
+            if (IsVariant(attacker, ZombieVariant.Runt))
+            {
+                missChance += 0.12f;
+            }
+            else if (IsSkeletonBiter(attacker))
+            {
+                missChance += 0.06f;
+            }
+            else if (IsVariant(attacker, ZombieVariant.Biter))
+            {
+                missChance += 0.10f;
+            }
+            else if (IsVariant(attacker, ZombieVariant.Grabber))
+            {
+                missChance += 0.04f;
+            }
+            else if (IsVariant(attacker, ZombieVariant.Brute))
+            {
+                missChance -= 0.08f;
+            }
+
+            return Mathf.Clamp(missChance, 0f, 0.60f);
         }
 
         public static BodyPartRecord GetHeadPart(Pawn pawn)

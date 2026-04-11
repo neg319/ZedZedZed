@@ -72,29 +72,42 @@ namespace CustomizableZombieHorde
                 && pawn.RaceProps?.Humanlike == true
                 && !ZombieUtility.IsZombie(pawn)
                 && !HasSickImmunity(pawn)
-                && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieSickness);
+                && !ZombieInfectionUtility.HasReanimatedState(pawn)
+                && ZombieInfectionUtility.GetZombieInfection(pawn) == null;
         }
 
 
 
         public static bool TryApplyZombieSickness(Pawn pawn, float chance)
         {
+            return TryApplyZombieSickness(pawn, chance, null);
+        }
+
+        public static bool TryApplyZombieSickness(Pawn pawn, float chance, BodyPartRecord part)
+        {
+            if (!CanCatchZombieSickness(pawn))
+            {
+                return false;
+            }
+
             if (HasHardToKill(pawn))
             {
                 chance *= 0.35f;
             }
 
-            if (!CanCatchZombieSickness(pawn) || Rand.Value > chance)
+            if (Rand.Value > chance)
             {
                 return false;
             }
 
             try
             {
-                Hediff hediff = HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieSickness, pawn);
-                hediff.Severity = Mathf.Max(hediff.Severity, 0.20f);
+                Hediff hediff = part != null
+                    ? HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieSickness, pawn, part)
+                    : HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieSickness, pawn);
+                hediff.Severity = Mathf.Max(hediff.Severity, ZombieInfectionUtility.InitialInfectionSeverity);
                 pawn.health.AddHediff(hediff);
-                ZombieFeedbackUtility.SendZombieSicknessMessage(pawn);
+                ZombieFeedbackUtility.SendZombieSicknessMessage(pawn, part);
                 return true;
             }
             catch

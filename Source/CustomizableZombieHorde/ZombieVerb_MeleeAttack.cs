@@ -14,6 +14,19 @@ namespace CustomizableZombieHorde
             }
 
             Pawn casterPawn = CasterPawn;
+            if (casterPawn == null)
+            {
+                return new DamageWorker.DamageResult();
+            }
+
+            if (thing is Pawn victimPawn
+                && ZombieUtility.IsZombie(casterPawn)
+                && !ZombieUtility.IsZombie(victimPawn)
+                && Rand.Value < ZombieUtility.GetZombieMeleeMissChance(casterPawn, victimPawn))
+            {
+                return new DamageWorker.DamageResult();
+            }
+
             float armorPenetration = verbProps.AdjustedArmorPenetration(this, casterPawn);
             float angle = (thing.Position - casterPawn.Position).AngleFlat;
 

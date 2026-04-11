@@ -244,7 +244,42 @@ namespace CustomizableZombieHorde
             return true;
         }
     }
-[HarmonyPatch(typeof(Pawn_EquipmentTracker), nameof(Pawn_EquipmentTracker.AddEquipment))]
+
+    [HarmonyPatch(typeof(PawnRelationWorker_Parent), "CreateRelation")]
+    public static class Patch_PawnRelationWorker_Parent_CreateRelation
+    {
+        private static bool HasUnsafeParticipant(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return false;
+            }
+
+            if (ZombieUtility.IsZombie(pawn))
+            {
+                return true;
+            }
+
+            if (pawn.Name != null && !(pawn.Name is NameTriple))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool Prefix(Pawn generated, Pawn other, ref PawnGenerationRequest request)
+        {
+            if (HasUnsafeParticipant(generated) || HasUnsafeParticipant(other))
+            {
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(Pawn_EquipmentTracker), nameof(Pawn_EquipmentTracker.AddEquipment))]
     public static class Patch_Pawn_EquipmentTracker_AddEquipment
     {
         public static bool Prefix(Pawn_EquipmentTracker __instance, ThingWithComps newEq)
@@ -568,6 +603,16 @@ namespace CustomizableZombieHorde
         }
     }
 
+
+    [HarmonyPatch(typeof(Pawn), nameof(Pawn.MainDesc))]
+    public static class Patch_Pawn_MainDesc_RuntAgeLabel
+    {
+        public static void Postfix(Pawn __instance, ref string __result)
+        {
+            __result = ZombieRuntUtility.ApplyRuntMonthAgeLabelToDescription(__instance, __result);
+        }
+    }
+
     [HarmonyPatch(typeof(Corpse), nameof(Corpse.SpawnSetup))]
     public static class Patch_Corpse_SpawnSetup_RuntButchering
     {
@@ -716,7 +761,7 @@ namespace CustomizableZombieHorde
             }
             else if (!victimIsZombie && attackerIsZombie)
             {
-                float amount = dinfo.Amount * 0.55f;
+                float amount = dinfo.Amount * ZombieUtility.GetZombieOutgoingDamageMultiplier(attacker, victim);
                 if (ZombieTraitUtility.HasHardToKill(victim))
                 {
                     amount *= 0.75f;
@@ -766,6 +811,18 @@ namespace CustomizableZombieHorde
             if (isColonistShot)
             {
                 ZombieSpecialUtility.TriggerBoomerBurst(victim, consumePawn: true);
+            }
+
+            if (!ZombieUtility.IsZombie(victim)
+                && ZombieUtility.IsZombie(attacker)
+                && !victim.Dead
+                && ZombieInfectionUtility.IsZombieBiteDamage(dinfo))
+            {
+                BodyPartRecord infectionPart = ZombieInfectionUtility.ResolveAmputationFriendlyInfectionPart(victim, dinfo.HitPart);
+                if (infectionPart != null)
+                {
+                    ZombieTraitUtility.TryApplyZombieSickness(victim, ZombieInfectionUtility.GetZombieBiteInfectionChance(attacker), infectionPart);
+                }
             }
 
             if (!ZombieUtility.IsZombie(victim)
@@ -1088,6 +1145,189 @@ namespace CustomizableZombieHorde
 
 
 
+    internal static class ZombiePrisonerEnslavementUtility
+    {
+        private static readonly PropertyInfo GuestWillProperty = AccessTools.Property(typeof(Pawn_GuestTracker), "Will");
+        private static readonly MethodInfo GuestWillSetter = GuestWillProperty?.GetSetMethod(true);
+        private static readonly FieldInfo GuestWillField = AccessTools.Field(typeof(Pawn_GuestTracker), "will") ?? AccessTools.Field(typeof(Pawn_GuestTracker), "willInt");
+        private static readonly PropertyInfo GuestInteractionModeProperty = AccessTools.Property(typeof(Pawn_GuestTracker), "interactionMode") ?? AccessTools.Property(typeof(Pawn_GuestTracker), "InteractionMode");
+        private static readonly MethodInfo EnslavePrisonerMethod = typeof(GenGuest).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+            .FirstOrDefault(method => method.Name == "EnslavePrisoner" && method.GetParameters().Length == 1 && method.GetParameters()[0].ParameterType == typeof(Pawn));
+
+        internal static bool IsZombiePrisonerAwaitingEnslavement(Pawn pawn)
+        {
+            if (pawn == null || !ZombieUtility.IsZombie(pawn) || ZombieLurkerUtility.IsLurker(pawn))
+            {
+                return false;
+            }
+
+            try
+            {
+                if (!pawn.IsPrisonerOfColony)
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            object interactionMode = null;
+            try
+            {
+                interactionMode = pawn.guest == null ? null : GuestInteractionModeProperty?.GetValue(pawn.guest, null);
+            }
+            catch
+            {
+            }
+
+            if (interactionMode == null)
+            {
+                try
+                {
+                    interactionMode = pawn.guest?.interactionMode;
+                }
+                catch
+                {
+                }
+            }
+
+            if (interactionMode == null)
+            {
+                return false;
+            }
+
+            Def def = interactionMode as Def;
+            string token = def?.defName ?? def?.label ?? interactionMode.ToString();
+            return !token.NullOrEmpty() && token.IndexOf("enslav", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        internal static bool TryGetGuestWill(Pawn pawn, out float will)
+        {
+            will = 0f;
+            if (pawn?.guest == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                if (GuestWillProperty != null)
+                {
+                    object value = GuestWillProperty.GetValue(pawn.guest, null);
+                    if (value is float floatValue)
+                    {
+                        will = floatValue;
+                        return true;
+                    }
+
+                    if (value is double doubleValue)
+                    {
+                        will = (float)doubleValue;
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (GuestWillField != null)
+                {
+                    object value = GuestWillField.GetValue(pawn.guest);
+                    if (value is float floatValue)
+                    {
+                        will = floatValue;
+                        return true;
+                    }
+
+                    if (value is double doubleValue)
+                    {
+                        will = (float)doubleValue;
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
+        }
+
+        internal static bool TrySetGuestWill(Pawn pawn, float will)
+        {
+            if (pawn?.guest == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                if (GuestWillSetter != null)
+                {
+                    GuestWillSetter.Invoke(pawn.guest, new object[] { will });
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (GuestWillField != null)
+                {
+                    if (GuestWillField.FieldType == typeof(float))
+                    {
+                        GuestWillField.SetValue(pawn.guest, will);
+                    }
+                    else if (GuestWillField.FieldType == typeof(double))
+                    {
+                        GuestWillField.SetValue(pawn.guest, (double)will);
+                    }
+                    else
+                    {
+                        GuestWillField.SetValue(pawn.guest, Convert.ChangeType(will, GuestWillField.FieldType));
+                    }
+
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
+        }
+
+        internal static void TryFinishZombieEnslavement(Pawn pawn)
+        {
+            if (!IsZombiePrisonerAwaitingEnslavement(pawn))
+            {
+                return;
+            }
+
+            if (!TryGetGuestWill(pawn, out float will) || will > 1.0f)
+            {
+                return;
+            }
+
+            TrySetGuestWill(pawn, 0f);
+
+            try
+            {
+                EnslavePrisonerMethod?.Invoke(null, new object[] { pawn });
+            }
+            catch
+            {
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(Pawn_GuestTracker), "get_Recruitable")]
     public static class Patch_PawnGuestTracker_Recruitable
     {
@@ -1104,7 +1344,44 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            if (ZombiePrisonerEnslavementUtility.IsZombiePrisonerAwaitingEnslavement(pawn))
+            {
+                return;
+            }
+
             __result = false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Pawn_GuestTracker), "Will", MethodType.Getter)]
+    public static class Patch_PawnGuestTracker_Will_ZombieEnslaveFloor
+    {
+        public static void Postfix(Pawn_GuestTracker __instance, ref float __result)
+        {
+            if (__instance == null)
+            {
+                return;
+            }
+
+            Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            if (!ZombiePrisonerEnslavementUtility.IsZombiePrisonerAwaitingEnslavement(pawn))
+            {
+                return;
+            }
+
+            if (__result <= 1.0f)
+            {
+                __result = 0f;
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(InteractionWorker_EnslaveAttempt), "Interacted")]
+    public static class Patch_InteractionWorker_EnslaveAttempt_ZombieFinisher
+    {
+        public static void Postfix(Pawn recipient)
+        {
+            ZombiePrisonerEnslavementUtility.TryFinishZombieEnslavement(recipient);
         }
     }
 

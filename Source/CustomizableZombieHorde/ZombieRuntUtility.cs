@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using RimWorld;
 using Verse;
 
@@ -74,6 +75,24 @@ namespace CustomizableZombieHorde
         {
             int months = GetDisplayedMonths(pawn);
             return months > 0 ? months + " Months" : null;
+        }
+
+        public static string ApplyRuntMonthAgeLabelToDescription(Pawn pawn, string description)
+        {
+            if (pawn == null || !ZombieUtility.IsVariant(pawn, ZombieVariant.Runt) || description.NullOrEmpty())
+            {
+                return description;
+            }
+
+            int months = GetDisplayedMonths(pawn);
+            if (months <= 0)
+            {
+                return description;
+            }
+
+            string replacement = months + " months old";
+            string updated = Regex.Replace(description, @"\bage\s+\d+(?:\s*\([^)]*\))?", replacement, RegexOptions.IgnoreCase);
+            return updated;
         }
 
 

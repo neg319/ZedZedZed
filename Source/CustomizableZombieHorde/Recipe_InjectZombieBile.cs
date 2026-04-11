@@ -8,11 +8,6 @@ namespace CustomizableZombieHorde
     {
         public override bool AvailableOnNow(Thing thing, BodyPartRecord part = null)
         {
-            if (!base.AvailableOnNow(thing, part))
-            {
-                return false;
-            }
-
             Pawn patient = thing as Pawn;
             if (patient == null)
             {

@@ -49,6 +49,8 @@ This repository is the full source package for the mod, along with a GitHub Acti
 ### Infection, death, and reanimation
 
 - **Zombie infection** builds over time instead of ending the moment somebody is scratched.
+- **Rare bite infections can localize to a limb**, which means fast amputation can save a pawn before the sickness turns terminal.
+- **Only one active zombie infection can exist on a pawn at a time**, so once a pawn is infected it cannot stack new zombie infection copies on other limbs or body parts.
 - **Visible infection stages** make it easier to tell how bad things are getting.
 - **Bile med kits** can cure zombie infection before it reaches the terminal point.
 - **Zombie bile injection bills** can deliberately turn a living humanlike patient into a colony lurker through the medical bill system.
@@ -186,7 +188,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 81** of the active development cycle in this build set.
+This source package is currently at **iteration 91** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -217,6 +219,11 @@ Iteration history:
 - Iteration 52: zombie resurrection was moved into a global reanimation sweep that runs every random 1 to 3 in game hours and only revives dead pawns or zombies that already carry the Reanimated state.
 - Iteration 53: the map counter HUD was rebuilt again with more vertical room and a fully solid background, and the resurrection call now searches for the same vanilla revive methods more aggressively and only counts success when the corpse actually comes back to life.
 - Iteration 54: reanimation now uses a corpse based global rise system that spawns a fresh zombie after its cooldown instead of trying to wake the dead pawn itself, and the HUD counter got another spacing pass so the lower line finally clears the bottom edge.
+- Iteration 87: captured zombie enslavement was stabilized so will no longer stalls at the last fraction before conversion finishes.
+- Iteration 88: zombie melee output was softened so living pawns stop stacking injuries quite so brutally during swarms.
+- Iteration 89: zombie bite infections were reworked to be rare, limb localized when possible, and curable by fast amputation before terminal.
+- Iteration 90: zombie infection is now hard limited to one active instance per pawn, and any duplicate infection entries are collapsed back into a single strongest infection.
+- Iteration 91: parent child relation generation now skips zombies and other unsafe non family style names so visitor and neutral pawn generation no longer crashes on invalid casts.
 - Iteration 55: passive lurker reanimation, colony lurker relationship carryover, boomer reanimation exclusion, and stale corpse wake cleanup were corrected so the corpse rise system stops fighting those edge cases.
 - Iteration 56: all active code paths that used the old zombie passive trait were unified onto dead scent, while the old trait def was kept only as a legacy save compatibility alias.
 - Iteration 57: the settings menu headers got more breathing room so section titles and subtext sit cleaner with less clipping and overlap.
@@ -245,8 +252,12 @@ Iteration history:
 - Iteration 71: hardened the prioritized double tapping work type list so it falls back to vanilla work type defs more safely instead of showing an empty state.
 - Iteration 72: changed prioritized double tapping to list every loaded work type in settings so the player can choose any job that should break away and finish fresh zombie corpses.
 - Iteration 80: fixed the zombie bile surgery def for RimWorld 1.6 compatibility, hardened bone biter feeding against live pawn list changes, and sanitized zombie corpse visuals so bad head or tattoo data stops throwing render errors.
+- Iteration 86: huddled packs now stop camping the edge forever, push deeper into the map in stages, and begin targeting interior map points so ignored huddles can turn into a real threat.
+- Iteration 89: zombie bites can now cause rare limb based infections instead of only generic full body sickness, so fast amputation of the infected arm or leg can save a pawn before the infection turns terminal.
 
 ## Changelog
+- 2026-04-10 - Minor update - iteration 89: zombie bites now only rarely spread infection, and when they do the infection is attached to the bitten limb so quick amputation can remove it before the sickness becomes terminal.
+- 2026-04-10 - Minor update - iteration 86: Reworked huddled pack pathing so they stop lingering forever at the map edge, steadily pick deeper interior rally points, and eventually aim for meaningful interior map space instead of milling around the same border strip.
 - 2026-04-10 - Minor update - iteration 80: Fixed the zombie bile surgery def to stop the missing MedicalSleepingSpot and PotentialBillGiver errors, switched bone biter feeding to a safe snapshot so it no longer crashes on collection changes, and sanitized zombie corpse visual data so bad head or tattoo state stops throwing corpse render errors.
 - 2026-04-09: Minor update. Removed stuffed tinting from the rotten leather bed so the placed bed uses its custom texture color instead of being darkened by stuff coloring.
 - 2026-04-09 - Minor update - iteration 77: Reworked zombie corpse reanimation so standard zombie corpses no longer depend on a corpse-side Reanimated marker to get back up. Fresh zombie corpses now schedule their wake on spawn and the global sweep raises any valid zombie corpse unless the head or skull has been ruined.
@@ -406,3 +417,10 @@ This changelog treats a **major update** as something that adds substantial new 
 - Reduced blood moon command spam so zombies stop constantly having their jobs reset, which should make blood moon movement much smoother.
 - Iteration 81: herd crossings were added as a major map crossing event with a debug button, event timing controls, and automatic sizing at 10 times colonists with a floor of 50 and a cap of 75.
 - Iteration 82: standard biters now take about 50 percent more incoming damage than before, so the basic horde body drops faster under focused fire while bone biters and the heavier specials keep their own tougher profiles.
+
+- Iteration 83: runt age display was cleaned up so runts stop showing a separate year age and duplicate month line, and now describe themselves with a single 7 to 9 months old label instead.
+- Iteration 84: mottled hide floor was rescaled so the visible pattern reads at half its former size in game, and standard biters were softened again by increasing their incoming damage multiplier from 6.0 to 9.0.
+- Iteration 85: restored the zombie bile operation to the pawn Operations add bill list by giving it a valid 1.6 surgery bed user list again, removed the dead MedicalSleepingSpot reference, and renamed the operation label so it now shows up plainly as administer zombie bile.
+- Iteration 87: zombie prisoners being set to enslave now get a slavery specific handoff so their will can finish dropping below the old 0.9 to 1.0 stall point, letting wardens complete enslavement instead of leaving them stuck as permanent prisoners.
+
+- Iteration 88: zombie melee against living pawns was softened across the board by adding per variant outgoing damage tuning and a real shambler miss chance, so colonists should stop stacking up absurd walls of cuts and cracks quite so fast when the horde gets into melee.

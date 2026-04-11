@@ -20,7 +20,48 @@ namespace CustomizableZombieHorde
 
         public static Hediff GetZombieInfection(Pawn pawn)
         {
-            return pawn?.health?.hediffSet?.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieSickness);
+            if (pawn?.health?.hediffSet?.hediffs == null)
+            {
+                return null;
+            }
+
+            var infections = pawn.health.hediffSet.hediffs
+                .Where(hediff => hediff?.def == ZombieDefOf.CZH_ZombieSickness)
+                .ToList();
+
+            if (infections.Count == 0)
+            {
+                return null;
+            }
+
+            Hediff primary = infections
+                .OrderByDescending(hediff => hediff.Severity)
+                .ThenByDescending(hediff => hediff.Part != null ? 1 : 0)
+                .First();
+
+            if (infections.Count > 1)
+            {
+                float strongestSeverity = infections.Max(hediff => hediff.Severity);
+                primary.Severity = Mathf.Clamp(Mathf.Max(primary.Severity, strongestSeverity), InitialInfectionSeverity, 1f);
+
+                foreach (Hediff extra in infections)
+                {
+                    if (extra == null || extra == primary)
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        pawn.health.RemoveHediff(extra);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            return primary;
         }
 
         public static bool HasReanimatedState(Pawn pawn)
@@ -316,15 +357,19 @@ namespace CustomizableZombieHorde
 
         public static void RemoveZombieInfection(Pawn pawn, ZombieGameComponent component = null)
         {
-            Hediff infection = GetZombieInfection(pawn);
-            if (infection != null)
+            if (pawn?.health?.hediffSet?.hediffs != null)
             {
-                try
+                foreach (Hediff infection in pawn.health.hediffSet.hediffs
+                    .Where(hediff => hediff?.def == ZombieDefOf.CZH_ZombieSickness)
+                    .ToList())
                 {
-                    pawn.health.RemoveHediff(infection);
-                }
-                catch
-                {
+                    try
+                    {
+                        pawn.health.RemoveHediff(infection);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
 
@@ -333,6 +378,11 @@ namespace CustomizableZombieHorde
         }
 
         public static Hediff EnsureZombieInfection(Pawn pawn, float severity)
+        {
+            return EnsureZombieInfection(pawn, severity, null);
+        }
+
+        public static Hediff EnsureZombieInfection(Pawn pawn, float severity, BodyPartRecord part)
         {
             if (pawn?.health == null)
             {
@@ -344,7 +394,9 @@ namespace CustomizableZombieHorde
             {
                 try
                 {
-                    infection = HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieSickness, pawn);
+                    infection = part != null
+                        ? HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieSickness, pawn, part)
+                        : HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieSickness, pawn);
                     pawn.health.AddHediff(infection);
                 }
                 catch
@@ -355,6 +407,108 @@ namespace CustomizableZombieHorde
 
             infection.Severity = Mathf.Clamp(severity, InitialInfectionSeverity, 1f);
             return infection;
+        }
+
+
+        public static bool IsZombieBiteDamage(DamageInfo dinfo)
+        {
+            DamageDef damageDef = dinfo.Def;
+            if (damageDef == null)
+            {
+                return false;
+            }
+
+            if (damageDef == DamageDefOf.Bite)
+            {
+                return true;
+            }
+
+            string defName = damageDef.defName ?? string.Empty;
+            return string.Equals(defName, "Bite", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static float GetZombieBiteInfectionChance(Pawn attacker)
+        {
+            if (attacker == null || !ZombieUtility.IsZombie(attacker))
+            {
+                return 0f;
+            }
+
+            if (ZombieUtility.IsVariant(attacker, ZombieVariant.Sick))
+            {
+                return 0.05f;
+            }
+
+            if (ZombieUtility.IsVariant(attacker, ZombieVariant.Brute) || ZombieUtility.IsVariant(attacker, ZombieVariant.Drowned))
+            {
+                return 0.035f;
+            }
+
+            if (ZombieUtility.IsVariant(attacker, ZombieVariant.Biter) || ZombieUtility.IsVariant(attacker, ZombieVariant.Boomer))
+            {
+                return 0.02f;
+            }
+
+            if (ZombieUtility.IsVariant(attacker, ZombieVariant.Runt) || ZombieUtility.IsVariant(attacker, ZombieVariant.Grabber))
+            {
+                return 0.015f;
+            }
+
+            return 0.02f;
+        }
+
+        public static BodyPartRecord ResolveAmputationFriendlyInfectionPart(Pawn pawn, BodyPartRecord hitPart)
+        {
+            if (pawn?.health?.hediffSet == null)
+            {
+                return null;
+            }
+
+            BodyPartRecord bestPart = null;
+            int bestScore = 0;
+
+            for (BodyPartRecord current = hitPart; current != null; current = current.parent)
+            {
+                int score = GetAmputationFriendlyPartScore(current);
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestPart = current;
+                }
+            }
+
+            return bestScore > 0 ? bestPart : null;
+        }
+
+        private static int GetAmputationFriendlyPartScore(BodyPartRecord part)
+        {
+            if (part?.def == null)
+            {
+                return 0;
+            }
+
+            string name = ((part.def.defName ?? string.Empty) + " " + (part.Label ?? string.Empty)).ToLowerInvariant();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return 0;
+            }
+
+            if (name.Contains("arm") || name.Contains("leg") || name.Contains("hand") || name.Contains("foot"))
+            {
+                return 5;
+            }
+
+            if (name.Contains("shoulder") || name.Contains("clavicle") || name.Contains("femur") || name.Contains("tibia") || name.Contains("fibula") || name.Contains("humerus") || name.Contains("radius") || name.Contains("ulna"))
+            {
+                return 4;
+            }
+
+            if (name.Contains("finger") || name.Contains("thumb") || name.Contains("toe"))
+            {
+                return 2;
+            }
+
+            return 0;
         }
 
         public static float GetInfectionCompletion(Hediff infection)

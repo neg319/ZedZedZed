@@ -46,14 +46,21 @@ namespace CustomizableZombieHorde
             Messages.Message(doctorName + " injects zombie bile into " + patient.LabelShortCap + ". They survive the procedure and become a colony lurker.", patient, MessageTypeDefOf.NeutralEvent);
         }
 
-        public static void SendZombieSicknessMessage(Pawn pawn)
+        public static void SendZombieSicknessMessage(Pawn pawn, BodyPartRecord part = null)
         {
             if (pawn == null)
             {
                 return;
             }
 
-            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness. It worsens over time, becomes terminal at 90%, kills the pawn, then continues through the corpse until it reaches 100% and rises unless the skull is destroyed.", pawn, MessageTypeDefOf.NegativeHealthEvent);
+            string locationText = part != null
+                ? " in the " + (part.Label ?? part.def?.label ?? "limb")
+                : string.Empty;
+            string cureText = part != null
+                ? " If that limb is amputated before the infection turns terminal, the infection can be removed with it."
+                : string.Empty;
+
+            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness" + locationText + ". It worsens over time, becomes terminal at 90%, kills the pawn, then continues through the corpse until it reaches 100% and rises unless the skull is destroyed." + cureText, pawn, MessageTypeDefOf.NegativeHealthEvent);
         }
 
 
@@ -132,14 +139,6 @@ namespace CustomizableZombieHorde
                 lines.Add("Tamed lurker. Other undead should ignore this colony member.");
             }
 
-            if (ZombieUtility.IsVariant(pawn, ZombieVariant.Runt))
-            {
-                string ageLabel = ZombieRuntUtility.GetDisplayedAgeLabel(pawn);
-                if (!ageLabel.NullOrEmpty())
-                {
-                    lines.Add("Age: " + ageLabel);
-                }
-            }
 
             if (ZombieInfectionUtility.HasReanimatedState(pawn))
             {
@@ -149,7 +148,9 @@ namespace CustomizableZombieHorde
             {
                 if (ZombieBileUtility.NeedsBileTreatment(pawn))
                 {
-                    lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It worsens over time and can be cured with a bile med kit before it reaches terminal at 90%.");
+                    Hediff localizedInfection = ZombieInfectionUtility.GetZombieInfection(pawn);
+                    string localizedPartText = localizedInfection?.Part != null ? " If the infected limb is removed before terminal, that also cures it." : string.Empty;
+                    lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It worsens over time and can be cured with a bile med kit before it reaches terminal at 90%." + localizedPartText);
                 }
                 else if (ZombieInfectionUtility.IsTerminal(pawn))
                 {
