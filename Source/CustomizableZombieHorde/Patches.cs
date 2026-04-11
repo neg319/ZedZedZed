@@ -1150,7 +1150,12 @@ namespace CustomizableZombieHorde
         private static readonly PropertyInfo GuestWillProperty = AccessTools.Property(typeof(Pawn_GuestTracker), "Will");
         private static readonly MethodInfo GuestWillSetter = GuestWillProperty?.GetSetMethod(true);
         private static readonly FieldInfo GuestWillField = AccessTools.Field(typeof(Pawn_GuestTracker), "will") ?? AccessTools.Field(typeof(Pawn_GuestTracker), "willInt");
-        private static readonly PropertyInfo GuestInteractionModeProperty = AccessTools.Property(typeof(Pawn_GuestTracker), "interactionMode") ?? AccessTools.Property(typeof(Pawn_GuestTracker), "InteractionMode");
+        private static readonly PropertyInfo GuestInteractionModeProperty = AccessTools.Property(typeof(Pawn_GuestTracker), "interactionMode")
+            ?? AccessTools.Property(typeof(Pawn_GuestTracker), "InteractionMode");
+        private static readonly FieldInfo GuestInteractionModeField = AccessTools.Field(typeof(Pawn_GuestTracker), "interactionMode")
+            ?? AccessTools.Field(typeof(Pawn_GuestTracker), "interactionModeInt")
+            ?? AccessTools.Field(typeof(Pawn_GuestTracker), "slaveInteractionMode")
+            ?? AccessTools.Field(typeof(Pawn_GuestTracker), "slaveInteractionModeInt");
         private static readonly MethodInfo EnslavePrisonerMethod = typeof(GenGuest).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
             .FirstOrDefault(method => method.Name == "EnslavePrisoner" && method.GetParameters().Length == 1 && method.GetParameters()[0].ParameterType == typeof(Pawn));
 
@@ -1186,7 +1191,69 @@ namespace CustomizableZombieHorde
             {
                 try
                 {
-                    interactionMode = pawn.guest?.interactionMode;
+                    interactionMode = GuestInteractionModeField?.GetValue(pawn.guest);
+                }
+                catch
+                {
+                }
+            }
+
+            if (interactionMode == null && pawn.guest != null)
+            {
+                try
+                {
+                    foreach (FieldInfo field in typeof(Pawn_GuestTracker).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+                    {
+                        if (field == null || field.FieldType == null)
+                        {
+                            continue;
+                        }
+
+                        string fieldName = field.Name ?? string.Empty;
+                        string typeName = field.FieldType.Name ?? string.Empty;
+                        if (fieldName.IndexOf("interaction", StringComparison.OrdinalIgnoreCase) < 0 && typeName.IndexOf("InteractionMode", StringComparison.OrdinalIgnoreCase) < 0)
+                        {
+                            continue;
+                        }
+
+                        object value = field.GetValue(pawn.guest);
+                        if (value != null)
+                        {
+                            interactionMode = value;
+                            break;
+                        }
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            if (interactionMode == null && pawn.guest != null)
+            {
+                try
+                {
+                    foreach (PropertyInfo property in typeof(Pawn_GuestTracker).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+                    {
+                        if (property == null || !property.CanRead || property.GetIndexParameters().Length != 0)
+                        {
+                            continue;
+                        }
+
+                        string propertyName = property.Name ?? string.Empty;
+                        string typeName = property.PropertyType?.Name ?? string.Empty;
+                        if (propertyName.IndexOf("interaction", StringComparison.OrdinalIgnoreCase) < 0 && typeName.IndexOf("InteractionMode", StringComparison.OrdinalIgnoreCase) < 0)
+                        {
+                            continue;
+                        }
+
+                        object value = property.GetValue(pawn.guest, null);
+                        if (value != null)
+                        {
+                            interactionMode = value;
+                            break;
+                        }
+                    }
                 }
                 catch
                 {

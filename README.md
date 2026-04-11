@@ -188,7 +188,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 91** of the active development cycle in this build set.
+This source package is currently at **iteration 92** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -224,6 +224,7 @@ Iteration history:
 - Iteration 89: zombie bite infections were reworked to be rare, limb localized when possible, and curable by fast amputation before terminal.
 - Iteration 90: zombie infection is now hard limited to one active instance per pawn, and any duplicate infection entries are collapsed back into a single strongest infection.
 - Iteration 91: parent child relation generation now skips zombies and other unsafe non family style names so visitor and neutral pawn generation no longer crashes on invalid casts.
+- Iteration 92: removed the hard coded prisoner interactionMode access that broke the 1.6 GitHub build, and replaced it with reflection based interaction mode lookup so zombie enslavement stays compatible with the current guest tracker API.
 - Iteration 55: passive lurker reanimation, colony lurker relationship carryover, boomer reanimation exclusion, and stale corpse wake cleanup were corrected so the corpse rise system stops fighting those edge cases.
 - Iteration 56: all active code paths that used the old zombie passive trait were unified onto dead scent, while the old trait def was kept only as a legacy save compatibility alias.
 - Iteration 57: the settings menu headers got more breathing room so section titles and subtext sit cleaner with less clipping and overlap.
