@@ -982,6 +982,66 @@ namespace CustomizableZombieHorde
 
     public static partial class Patch_FloatMenuMakerMap_ChoicesAtFor
     {
+        private static void AddOptionIfMissing(List<FloatMenuOption> opts, string label, Action action)
+        {
+            if (opts == null || label.NullOrEmpty())
+            {
+                return;
+            }
+
+            if (opts.Any(existing => existing != null && string.Equals(existing.Label, label, StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
+
+            opts.Add(new FloatMenuOption(label, action));
+        }
+
+        private static void AddManualDoubleTapOrders(Pawn pawn, List<FloatMenuOption> opts, List<Pawn> pawnsAtCell, List<Corpse> corpsesAtCell)
+        {
+            foreach (Pawn targetPawn in pawnsAtCell.Where(ZombieDoubleTapUtility.CanDoubleTapPawn))
+            {
+                string label = "Double Tap " + targetPawn.LabelShortCap;
+                if (!pawn.CanReach(targetPawn, Verse.AI.PathEndMode.Touch, Danger.Deadly))
+                {
+                    AddOptionIfMissing(opts, label + ": no path", null);
+                    continue;
+                }
+
+                if (!pawn.CanReserve(targetPawn))
+                {
+                    AddOptionIfMissing(opts, label + ": reserved", null);
+                    continue;
+                }
+
+                AddOptionIfMissing(opts, label, delegate
+                {
+                    ZombieDoubleTapUtility.TryStartManualDoubleTap(pawn, targetPawn);
+                });
+            }
+
+            foreach (Corpse corpse in corpsesAtCell.Where(ZombieDoubleTapUtility.CanDoubleTapCorpse))
+            {
+                string label = "Double Tap " + corpse.LabelShortCap;
+                if (!pawn.CanReach(corpse, Verse.AI.PathEndMode.Touch, Danger.Deadly))
+                {
+                    AddOptionIfMissing(opts, label + ": no path", null);
+                    continue;
+                }
+
+                if (!pawn.CanReserve(corpse))
+                {
+                    AddOptionIfMissing(opts, label + ": reserved", null);
+                    continue;
+                }
+
+                AddOptionIfMissing(opts, label, delegate
+                {
+                    ZombieDoubleTapUtility.TryStartManualDoubleTap(pawn, corpse);
+                });
+            }
+        }
+
         public static void AddCustomHumanlikeOrders(IntVec3 cell, Pawn pawn, List<FloatMenuOption> opts)
         {
             if (!cell.InBounds(pawn.Map))
@@ -989,7 +1049,12 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            List<Pawn> pawnsAtCell = cell.GetThingList(pawn.Map).OfType<Pawn>().ToList();
+            List<Thing> thingsAtCell = cell.GetThingList(pawn.Map);
+            List<Pawn> pawnsAtCell = thingsAtCell.OfType<Pawn>().ToList();
+            List<Corpse> corpsesAtCell = thingsAtCell.OfType<Corpse>().ToList();
+
+            AddManualDoubleTapOrders(pawn, opts, pawnsAtCell, corpsesAtCell);
+
             if (pawnsAtCell.Count == 0)
             {
                 return;
@@ -1097,6 +1162,125 @@ namespace CustomizableZombieHorde
     }
 
 
+
+    [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetGizmos))]
+    public static class Patch_Pawn_GetGizmos_DoubleTapCommand
+    {
+        public static void Postfix(Pawn __instance, ref IEnumerable<Gizmo> __result)
+        {
+            __result = AppendDoubleTapGizmo(__result, __instance);
+        }
+
+        private static IEnumerable<Gizmo> AppendDoubleTapGizmo(IEnumerable<Gizmo> values, Pawn pawn)
+        {
+            if (values != null)
+            {
+                foreach (Gizmo gizmo in values)
+                {
+                    yield return gizmo;
+                }
+            }
+
+            if (pawn == null || !pawn.IsColonistPlayerControlled || pawn.Dead || pawn.Destroyed || !pawn.Spawned)
+            {
+                yield break;
+            }
+
+            Command_Action command = new Command_Action
+            {
+                defaultLabel = "Double Tap",
+                defaultDesc = "Select a downed colonist, zombie, or dangerous corpse to finish it with a head shot.",
+                action = delegate
+                {
+                    ManualDoubleTapGizmoUtility.BeginDoubleTapTargeting(pawn);
+                }
+            };
+
+            yield return command;
+        }
+    }
+
+    internal static class ManualDoubleTapGizmoUtility
+    {
+        internal static void BeginDoubleTapTargeting(Pawn actor)
+        {
+            if (actor == null || actor.MapHeld == null)
+            {
+                return;
+            }
+
+            TargetingParameters parameters = new TargetingParameters
+            {
+                canTargetPawns = true,
+                canTargetItems = true,
+                canTargetBuildings = false,
+                canTargetLocations = false,
+                validator = target => ZombieDoubleTapUtility.CanDoubleTapThing(target.Thing)
+            };
+
+            Action<LocalTargetInfo> action = delegate(LocalTargetInfo target)
+            {
+                ZombieDoubleTapUtility.TryStartManualDoubleTap(actor, target.Thing);
+            };
+
+            object targeter = Find.Targeter;
+            if (targeter == null)
+            {
+                return;
+            }
+
+            MethodInfo method = targeter.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(candidate => candidate.Name == "BeginTargeting")
+                .OrderBy(candidate => candidate.GetParameters().Length)
+                .FirstOrDefault(candidate =>
+                {
+                    ParameterInfo[] parametersInfo = candidate.GetParameters();
+                    return parametersInfo.Length >= 2
+                        && parametersInfo[0].ParameterType == typeof(TargetingParameters)
+                        && parametersInfo[1].ParameterType.IsAssignableFrom(typeof(Action<LocalTargetInfo>));
+                });
+
+            if (method == null)
+            {
+                return;
+            }
+
+            ParameterInfo[] callParameters = method.GetParameters();
+            object[] args = new object[callParameters.Length];
+            args[0] = parameters;
+            args[1] = action;
+
+            for (int i = 2; i < callParameters.Length; i++)
+            {
+                Type parameterType = callParameters[i].ParameterType;
+
+                if (parameterType == typeof(Pawn))
+                {
+                    args[i] = actor;
+                }
+                else if (parameterType == typeof(bool))
+                {
+                    args[i] = false;
+                }
+                else if (parameterType.IsValueType)
+                {
+                    args[i] = Activator.CreateInstance(parameterType);
+                }
+                else
+                {
+                    args[i] = null;
+                }
+            }
+
+            try
+            {
+                method.Invoke(targeter, args);
+            }
+            catch
+            {
+            }
+        }
+    }
 
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetInspectString))]
     public static class Patch_Pawn_GetInspectString
@@ -1417,29 +1601,6 @@ namespace CustomizableZombieHorde
             }
 
             __result = false;
-        }
-    }
-
-    [HarmonyPatch(typeof(Pawn_GuestTracker), "Will", MethodType.Getter)]
-    public static class Patch_PawnGuestTracker_Will_ZombieEnslaveFloor
-    {
-        public static void Postfix(Pawn_GuestTracker __instance, ref float __result)
-        {
-            if (__instance == null)
-            {
-                return;
-            }
-
-            Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
-            if (!ZombiePrisonerEnslavementUtility.IsZombiePrisonerAwaitingEnslavement(pawn))
-            {
-                return;
-            }
-
-            if (__result <= 1.0f)
-            {
-                __result = 0f;
-            }
         }
     }
 

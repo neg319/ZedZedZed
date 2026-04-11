@@ -178,7 +178,7 @@ namespace CustomizableZombieHorde
 
         private void ScheduleNextGlobalReanimationCheck(int currentTick)
         {
-            nextGlobalReanimationCheckTick = currentTick + Rand.RangeInclusive(GenDate.TicksPerHour, GenDate.TicksPerHour * 3);
+            nextGlobalReanimationCheckTick = currentTick + 300;
         }
 
         public bool TryGetNextGlobalReanimationCheckTick(out int wakeTick)
@@ -1528,6 +1528,13 @@ namespace CustomizableZombieHorde
                         continue;
                     }
 
+                    if (ZombieUtility.IsPlayerAlignedZombie(pawn))
+                    {
+                        ZombieUtility.EnsureFriendlyZombieState(pawn);
+                        ZombieUtility.RefreshDrownedState(pawn);
+                        continue;
+                    }
+
                     ZombieUtility.StripAllUsableItems(pawn);
                     ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: false);
                     ZombieUtility.NormalizeZombieCosmeticDamage(pawn);
@@ -1880,7 +1887,7 @@ namespace CustomizableZombieHorde
 
             if (pendingDeadInfectionSeverityByPawnId != null)
             {
-                List<int> stalePendingIds = pendingDeadInfectionSeverityByPawnId.Keys.Where(id => seenPendingPawnIds.Contains(id)).ToList();
+                List<int> stalePendingIds = pendingDeadInfectionSeverityByPawnId.Keys.Where(id => !seenPendingPawnIds.Contains(id)).ToList();
                 foreach (int staleId in stalePendingIds)
                 {
                     pendingDeadInfectionSeverityByPawnId.Remove(staleId);

@@ -97,6 +97,11 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
+            if (TryReanimateExistingPawnFromCorpse(corpse, kindDef, desiredFaction, preserveName, preserveSkills, preserveRelations, out newPawn))
+            {
+                return true;
+            }
+
             Faction generationFaction = desiredFaction ?? ZombieFactionUtility.GetOrCreateZombieFaction();
             Pawn generatedPawn = null;
             IntVec3 originalCorpseCell = corpse.PositionHeld;
@@ -169,6 +174,80 @@ namespace CustomizableZombieHorde
                 if (Prefs.DevMode)
                 {
                     Log.Warning("[Zed Zed Zed] Reanimation spawn failed: " + ex);
+                }
+
+                return false;
+            }
+        }
+
+        private static bool TryReanimateExistingPawnFromCorpse(Corpse corpse, PawnKindDef kindDef, Faction desiredFaction, bool preserveName, bool preserveSkills, bool preserveRelations, out Pawn reanimatedPawn)
+        {
+            reanimatedPawn = null;
+            Pawn sourcePawn = corpse?.InnerPawn;
+            Map map = corpse?.MapHeld;
+            if (sourcePawn == null || map == null || kindDef == null)
+            {
+                return false;
+            }
+
+            Name originalName = sourcePawn.Name;
+            IntVec3 spawnCell = FindBestReanimationCell(corpse.PositionHeld, map);
+            try
+            {
+                if (!ZombieUtility.TryResurrectZombie(sourcePawn) || sourcePawn.Dead)
+                {
+                    return false;
+                }
+
+                if (!sourcePawn.Spawned)
+                {
+                    if (corpse.Spawned && !corpse.Destroyed)
+                    {
+                        corpse.Destroy(DestroyMode.Vanish);
+                    }
+
+                    GenSpawn.Spawn(sourcePawn, spawnCell, map, WipeMode.Vanish);
+                }
+                else if (sourcePawn.PositionHeld.IsValid && sourcePawn.MapHeld == map && spawnCell.IsValid && sourcePawn.PositionHeld != spawnCell)
+                {
+                    sourcePawn.Position = spawnCell;
+                }
+
+                ConvertExistingPawnToZombie(sourcePawn, kindDef, desiredFaction, preserveName, preserveSkills, preserveRelations, initialSpawn: false);
+                ZombieUtility.PrepareZombieForReanimation(sourcePawn);
+                ZombieUtility.PrepareSpawnedZombie(sourcePawn);
+                if (preserveName && originalName != null)
+                {
+                    TrySetPawnName(sourcePawn, originalName);
+                }
+
+                ZombieUtility.RefreshDrownedState(sourcePawn);
+                Current.Game?.GetComponent<ZombieGameComponent>()?.RegisterBehavior(sourcePawn, ZombieSpawnEventType.AssaultBase);
+
+                if (ZombieLurkerUtility.IsPassiveLurker(sourcePawn))
+                {
+                    sourcePawn.jobs?.StopAll();
+                    ZombieLurkerUtility.EnsurePassiveLurkerBehavior(sourcePawn);
+                }
+                else if (ZombieLurkerUtility.IsColonyLurker(sourcePawn))
+                {
+                    ZombieLurkerUtility.EnsureColonyLurkerState(sourcePawn, emergencyStabilize: true, stopCurrentJobs: true);
+                }
+                else
+                {
+                    ZombieUtility.AssignInitialShambleJob(sourcePawn);
+                    ZombieUtility.EnsureZombieAggression(sourcePawn);
+                }
+
+                ZombieUtility.MarkPawnGraphicsDirty(sourcePawn);
+                reanimatedPawn = sourcePawn;
+                return sourcePawn.Spawned && !sourcePawn.Dead && !sourcePawn.Destroyed;
+            }
+            catch (Exception ex)
+            {
+                if (Prefs.DevMode)
+                {
+                    Log.Warning("[Zed Zed Zed] Direct corpse reanimation failed, falling back to fresh pawn generation: " + ex);
                 }
 
                 return false;

@@ -93,15 +93,18 @@
     <workerClass>CustomizableZombieHorde.Recipe_InjectZombieBile</workerClass>
     <workAmount>900</workAmount>
     <workSkill>Medicine</workSkill>
+    <recipeUsers>
+      <li>Human</li>
+    </recipeUsers>
+    <hideBodyPartNames>true</hideBodyPartNames>
     <targetsBodyPart>false</targetsBodyPart>
     <anesthetize>false</anesthetize>
     <surgerySuccessChanceFactor>1.0</surgerySuccessChanceFactor>
-    <recipeUsers Inherit="False">
-      <li>Bed</li>
-      <li>HospitalBed</li>
-      <li>SleepingSpot</li>
-      <li>CZH_RottenLeatherBed</li>
-    </recipeUsers>
+    <fixedIngredientFilter Inherit="False">
+      <thingDefs>
+        <li>CZH_ZombieBile</li>
+      </thingDefs>
+    </fixedIngredientFilter>
     <ingredients>
       <li>
         <filter>
@@ -112,7 +115,7 @@
         <count>1</count>
       </li>
     </ingredients>
-    <defaultIngredientFilter>
+    <defaultIngredientFilter Inherit="False">
       <thingDefs>
         <li>CZH_ZombieBile</li>
       </thingDefs>

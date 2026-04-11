@@ -1112,6 +1112,12 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            if (IsPlayerAlignedZombie(pawn))
+            {
+                EnsureFriendlyZombieState(pawn);
+                return;
+            }
+
             if (ZombieLurkerUtility.IsColonyLurker(pawn) || IsUnderColonyRestraint(pawn))
             {
                 return;
@@ -1157,6 +1163,104 @@ namespace CustomizableZombieHorde
             }
 
             AssignBehaviorJob(pawn);
+        }
+
+        public static void EnsureFriendlyZombieState(Pawn pawn, bool stopCurrentJobs = false)
+        {
+            if (!IsZombie(pawn) || pawn == null || pawn.Dead || pawn.Destroyed)
+            {
+                return;
+            }
+
+            bool colonyAligned = false;
+            try
+            {
+                colonyAligned = IsPlayerAlignedZombie(pawn) || pawn.Faction == Faction.OfPlayer || pawn.HostFaction == Faction.OfPlayer;
+            }
+            catch
+            {
+                colonyAligned = pawn.Faction == Faction.OfPlayer || pawn.HostFaction == Faction.OfPlayer;
+            }
+
+            if (!colonyAligned)
+            {
+                return;
+            }
+
+            TryEndZombieMentalState(pawn);
+            TryNormalizeFriendlyZombieFaction(pawn);
+
+            if (pawn.jobs == null)
+            {
+                return;
+            }
+
+            Pawn primaryTarget = pawn.CurJob?.targetA.Thing as Pawn;
+            Pawn secondaryTarget = pawn.CurJob?.targetB.Thing as Pawn;
+            bool hasFriendlyTarget = IsColonyAlly(primaryTarget) || IsPlayerAlignedZombie(primaryTarget) || IsColonyAlly(secondaryTarget) || IsPlayerAlignedZombie(secondaryTarget);
+            string currentJobName = pawn.CurJobDef?.defName ?? string.Empty;
+            bool hostileJob = pawn.CurJobDef == JobDefOf.AttackMelee || currentJobName.IndexOf("attack", StringComparison.OrdinalIgnoreCase) >= 0;
+            if (stopCurrentJobs || hostileJob || hasFriendlyTarget)
+            {
+                try
+                {
+                    pawn.jobs.StopAll();
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static void TryNormalizeFriendlyZombieFaction(Pawn pawn)
+        {
+            if (pawn == null || pawn.Faction == Faction.OfPlayer)
+            {
+                return;
+            }
+
+            bool shouldJoinPlayerFaction = pawn.HostFaction == Faction.OfPlayer;
+            if (!shouldJoinPlayerFaction)
+            {
+                try
+                {
+                    shouldJoinPlayerFaction = pawn.IsSlaveOfColony;
+                }
+                catch
+                {
+                }
+            }
+
+            if (!shouldJoinPlayerFaction)
+            {
+                return;
+            }
+
+            try
+            {
+                pawn.SetFaction(Faction.OfPlayer);
+                return;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                AccessTools.Method(typeof(Pawn), "SetFaction", new[] { typeof(Faction), typeof(Pawn) })?.Invoke(pawn, new object[] { Faction.OfPlayer, null });
+                return;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                pawn.SetFactionDirect(Faction.OfPlayer);
+            }
+            catch
+            {
+            }
         }
 
         private static void TryEndZombieMentalState(Pawn pawn)

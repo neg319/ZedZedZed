@@ -142,7 +142,7 @@ namespace CustomizableZombieHorde
 
             if (ZombieInfectionUtility.HasReanimatedState(pawn))
             {
-                lines.Add("Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn has fully turned, can no longer be cured, and if killed will be handled by the global reanimation sweep every 1 to 3 in game hours unless the head or skull is ruined.");
+                lines.Add("Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn has fully turned, can no longer be cured, and if killed will be handled by the global reanimation sweep every few in game seconds once the corpse is ready, unless the head or skull is ruined.");
             }
             else if (ZombieInfectionUtility.HasZombieInfection(pawn))
             {
@@ -180,7 +180,7 @@ namespace CustomizableZombieHorde
                 string infectionLine;
                 if (ZombieInfectionUtility.HasReanimatedState(innerPawn))
                 {
-                    infectionLine = "Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. This corpse will try to rise again after its reanimation delay, and a global sweep checks for ready corpses every 1 to 3 in game hours. ";
+                    infectionLine = "Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. This corpse will try to rise again after its reanimation delay, and a global sweep checks for ready corpses every few in game seconds. ";
                 }
                 else
                 {

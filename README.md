@@ -13,6 +13,11 @@
 
 # Zed Zed Zed
 
+## Iteration 97 - Reanimation Rebuild
+- Rebuilt corpse reanimation so the mod now tries to revive the original corpse pawn in place before falling back to fresh pawn generation.
+- Tightened the global reanimation sweep so ready corpses are checked every few in game seconds instead of waiting on a long random gap.
+- Fixed a dead infection tracking cleanup bug that was deleting active pending entries instead of stale ones.
+
 Zed Zed Zed is a RimWorld zombie mod built around pressure, atmosphere, and the feeling that the colony is never quite finished cleaning up the last mess before the next one starts. This is not just a single raid that shows up, dies, and goes away. The dead can drift in from the edge of the map, bunch up in quiet packs, push straight at your base, erupt inside the colony, or keep crawling out of graves until you smash the source. If you really want to lean into the horror, you can also use a medical bill to inject zombie bile into a living patient and deliberately turn them into a colony lurker.
 
 The whole mod is built to be tuned to your taste. You can rename the zombie family, rename each strain, decide which strains are allowed, control how often events fire, scale danger to colony size, change infection timing, open the settings directly from the pause menu, and use debug tools when you want to test something fast.
@@ -56,7 +61,7 @@ This repository is the full source package for the mod, along with a GitHub Acti
 - **Zombie bile injection bills** can deliberately turn a living humanlike patient into a colony lurker through the medical bill system.
 - **Terminal and reanimated states** keep the outbreak dangerous even after a pawn dies.
 - **Post death progression** means infection can keep climbing on a corpse after death instead of stopping there.
-- **Global reanimation sweeps** handle dead reanimated corpses at the game level every 1 to 3 in game hours, so they can still rise again if the head and skull are intact.
+- **Global reanimation sweeps** handle dead reanimated corpses at the game level every few in game seconds once their reanimation delay is finished, so they can still rise again if the head and skull are intact.
 - **Zombie blood exposure** and **zombie acid corrosion** add lingering damage and contamination pressure on top of direct attacks.
 - **Puked On** makes a pawn stink so badly that nearby zombies are drawn toward them.
 
@@ -425,3 +430,12 @@ This changelog treats a **major update** as something that adds substantial new 
 - Iteration 87: zombie prisoners being set to enslave now get a slavery specific handoff so their will can finish dropping below the old 0.9 to 1.0 stall point, letting wardens complete enslavement instead of leaving them stuck as permanent prisoners.
 
 - Iteration 88: zombie melee against living pawns was softened across the board by adding per variant outgoing damage tuning and a real shambler miss chance, so colonists should stop stacking up absurd walls of cuts and cracks quite so fast when the horde gets into melee.
+
+- Iteration 89: zombie bite infection was localized to the bitten limb, made much rarer, and set up so timely amputation can remove it before the sickness turns terminal.
+- Iteration 90: pawns are now limited to one active zombie infection at a time, and duplicate infection entries are collapsed back down to a single strongest copy if an edge case ever creates more than one.
+- Iteration 91: parent child relation generation now skips zombie style pawns so neutral groups and visitors stop crashing during pawn name relation setup.
+- Iteration 92: replaced the hard coded guest interaction mode reference with a safe reflection lookup so the GitHub build stops failing on the missing 1.6 member.
+- Iteration 93: removed the broken Harmony patch that targeted a missing guest will getter, and rebuilt the zombie bile surgery so it inherits the normal pawn operation users and uses a bile only fixed ingredient filter, which should put administer zombie bile back in the Operations menu without reviving the old cross reference error.
+- Iteration 94: stitched rotten leather floor and mottled hide floor were both rescaled so their visible surface patterns now read at half their former size in game.
+
+- Iteration 95: colony aligned zombie slaves now get pulled out of the hostile zombie aggression loop so enslaved zombies stop turning on the colony, double tapping now has a safety fallback even when the prioritized option is off, and the administer zombie bile surgery was rebound to Human so it can appear in pawn operations without tagging beds as bill givers.

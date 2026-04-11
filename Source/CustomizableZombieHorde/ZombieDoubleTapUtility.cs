@@ -95,22 +95,68 @@ namespace CustomizableZombieHorde
         public static void HandlePrioritizedDoubleTap()
         {
             CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
-            if (settings == null || !settings.enablePrioritizedDoubleTap)
+            if (settings == null)
             {
                 return;
             }
 
+            bool prioritize = settings.enablePrioritizedDoubleTap;
             foreach (Map map in Find.Maps)
             {
                 List<Pawn> pawns = map.mapPawns.AllPawnsSpawned
-                    .Where(IsEligibleWorker)
+                    .Where(pawn => prioritize ? IsEligibleWorker(pawn) : IsEligibleFallbackWorker(pawn))
                     .ToList();
 
                 foreach (Pawn pawn in pawns)
                 {
-                    TryAssignDoubleTapJob(pawn);
+                    if (prioritize)
+                    {
+                        TryAssignDoubleTapJob(pawn);
+                    }
+                    else
+                    {
+                        TryAssignFallbackDoubleTapJob(pawn);
+                    }
                 }
             }
+        }
+
+        public static bool IsEligibleFallbackWorker(Pawn pawn)
+        {
+            if (pawn == null || pawn.Dead || pawn.Destroyed || !pawn.Spawned)
+            {
+                return false;
+            }
+
+            if (!pawn.RaceProps.Humanlike || pawn.Faction != Faction.OfPlayer || pawn.IsPrisonerOfColony)
+            {
+                return false;
+            }
+
+            if (pawn.Drafted || pawn.Downed || pawn.InMentalState || pawn.stances?.FullBodyBusy == true)
+            {
+                return false;
+            }
+
+            JobDef currentJob = pawn.CurJobDef;
+            if (currentJob == ZombieDefOf.CZH_DoubleTapZombieCorpse)
+            {
+                return false;
+            }
+
+            if (currentJob == null)
+            {
+                return true;
+            }
+
+            string jobName = currentJob.defName ?? string.Empty;
+            if (currentJob == JobDefOf.Wait || currentJob == JobDefOf.Goto || jobName.IndexOf("wander", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+
+            return jobName.IndexOf("haul", System.StringComparison.OrdinalIgnoreCase) >= 0
+                || jobName.IndexOf("clean", System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         public static bool IsEligibleWorker(Pawn pawn)
@@ -146,9 +192,14 @@ namespace CustomizableZombieHorde
         public static bool PawnMatchesSelectedWorkTypes(Pawn pawn)
         {
             List<string> selectedDefNames = CustomizableZombieHordeMod.Settings?.prioritizedDoubleTapWorkTypeDefs;
-            if (pawn?.workSettings == null || selectedDefNames == null || selectedDefNames.Count == 0)
+            if (pawn?.workSettings == null)
             {
                 return false;
+            }
+
+            if (selectedDefNames == null || selectedDefNames.Count == 0)
+            {
+                selectedDefNames = GetDefaultWorkTypeDefNames();
             }
 
             foreach (string defName in selectedDefNames)
@@ -161,6 +212,30 @@ namespace CustomizableZombieHorde
             }
 
             return false;
+        }
+
+        public static bool TryAssignFallbackDoubleTapJob(Pawn pawn)
+        {
+            if (!IsEligibleFallbackWorker(pawn))
+            {
+                return false;
+            }
+
+            Corpse corpse = FindBestCorpseForDoubleTap(pawn, 30f);
+            if (corpse == null)
+            {
+                return false;
+            }
+
+            if (pawn.CurJob != null && pawn.CurJob.def == ZombieDefOf.CZH_DoubleTapZombieCorpse && pawn.CurJob.targetA.Thing == corpse)
+            {
+                return true;
+            }
+
+            Job job = JobMaker.MakeJob(ZombieDefOf.CZH_DoubleTapZombieCorpse, corpse);
+            job.expiryInterval = 1800;
+            pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+            return true;
         }
 
         public static bool TryAssignDoubleTapJob(Pawn pawn)
@@ -224,6 +299,99 @@ namespace CustomizableZombieHorde
             return bestCorpse;
         }
 
+        public static bool CanDoubleTapThing(Thing thing)
+        {
+            if (thing is Corpse corpse)
+            {
+                return CanDoubleTapCorpse(corpse);
+            }
+
+            if (thing is Pawn pawn)
+            {
+                return CanDoubleTapPawn(pawn);
+            }
+
+            return false;
+        }
+
+        public static bool CanDoubleTapPawn(Pawn pawn)
+        {
+            if (pawn == null || pawn.Destroyed || pawn.Dead || !pawn.Spawned || pawn.MapHeld == null || !pawn.Downed)
+            {
+                return false;
+            }
+
+            if (pawn.RaceProps?.Humanlike != true)
+            {
+                return false;
+            }
+
+            if (ZombieRulesUtility.HasHeadDamageOrDestruction(pawn) || ZombieInfectionUtility.IsSkullMissing(pawn))
+            {
+                return false;
+            }
+
+            return ZombieUtility.IsZombie(pawn)
+                || pawn.IsColonist
+                || pawn.IsPrisonerOfColony
+                || pawn.IsSlaveOfColony
+                || ZombieInfectionUtility.HasZombieInfection(pawn)
+                || ZombieInfectionUtility.HasReanimatedState(pawn);
+        }
+
+        public static bool TryStartManualDoubleTap(Pawn actor, Thing targetThing)
+        {
+            if (actor == null || actor.Dead || actor.Destroyed || !actor.Spawned || actor.MapHeld == null || !actor.IsColonistPlayerControlled)
+            {
+                return false;
+            }
+
+            if (actor.Downed || actor.InMentalState || actor.stances?.FullBodyBusy == true)
+            {
+                return false;
+            }
+
+            if (!CanDoubleTapThing(targetThing))
+            {
+                return false;
+            }
+
+            if (!actor.CanReserveAndReach(targetThing, PathEndMode.Touch, Danger.Deadly))
+            {
+                return false;
+            }
+
+            if (actor.CurJob != null && actor.CurJob.def == ZombieDefOf.CZH_DoubleTapZombieCorpse && actor.CurJob.targetA.Thing == targetThing)
+            {
+                return true;
+            }
+
+            if (actor.drafter != null && actor.Drafted)
+            {
+                actor.drafter.Drafted = false;
+            }
+
+            Job job = JobMaker.MakeJob(ZombieDefOf.CZH_DoubleTapZombieCorpse, targetThing);
+            job.expiryInterval = 3000;
+            actor.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+            return true;
+        }
+
+        public static bool PerformDoubleTap(Pawn actor, Thing targetThing)
+        {
+            if (targetThing is Corpse corpse)
+            {
+                return PerformDoubleTap(actor, corpse);
+            }
+
+            if (targetThing is Pawn pawn)
+            {
+                return PerformDoubleTap(actor, pawn);
+            }
+
+            return false;
+        }
+
         public static bool CanDoubleTapCorpse(Corpse corpse)
         {
             Pawn innerPawn = corpse?.InnerPawn;
@@ -252,6 +420,77 @@ namespace CustomizableZombieHorde
             }
 
             return corpse.Spawned && corpse.MapHeld != null;
+        }
+
+        public static bool PerformDoubleTap(Pawn actor, Pawn target)
+        {
+            if (!CanDoubleTapPawn(target))
+            {
+                return false;
+            }
+
+            BodyPartRecord head = ZombieUtility.GetHeadPart(target);
+            BodyPartRecord brain = FindBodyPart(target, "Brain");
+            BodyPartRecord skull = FindBodyPart(target, "Skull");
+            BodyPartRecord fatalPart = head ?? skull ?? brain;
+
+            try
+            {
+                if (fatalPart != null)
+                {
+                    target.TakeDamage(new DamageInfo(DamageDefOf.Cut, 999f, 999f, -1f, actor, fatalPart));
+                }
+                else
+                {
+                    target.TakeDamage(new DamageInfo(DamageDefOf.Cut, 999f, 999f, -1f, actor));
+                }
+            }
+            catch
+            {
+            }
+
+            if (!target.Dead)
+            {
+                try
+                {
+                    if (fatalPart != null)
+                    {
+                        target.Kill(new DamageInfo(DamageDefOf.Cut, 999f, 999f, -1f, actor, fatalPart));
+                    }
+                    else
+                    {
+                        target.Kill(new DamageInfo(DamageDefOf.Cut, 999f, 999f, -1f, actor));
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            Corpse corpse = target.Corpse;
+            if (corpse != null && corpse.Spawned)
+            {
+                Pawn innerPawn = corpse.InnerPawn ?? target;
+                bool changed = false;
+                changed |= EnsureCutTrauma(innerPawn, brain, 2.5f, actor);
+                changed |= EnsureCutTrauma(innerPawn, skull ?? head, 14f, actor);
+                changed |= EnsureCutTrauma(innerPawn, head, 10f, actor);
+
+                ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
+                component?.MarkInfectionHeadFatal(innerPawn);
+                component?.ClearZombieCorpseWake(corpse);
+                component?.ClearInfectionReanimation(corpse);
+                component?.ClearDeadInfectedCorpse(corpse);
+
+                if (corpse.MapHeld != null)
+                {
+                    FilthMaker.TryMakeFilth(corpse.PositionHeld, corpse.MapHeld, ZombieDefOf.CZH_Filth_ZombieBlood ?? ThingDefOf.Filth_Blood);
+                }
+
+                return changed || innerPawn.Dead;
+            }
+
+            return target.Dead;
         }
 
         public static bool PerformDoubleTap(Pawn actor, Corpse corpse)

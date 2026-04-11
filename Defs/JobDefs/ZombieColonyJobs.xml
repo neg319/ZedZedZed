@@ -3,7 +3,7 @@
   <JobDef>
     <defName>CZH_DoubleTapZombieCorpse</defName>
     <driverClass>CustomizableZombieHorde.JobDriver_DoubleTapZombieCorpse</driverClass>
-    <reportString>double tapping a zombie corpse.</reportString>
+    <reportString>double tapping a downed target.</reportString>
     <casualInterruptible>true</casualInterruptible>
     <playerInterruptible>true</playerInterruptible>
     <checkOverrideOnDamage>Always</checkOverrideOnDamage>
