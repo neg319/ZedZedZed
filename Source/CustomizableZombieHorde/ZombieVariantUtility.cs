@@ -63,14 +63,14 @@ namespace CustomizableZombieHorde
 
         private static readonly Dictionary<ZombieVariant, ZombieButcherProfile> ButcherProfiles = new Dictionary<ZombieVariant, ZombieButcherProfile>
         {
-            { ZombieVariant.Biter, new ZombieButcherProfile(9, 7, 0f, 0, 0) },
-            { ZombieVariant.Runt, new ZombieButcherProfile(5, 4, 0.22f, 1, 1) },
-            { ZombieVariant.Boomer, new ZombieButcherProfile(9, 7, 1f, 1, 2) },
-            { ZombieVariant.Sick, new ZombieButcherProfile(9, 7, 1f, 1, 2) },
-            { ZombieVariant.Drowned, new ZombieButcherProfile(9, 7, 0.34f, 1, 1) },
-            { ZombieVariant.Brute, new ZombieButcherProfile(18, 14, 0.40f, 1, 2) },
-            { ZombieVariant.Grabber, new ZombieButcherProfile(9, 7, 0.44f, 1, 1) },
-            { ZombieVariant.Lurker, new ZombieButcherProfile(9, 7, 0.28f, 1, 1) }
+            { ZombieVariant.Biter, new ZombieButcherProfile(9, 7, 0.50f, 1, 3) },
+            { ZombieVariant.Runt, new ZombieButcherProfile(5, 4, 0.50f, 1, 3) },
+            { ZombieVariant.Boomer, new ZombieButcherProfile(9, 7, 1.00f, 3, 9) },
+            { ZombieVariant.Sick, new ZombieButcherProfile(9, 7, 1.00f, 3, 9) },
+            { ZombieVariant.Drowned, new ZombieButcherProfile(9, 7, 0.50f, 1, 3) },
+            { ZombieVariant.Brute, new ZombieButcherProfile(18, 14, 0.50f, 1, 3) },
+            { ZombieVariant.Grabber, new ZombieButcherProfile(9, 7, 0.50f, 1, 3) },
+            { ZombieVariant.Lurker, new ZombieButcherProfile(9, 7, 0.50f, 1, 3) }
         };
 
         public static ZombieVariant GetVariantFromKindDefName(string defName)

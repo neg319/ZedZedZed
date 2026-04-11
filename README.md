@@ -442,3 +442,29 @@ This changelog treats a **major update** as something that adds substantial new 
 
 - Iteration 98: manual double tap orders were broadened so any humanlike downed pawn or intact humanlike corpse can be right clicked and given a Double Tap order, and those menu entries are now inserted at the top of the float menu so they are easier to spot immediately.
 - Iteration 99: rebuilt corpse wakeup around a more reliable fresh spawn reanimation path, upgraded fallback pawn generation to prefer the PawnGenerator overload that accepts a faction when available, and fixed the resurrection reflection argument builder so RimWorld 1.6 style ResurrectionParams methods can finally be invoked instead of silently being skipped.
+
+- Iteration 100: rebuilt resurrection around a corpse centered hybrid path inspired by the new design writeup. The mod now runs corpses through a dedicated `CorpseEligibilityUtility` and `ZombieResurrectionService`, tries the vanilla style revive call on the original dead pawn first, then normalizes that same pawn back into the correct zombie or colony lurker state before falling back to the older spawn replacement path.
+
+
+## Iteration 101
+- Checked the hybrid reanimation rebuild against the rest of the mod.
+- Fixed a compatibility issue where player aligned zombies revived through the new corpse service could still be given hostile shamble behavior.
+- Reanimated colony aligned zombies now stay friendly instead of immediately taking assault style jobs after rising.
+
+
+## Iteration 102
+- Zombie bile surgery now bypasses the normal RimWorld surgery failure roll whenever the doctor has at least 3 Medical, so administering zombie bile succeeds reliably instead of randomly failing in skilled hands.
+- Doctors below 3 Medical still fall back to the normal surgery fail logic, which keeps the operation dangerous only for unqualified pawns.
+
+
+## Iteration 103 - Zombie bile surgery reliability tune
+- Zombie bile surgery now still uses the normal surgery failure path, but high Medical skill can convert most failed rolls into successful injections.
+- Doctors with Medical 20 now almost never fail the bile operation twice in a row.
+
+## Iteration 104 - Zombie butchering bile pass
+- All butchered zombies now keep their normal rotten flesh and rotten leather output while also having a flat 50% chance to yield zombie bile.
+- Any bile drop now gives at least 1 bile and can roll more than 1, with heavier fluid rich strains like boomers, sick zombies, and brutes able to roll up to 3.
+
+## Iteration 105 - Zombie butcher bile retune
+- Sick zombies and boomers now always yield zombie bile when butchered, and they roll a much heavier payout of 3 to 9 bile.
+- All other butchered zombie variants now use a 50% bile chance with a 1 to 3 bile payout while still keeping their normal rotten flesh and rotten leather output.

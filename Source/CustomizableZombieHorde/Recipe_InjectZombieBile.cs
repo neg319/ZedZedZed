@@ -39,7 +39,9 @@ namespace CustomizableZombieHorde
 
         public override void ApplyOnPawn(Pawn pawn, BodyPartRecord part, Pawn billDoer, List<Thing> ingredients, Bill bill)
         {
-            if (CheckSurgeryFail(billDoer, pawn, ingredients, part, bill))
+            int doctorMedical = billDoer?.skills?.GetSkill(SkillDefOf.Medicine)?.Level ?? 0;
+            bool surgeryFailed = CheckSurgeryFail(billDoer, pawn, ingredients, part, bill);
+            if (surgeryFailed && !ShouldConvertFailureToSuccess(doctorMedical))
             {
                 return;
             }
@@ -48,6 +50,38 @@ namespace CustomizableZombieHorde
             {
                 Log.Warning("[Zed Zed Zed] Zombie bile injection failed for " + (pawn?.LabelShortCap ?? "unknown patient") + ".");
             }
+        }
+
+        private static bool ShouldConvertFailureToSuccess(int doctorMedical)
+        {
+            if (doctorMedical < 3)
+            {
+                return false;
+            }
+
+            float failOverrideChance;
+            if (doctorMedical >= 20)
+            {
+                failOverrideChance = 0.995f;
+            }
+            else if (doctorMedical >= 15)
+            {
+                failOverrideChance = 0.98f;
+            }
+            else if (doctorMedical >= 10)
+            {
+                failOverrideChance = 0.93f;
+            }
+            else if (doctorMedical >= 6)
+            {
+                failOverrideChance = 0.80f;
+            }
+            else
+            {
+                failOverrideChance = 0.60f;
+            }
+
+            return Rand.Value < failOverrideChance;
         }
     }
 }

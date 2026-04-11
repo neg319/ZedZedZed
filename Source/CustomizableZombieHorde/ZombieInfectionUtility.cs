@@ -283,12 +283,9 @@ namespace CustomizableZombieHorde
             }
 
             bool wasColonist = ShouldBecomeLurkerAfterInfection(pawn, component);
-            PawnKindDef newKind = wasColonist
-                ? ZombieKindSelector.GetKindForVariant(ZombieVariant.Lurker, corpse.MapHeld)
-                : ZombieKindSelector.GetRandomKind(corpse.MapHeld);
-            Faction desiredFaction = wasColonist ? Faction.OfPlayer : ZombieFactionUtility.GetOrCreateZombieFaction();
+            ZombieRaiseMode raiseMode = wasColonist ? ZombieRaiseMode.ColonyLurker : ZombieRaiseMode.InfectedZombie;
 
-            if (!ZombiePawnFactory.TrySpawnReanimatedPawnFromCorpse(corpse, newKind, desiredFaction, preserveName: wasColonist, preserveSkills: wasColonist, preserveRelations: wasColonist, out Pawn risenPawn))
+            if (!ZombieResurrectionService.TryRaiseCorpse(corpse, raiseMode, component, out Pawn risenPawn))
             {
                 component?.ScheduleInfectionReanimation(corpse, forceReschedule: true);
                 return false;

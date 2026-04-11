@@ -1615,7 +1615,7 @@ namespace CustomizableZombieHorde
                             continue;
                         }
 
-                        if (ZombiePawnFactory.TrySpawnReanimatedZombieFromCorpse(corpse, out Pawn risenZombie))
+                        if (ZombieResurrectionService.TryRaiseCorpse(corpse, ZombieRaiseMode.ZombieCorpse, this, out Pawn risenZombie))
                         {
                             ClearZombieCorpseWake(corpse);
                             ZombieFeedbackUtility.TrySendReanimationWarning(risenZombie);

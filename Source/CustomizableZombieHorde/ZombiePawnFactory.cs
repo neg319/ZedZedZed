@@ -156,7 +156,6 @@ namespace CustomizableZombieHorde
                 }
 
                 GenSpawn.Spawn(generatedPawn, spawnCell, map, WipeMode.Vanish);
-                Current.Game?.GetComponent<ZombieGameComponent>()?.RegisterBehavior(generatedPawn, ZombieSpawnEventType.AssaultBase);
                 ZombieUtility.PrepareZombieForReanimation(generatedPawn);
                 ZombieUtility.PrepareSpawnedZombie(generatedPawn);
                 if (preserveName && sourcePawn.Name != null)
@@ -174,8 +173,13 @@ namespace CustomizableZombieHorde
                 {
                     ZombieLurkerUtility.EnsureColonyLurkerState(generatedPawn, emergencyStabilize: true, stopCurrentJobs: true);
                 }
+                else if (ZombieUtility.IsPlayerAlignedZombie(generatedPawn))
+                {
+                    ZombieUtility.EnsureFriendlyZombieState(generatedPawn, stopCurrentJobs: true);
+                }
                 else
                 {
+                    Current.Game?.GetComponent<ZombieGameComponent>()?.RegisterBehavior(generatedPawn, ZombieSpawnEventType.AssaultBase);
                     ZombieUtility.AssignInitialShambleJob(generatedPawn);
                     ZombieUtility.EnsureZombieAggression(generatedPawn);
                 }
@@ -245,7 +249,6 @@ namespace CustomizableZombieHorde
                 }
 
                 ZombieUtility.RefreshDrownedState(sourcePawn);
-                Current.Game?.GetComponent<ZombieGameComponent>()?.RegisterBehavior(sourcePawn, ZombieSpawnEventType.AssaultBase);
 
                 if (ZombieLurkerUtility.IsPassiveLurker(sourcePawn))
                 {
@@ -256,8 +259,13 @@ namespace CustomizableZombieHorde
                 {
                     ZombieLurkerUtility.EnsureColonyLurkerState(sourcePawn, emergencyStabilize: true, stopCurrentJobs: true);
                 }
+                else if (ZombieUtility.IsPlayerAlignedZombie(sourcePawn))
+                {
+                    ZombieUtility.EnsureFriendlyZombieState(sourcePawn, stopCurrentJobs: true);
+                }
                 else
                 {
+                    Current.Game?.GetComponent<ZombieGameComponent>()?.RegisterBehavior(sourcePawn, ZombieSpawnEventType.AssaultBase);
                     ZombieUtility.AssignInitialShambleJob(sourcePawn);
                     ZombieUtility.EnsureZombieAggression(sourcePawn);
                 }

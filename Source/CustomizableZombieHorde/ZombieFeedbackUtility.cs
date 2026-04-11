@@ -121,6 +121,26 @@ namespace CustomizableZombieHorde
             Messages.Message(pawn.LabelShortCap + " rises again. Destroy the head if you want it to stay down.", pawn, MessageTypeDefOf.NegativeEvent);
         }
 
+        private static string GetButcherBileInspectLabel(ZombieButcherProfile profile)
+        {
+            if (profile == null || !profile.CanDropBile)
+            {
+                return null;
+            }
+
+            int min = profile.BileMinCount < 1 ? 1 : profile.BileMinCount;
+            int max = profile.BileMaxCount < min ? min : profile.BileMaxCount;
+            string countLabel = min == max ? min.ToString() : min + " to " + max;
+
+            if (profile.BileChance >= 0.999f)
+            {
+                return "Butchering this corpse will yield " + countLabel + " zombie bile.";
+            }
+
+            int percent = (int)System.Math.Round(profile.BileChance * 100f);
+            return "Butchering this corpse has a " + percent + "% chance to yield " + countLabel + " zombie bile.";
+        }
+
         public static string GetPawnInspectString(Pawn pawn)
         {
             if (pawn == null)
@@ -215,7 +235,11 @@ namespace CustomizableZombieHorde
                 ZombieButcherProfile profile = ZombieVariantUtility.GetButcherProfile(ZombieVariantUtility.GetVariant(innerPawn));
                 if (profile != null && profile.CanDropBile)
                 {
-                    lines.Add("Butchering this special corpse may yield zombie bile.");
+                    string butcherLabel = GetButcherBileInspectLabel(profile);
+                    if (!butcherLabel.NullOrEmpty())
+                    {
+                        lines.Add(butcherLabel);
+                    }
                 }
             }
 
