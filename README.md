@@ -439,3 +439,6 @@ This changelog treats a **major update** as something that adds substantial new 
 - Iteration 94: stitched rotten leather floor and mottled hide floor were both rescaled so their visible surface patterns now read at half their former size in game.
 
 - Iteration 95: colony aligned zombie slaves now get pulled out of the hostile zombie aggression loop so enslaved zombies stop turning on the colony, double tapping now has a safety fallback even when the prioritized option is off, and the administer zombie bile surgery was rebound to Human so it can appear in pawn operations without tagging beds as bill givers.
+
+- Iteration 98: manual double tap orders were broadened so any humanlike downed pawn or intact humanlike corpse can be right clicked and given a Double Tap order, and those menu entries are now inserted at the top of the float menu so they are easier to spot immediately.
+- Iteration 99: rebuilt corpse wakeup around a more reliable fresh spawn reanimation path, upgraded fallback pawn generation to prefer the PawnGenerator overload that accepts a faction when available, and fixed the resurrection reflection argument builder so RimWorld 1.6 style ResurrectionParams methods can finally be invoked instead of silently being skipped.

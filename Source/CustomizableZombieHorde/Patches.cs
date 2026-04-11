@@ -982,7 +982,7 @@ namespace CustomizableZombieHorde
 
     public static partial class Patch_FloatMenuMakerMap_ChoicesAtFor
     {
-        private static void AddOptionIfMissing(List<FloatMenuOption> opts, string label, Action action)
+        private static void AddOptionIfMissing(List<FloatMenuOption> opts, string label, Action action, bool insertAtTop = false)
         {
             if (opts == null || label.NullOrEmpty())
             {
@@ -994,51 +994,58 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            opts.Add(new FloatMenuOption(label, action));
+            FloatMenuOption option = new FloatMenuOption(label, action);
+            if (insertAtTop)
+            {
+                opts.Insert(0, option);
+                return;
+            }
+
+            opts.Add(option);
         }
 
         private static void AddManualDoubleTapOrders(Pawn pawn, List<FloatMenuOption> opts, List<Pawn> pawnsAtCell, List<Corpse> corpsesAtCell)
         {
-            foreach (Pawn targetPawn in pawnsAtCell.Where(ZombieDoubleTapUtility.CanDoubleTapPawn))
+            foreach (Pawn targetPawn in pawnsAtCell.Where(ZombieDoubleTapUtility.CanPlayerOrderDoubleTapPawn))
             {
                 string label = "Double Tap " + targetPawn.LabelShortCap;
                 if (!pawn.CanReach(targetPawn, Verse.AI.PathEndMode.Touch, Danger.Deadly))
                 {
-                    AddOptionIfMissing(opts, label + ": no path", null);
+                    AddOptionIfMissing(opts, label + ": no path", null, true);
                     continue;
                 }
 
                 if (!pawn.CanReserve(targetPawn))
                 {
-                    AddOptionIfMissing(opts, label + ": reserved", null);
+                    AddOptionIfMissing(opts, label + ": reserved", null, true);
                     continue;
                 }
 
                 AddOptionIfMissing(opts, label, delegate
                 {
                     ZombieDoubleTapUtility.TryStartManualDoubleTap(pawn, targetPawn);
-                });
+                }, true);
             }
 
-            foreach (Corpse corpse in corpsesAtCell.Where(ZombieDoubleTapUtility.CanDoubleTapCorpse))
+            foreach (Corpse corpse in corpsesAtCell.Where(ZombieDoubleTapUtility.CanPlayerOrderDoubleTapCorpse))
             {
                 string label = "Double Tap " + corpse.LabelShortCap;
                 if (!pawn.CanReach(corpse, Verse.AI.PathEndMode.Touch, Danger.Deadly))
                 {
-                    AddOptionIfMissing(opts, label + ": no path", null);
+                    AddOptionIfMissing(opts, label + ": no path", null, true);
                     continue;
                 }
 
                 if (!pawn.CanReserve(corpse))
                 {
-                    AddOptionIfMissing(opts, label + ": reserved", null);
+                    AddOptionIfMissing(opts, label + ": reserved", null, true);
                     continue;
                 }
 
                 AddOptionIfMissing(opts, label, delegate
                 {
                     ZombieDoubleTapUtility.TryStartManualDoubleTap(pawn, corpse);
-                });
+                }, true);
             }
         }
 

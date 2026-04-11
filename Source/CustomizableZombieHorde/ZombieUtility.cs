@@ -1649,7 +1649,7 @@ namespace CustomizableZombieHorde
         {
             args = null;
             ParameterInfo[] parameters = method.GetParameters();
-            if (parameters == null || parameters.Length == 0 || parameters.Length > 4)
+            if (parameters == null || parameters.Length == 0 || parameters.Length > 5)
             {
                 return false;
             }
@@ -1660,15 +1660,21 @@ namespace CustomizableZombieHorde
             {
                 ParameterInfo parameter = parameters[i];
                 Type parameterType = parameter.ParameterType;
+                Type concreteType = parameterType.IsByRef ? parameterType.GetElementType() : parameterType;
 
-                if (parameterType.IsAssignableFrom(typeof(Pawn)))
+                if (concreteType == null)
+                {
+                    return false;
+                }
+
+                if (concreteType.IsAssignableFrom(typeof(Pawn)))
                 {
                     built[i] = pawn;
                     assignedPawnOrCorpse = true;
                     continue;
                 }
 
-                if (corpse != null && parameterType.IsAssignableFrom(typeof(Corpse)))
+                if (corpse != null && concreteType.IsAssignableFrom(typeof(Corpse)))
                 {
                     built[i] = corpse;
                     assignedPawnOrCorpse = true;
@@ -1681,7 +1687,35 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                return false;
+                if (string.Equals(concreteType.Name, "ResurrectionParams", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(concreteType.FullName, "RimWorld.ResurrectionParams", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        built[i] = Activator.CreateInstance(concreteType);
+                        continue;
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                if (concreteType.IsValueType)
+                {
+                    built[i] = Activator.CreateInstance(concreteType);
+                    continue;
+                }
+
+                try
+                {
+                    built[i] = Activator.CreateInstance(concreteType);
+                    continue;
+                }
+                catch
+                {
+                }
+
+                built[i] = null;
             }
 
             if (!assignedPawnOrCorpse)

@@ -303,15 +303,30 @@ namespace CustomizableZombieHorde
         {
             if (thing is Corpse corpse)
             {
-                return CanDoubleTapCorpse(corpse);
+                return CanPlayerOrderDoubleTapCorpse(corpse);
             }
 
             if (thing is Pawn pawn)
             {
-                return CanDoubleTapPawn(pawn);
+                return CanPlayerOrderDoubleTapPawn(pawn);
             }
 
             return false;
+        }
+
+        public static bool CanPlayerOrderDoubleTapPawn(Pawn pawn)
+        {
+            if (pawn == null || pawn.Destroyed || pawn.Dead || !pawn.Spawned || pawn.MapHeld == null || !pawn.Downed)
+            {
+                return false;
+            }
+
+            if (pawn.RaceProps?.Humanlike != true)
+            {
+                return false;
+            }
+
+            return !ZombieRulesUtility.HasHeadDamageOrDestruction(pawn) && !ZombieInfectionUtility.IsSkullMissing(pawn);
         }
 
         public static bool CanDoubleTapPawn(Pawn pawn)
@@ -390,6 +405,27 @@ namespace CustomizableZombieHorde
             }
 
             return false;
+        }
+
+        public static bool CanPlayerOrderDoubleTapCorpse(Corpse corpse)
+        {
+            Pawn innerPawn = corpse?.InnerPawn;
+            if (corpse == null || corpse.Destroyed || innerPawn == null || !innerPawn.Dead || innerPawn.Destroyed)
+            {
+                return false;
+            }
+
+            if (innerPawn.RaceProps?.Humanlike != true)
+            {
+                return false;
+            }
+
+            if (ZombieRulesUtility.HasHeadDamageOrDestruction(innerPawn) || ZombieInfectionUtility.IsSkullMissing(innerPawn))
+            {
+                return false;
+            }
+
+            return corpse.Spawned && corpse.MapHeld != null;
         }
 
         public static bool CanDoubleTapCorpse(Corpse corpse)

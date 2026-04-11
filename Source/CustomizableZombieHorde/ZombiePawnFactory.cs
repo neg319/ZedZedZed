@@ -26,7 +26,7 @@ namespace CustomizableZombieHorde
             {
                 try
                 {
-                    pawn = PawnGenerator.GeneratePawn(kind);
+                    pawn = GeneratePawnWithBestAvailableOverload(kind, faction);
                 }
                 catch
                 {
@@ -97,9 +97,32 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
+            if (TrySpawnFreshReanimatedPawnFromCorpse(corpse, kindDef, desiredFaction, preserveName, preserveSkills, preserveRelations, out newPawn))
+            {
+                return true;
+            }
+
             if (TryReanimateExistingPawnFromCorpse(corpse, kindDef, desiredFaction, preserveName, preserveSkills, preserveRelations, out newPawn))
             {
                 return true;
+            }
+
+            if (Prefs.DevMode)
+            {
+                Log.Warning("[Zed Zed Zed] Reanimation failed after both the fresh spawn path and the direct resurrection path were attempted for " + sourcePawn.LabelCap + ".");
+            }
+
+            return false;
+        }
+
+        private static bool TrySpawnFreshReanimatedPawnFromCorpse(Corpse corpse, PawnKindDef kindDef, Faction desiredFaction, bool preserveName, bool preserveSkills, bool preserveRelations, out Pawn newPawn)
+        {
+            newPawn = null;
+            Pawn sourcePawn = corpse?.InnerPawn;
+            Map map = corpse?.MapHeld;
+            if (sourcePawn == null || map == null || kindDef == null)
+            {
+                return false;
             }
 
             Faction generationFaction = desiredFaction ?? ZombieFactionUtility.GetOrCreateZombieFaction();
@@ -173,7 +196,7 @@ namespace CustomizableZombieHorde
 
                 if (Prefs.DevMode)
                 {
-                    Log.Warning("[Zed Zed Zed] Reanimation spawn failed: " + ex);
+                    Log.Warning("[Zed Zed Zed] Fresh spawn reanimation path failed: " + ex);
                 }
 
                 return false;
@@ -252,6 +275,31 @@ namespace CustomizableZombieHorde
 
                 return false;
             }
+        }
+
+        private static Pawn GeneratePawnWithBestAvailableOverload(PawnKindDef kind, Faction faction)
+        {
+            if (kind == null)
+            {
+                return null;
+            }
+
+            if (faction != null)
+            {
+                try
+                {
+                    MethodInfo generatePawnWithFaction = AccessTools.Method(typeof(PawnGenerator), "GeneratePawn", new[] { typeof(PawnKindDef), typeof(Faction) });
+                    if (generatePawnWithFaction != null)
+                    {
+                        return generatePawnWithFaction.Invoke(null, new object[] { kind, faction }) as Pawn;
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return PawnGenerator.GeneratePawn(kind);
         }
 
         private static IntVec3 FindBestReanimationCell(IntVec3 preferredCell, Map map)
