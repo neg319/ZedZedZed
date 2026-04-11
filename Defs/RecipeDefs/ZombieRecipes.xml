@@ -96,13 +96,6 @@
     <targetsBodyPart>false</targetsBodyPart>
     <anesthetize>false</anesthetize>
     <surgerySuccessChanceFactor>1.0</surgerySuccessChanceFactor>
-    <recipeUsers Inherit="False">
-      <li>Bed</li>
-      <li>HospitalBed</li>
-      <li>SleepingSpot</li>
-      <li>MedicalSleepingSpot</li>
-      <li>CZH_RottenLeatherBed</li>
-    </recipeUsers>
     <ingredients>
       <li>
         <filter>

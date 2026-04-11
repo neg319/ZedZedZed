@@ -52,9 +52,14 @@ namespace CustomizableZombieHorde
                 return 1f;
             }
 
-            if (IsVariant(pawn, ZombieVariant.Biter))
+            if (IsSkeletonBiter(pawn))
             {
                 return 4f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Biter))
+            {
+                return 6f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Runt))
@@ -1122,7 +1127,7 @@ namespace CustomizableZombieHorde
             try
             {
                 Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, targetCell);
-                moveJob.expiryInterval = behavior == ZombieSpawnEventType.HuddledPack ? 1500 : 1100;
+                moveJob.expiryInterval = behavior == ZombieSpawnEventType.HuddledPack ? 1500 : (behavior == ZombieSpawnEventType.Herd ? 1800 : 1100);
                 moveJob.checkOverrideOnExpire = true;
                 moveJob.locomotionUrgency = GetZombieUrgency(pawn);
                 pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);
@@ -1218,13 +1223,12 @@ namespace CustomizableZombieHorde
 
             ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
             ZombieSpawnEventType behavior = component?.GetAssignedBehavior(pawn) ?? ZombieSpawnEventType.AssaultBase;
-            float preyRadius = ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) ? 26f : 12f;
+            float preyRadius = behavior == ZombieSpawnEventType.Herd ? (ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) ? 9f : 7f) : (ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) ? 26f : 12f);
             if (behavior == ZombieSpawnEventType.AssaultBase || behavior == ZombieSpawnEventType.GroundBurst)
             {
                 preyRadius = Mathf.Max(preyRadius, 28f);
             }
-
-            if (component?.IsBloodMoonVisualActive(pawn.MapHeld) == true)
+            else if (component?.IsBloodMoonVisualActive(pawn.MapHeld) == true && behavior != ZombieSpawnEventType.Herd)
             {
                 preyRadius = Mathf.Max(preyRadius, 34f);
             }
@@ -1291,7 +1295,7 @@ namespace CustomizableZombieHorde
             try
             {
                 Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, shambleCell);
-                moveJob.expiryInterval = fallbackBehavior == ZombieSpawnEventType.HuddledPack ? 1500 : 900;
+                moveJob.expiryInterval = fallbackBehavior == ZombieSpawnEventType.HuddledPack ? 1500 : (fallbackBehavior == ZombieSpawnEventType.Herd ? 1800 : 900);
                 moveJob.checkOverrideOnExpire = true;
                 moveJob.locomotionUrgency = GetZombieUrgency(pawn);
                 pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);

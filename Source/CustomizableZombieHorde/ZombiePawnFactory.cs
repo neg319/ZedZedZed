@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using HarmonyLib;
@@ -294,7 +295,7 @@ namespace CustomizableZombieHorde
             }
 
             ZombieLurkerUtility.EnsureEmotionlessLurker(pawn);
-            ZombieUtility.MarkPawnGraphicsDirty(pawn);
+            EnsureZombieVisualIntegrity(pawn);
         }
 
 
@@ -829,5 +830,106 @@ namespace CustomizableZombieHorde
             {
             }
         }
+
+        public static bool EnsureZombieVisualIntegrity(Pawn pawn, bool markGraphicsDirty = true)
+        {
+            if (pawn?.story == null || pawn.RaceProps?.Humanlike != true)
+            {
+                return false;
+            }
+
+            bool changed = false;
+            ZombieVariant variant = ZombieLurkerUtility.GetEffectiveVisualVariant(pawn, ZombieUtility.GetVariant(pawn));
+
+            try
+            {
+                if (pawn.story.bodyType == null)
+                {
+                    pawn.story.bodyType = ZombieVisualUtility.GetBodyType(variant, pawn, pawn.gender == Gender.Female ? BodyTypeDefOf.Female : BodyTypeDefOf.Male);
+                    changed = true;
+                }
+            }
+            catch
+            {
+            }
+
+            HeadTypeDef headType = GetObjectMember(pawn.story, "headType") as HeadTypeDef;
+            if (headType == null)
+            {
+                HeadTypeDef fallbackHead = GetFallbackHeadType(pawn);
+                if (fallbackHead != null)
+                {
+                    SetObjectMember(pawn.story, "headType", fallbackHead);
+                    changed = true;
+                }
+            }
+
+            HairDef hairDef = GetObjectMember(pawn.story, "hairDef") as HairDef;
+            if (hairDef == null)
+            {
+                HairDef fallbackHair = DefDatabase<HairDef>.GetNamedSilentFail("Bald")
+                    ?? DefDatabase<HairDef>.GetNamedSilentFail("Shaved")
+                    ?? DefDatabase<HairDef>.AllDefsListForReading.FirstOrDefault();
+                if (fallbackHair != null)
+                {
+                    SetObjectMember(pawn.story, "hairDef", fallbackHair);
+                    changed = true;
+                }
+            }
+
+            if (pawn.style != null)
+            {
+                if (BeardDefOf.NoBeard != null)
+                {
+                    SetObjectMember(pawn.style, "beardDef", BeardDefOf.NoBeard);
+                }
+
+                TattooDef noFaceTattoo = GetNoTattoo("Face");
+                TattooDef noBodyTattoo = GetNoTattoo("Body");
+                if (noFaceTattoo != null)
+                {
+                    SetObjectMember(pawn.style, "FaceTattoo", noFaceTattoo);
+                    SetObjectMember(pawn.style, "faceTattoo", noFaceTattoo);
+                    changed = true;
+                }
+
+                if (noBodyTattoo != null)
+                {
+                    SetObjectMember(pawn.style, "BodyTattoo", noBodyTattoo);
+                    SetObjectMember(pawn.style, "bodyTattoo", noBodyTattoo);
+                    changed = true;
+                }
+            }
+
+            if (changed && markGraphicsDirty)
+            {
+                ZombieUtility.MarkPawnGraphicsDirty(pawn);
+            }
+
+            return changed;
+        }
+
+        private static HeadTypeDef GetFallbackHeadType(Pawn pawn)
+        {
+            return DefDatabase<HeadTypeDef>.AllDefsListForReading
+                .FirstOrDefault(def => def != null && def.randomChosen && (def.gender == Gender.None || def.gender == pawn.gender))
+                ?? DefDatabase<HeadTypeDef>.AllDefsListForReading
+                    .FirstOrDefault(def => def != null && (def.gender == Gender.None || def.gender == pawn.gender))
+                ?? DefDatabase<HeadTypeDef>.AllDefsListForReading.FirstOrDefault();
+        }
+
+        private static TattooDef GetNoTattoo(string areaKey)
+        {
+            return DefDatabase<TattooDef>.AllDefsListForReading
+                .FirstOrDefault(def => def != null
+                    && !def.defName.NullOrEmpty()
+                    && def.defName.IndexOf("NoTattoo", StringComparison.OrdinalIgnoreCase) >= 0
+                    && def.defName.IndexOf(areaKey, StringComparison.OrdinalIgnoreCase) >= 0)
+                ?? DefDatabase<TattooDef>.AllDefsListForReading
+                    .FirstOrDefault(def => def != null
+                        && !def.defName.NullOrEmpty()
+                        && def.defName.IndexOf("NoTattoo", StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
     }
 }

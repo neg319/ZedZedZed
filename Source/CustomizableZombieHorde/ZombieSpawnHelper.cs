@@ -222,6 +222,8 @@ namespace CustomizableZombieHorde
                     return SpawnEdgeWanderers(map, forcedCount, sendLetter, ignoreCap, ignoreTimeOfDay, applyDifficulty, populationState);
                 case ZombieSpawnEventType.GroundBurst:
                     return SpawnGroundBurst(map, forcedCount, sendLetter, ignoreCap, ignoreTimeOfDay, allowCenterFallback: true, populationState: populationState);
+                case ZombieSpawnEventType.Herd:
+                    return SpawnHerd(map, forcedCount, sendLetter, ignoreCap: true, applyDifficulty: false, ignoreTimeOfDay: true);
                 default:
                     return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.AssaultBase, populationState: populationState);
             }
@@ -280,6 +282,109 @@ namespace CustomizableZombieHorde
         {
             string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
             return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Edge Wanderers", customLetterText: "A band of " + prefix.ToLowerInvariant() + "s is slowly drifting along the edge of the map, probing the colony perimeter for an opening.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.EdgeWander, populationState: populationState);
+        }
+
+        public static int GetRecommendedHerdCount(Map map)
+        {
+            int colonists = map?.mapPawns?.FreeColonistsSpawnedCount ?? 0;
+            colonists = colonists < 1 ? 1 : colonists;
+            return Mathf.Clamp(colonists * 10, 50, 75);
+        }
+
+        public static bool SpawnHerd(Map map, int? forcedCount = null, bool sendLetter = true, string customLetterLabel = null, string customLetterText = null, bool ignoreCap = true, bool applyDifficulty = false, bool ignoreTimeOfDay = true)
+        {
+            if (map == null)
+            {
+                return false;
+            }
+
+            int count = forcedCount ?? GetRecommendedHerdCount(map);
+            count = Mathf.Clamp(count, 50, 75);
+            count = FinalizeSpawnCount(map, count, applyDifficulty, !ignoreTimeOfDay, ignoreCap, ZombiePopulationState.Auto);
+            count = Mathf.Clamp(count, 50, 75);
+            if (count < 1)
+            {
+                return false;
+            }
+
+            Faction faction = ZombieFactionUtility.GetOrCreateZombieFaction();
+            if (faction == null)
+            {
+                return false;
+            }
+
+            ZombieHerdDirection direction = GetRandomHerdDirection();
+            List<IntVec3> lineCells = BuildHerdSpawnLine(map, direction, count);
+            if (lineCells.Count == 0)
+            {
+                return false;
+            }
+
+            int spawnedCount = 0;
+            IntVec3 firstCell = IntVec3.Invalid;
+            int biterSpawnCount = 0;
+            IntVec3 firstBiterSpawnCell = IntVec3.Invalid;
+            List<Pawn> spawnedPawns = new List<Pawn>();
+
+            for (int i = 0; i < lineCells.Count; i++)
+            {
+                PawnKindDef kind = ZombieKindSelector.GetRandomKind(map);
+                Pawn pawn = ZombiePawnFactory.GenerateZombie(kind, faction);
+                if (pawn == null)
+                {
+                    continue;
+                }
+
+                if (pawn.Faction == null)
+                {
+                    try
+                    {
+                        pawn.SetFactionDirect(faction);
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                IntVec3 spawnCell = lineCells[i];
+                if (!SpawnZombiePawn(map, pawn, spawnCell, ZombieSpawnEventType.Herd, direction))
+                {
+                    pawn.Destroy(DestroyMode.Vanish);
+                    continue;
+                }
+
+                if (!firstCell.IsValid)
+                {
+                    firstCell = spawnCell;
+                }
+
+                spawnedCount++;
+                spawnedPawns.Add(pawn);
+                if (ZombieUtility.IsVariant(pawn, ZombieVariant.Biter))
+                {
+                    biterSpawnCount++;
+                    if (!firstBiterSpawnCell.IsValid)
+                    {
+                        firstBiterSpawnCell = spawnCell;
+                    }
+                }
+            }
+
+            TrySpawnRareRuntWithBiters(map, faction, biterSpawnCount, firstBiterSpawnCell, ZombieSpawnEventType.Herd, spawnedPawns);
+            if (spawnedCount < 1)
+            {
+                return false;
+            }
+
+            if (sendLetter)
+            {
+                string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
+                string label = customLetterLabel ?? (prefix + " Herd");
+                string text = customLetterText ?? "A broad herd of " + prefix.ToLowerInvariant() + "s is crossing the map in a slow wall of bodies. It is more interested in crossing than charging your base, but anything too close may still be dragged into the flow.";
+                Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.ThreatBig, new TargetInfo(firstCell.IsValid ? firstCell : map.Center, map));
+            }
+
+            return true;
         }
 
         public static bool SpawnHorde(Map map, int totalCount, int groups, string letterLabel, string letterText, bool ignoreCap = false, bool ignoreTimeOfDay = false, ZombiePopulationState populationState = ZombiePopulationState.Auto)
@@ -772,12 +877,17 @@ namespace CustomizableZombieHorde
             return pawns;
         }
 
-        private static bool SpawnZombiePawn(Map map, Pawn pawn, IntVec3 spawnCell, ZombieSpawnEventType behavior)
+        private static bool SpawnZombiePawn(Map map, Pawn pawn, IntVec3 spawnCell, ZombieSpawnEventType behavior, ZombieHerdDirection? herdDirection = null)
         {
             try
             {
                 GenSpawn.Spawn(pawn, spawnCell, map, WipeMode.Vanish);
-                Current.Game?.GetComponent<ZombieGameComponent>()?.RegisterBehavior(pawn, behavior);
+                ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
+                component?.RegisterBehavior(pawn, behavior);
+                if (behavior == ZombieSpawnEventType.Herd && herdDirection.HasValue)
+                {
+                    component?.RegisterHerdDirection(pawn, herdDirection.Value);
+                }
                 ZombieUtility.PrepareSpawnedZombie(pawn);
                 if (pawn.Downed)
                 {
@@ -848,9 +958,89 @@ namespace CustomizableZombieHorde
                     return "A group of " + prefix.ToLowerInvariant() + "s is wandering the outskirts of the map, circling the colony from a distance and looking for a weak approach.";
                 case ZombieSpawnEventType.GroundBurst:
                     return "A pack of " + prefix.ToLowerInvariant() + "s has burst from the ground inside your colony. This breach began inside your defenses, so respond quickly.";
+                case ZombieSpawnEventType.Herd:
+                    return "A herd of " + prefix.ToLowerInvariant() + "s is crossing the map in a broad line. It may ignore distant targets, but anything close to the flow can still get swallowed up.";
                 default:
                     return "A group of " + prefix.ToLowerInvariant() + "s has entered from the map edge and is drifting toward your colony. Pull back exposed workers and prepare a firing line.";
             }
+        }
+
+        private static ZombieHerdDirection GetRandomHerdDirection()
+        {
+            int roll = Rand.RangeInclusive(0, 3);
+            switch (roll)
+            {
+                case 0:
+                    return ZombieHerdDirection.NorthToSouth;
+                case 1:
+                    return ZombieHerdDirection.SouthToNorth;
+                case 2:
+                    return ZombieHerdDirection.WestToEast;
+                default:
+                    return ZombieHerdDirection.EastToWest;
+            }
+        }
+
+        private static List<IntVec3> BuildHerdSpawnLine(Map map, ZombieHerdDirection direction, int count)
+        {
+            List<IntVec3> cells = new List<IntVec3>();
+            if (map == null || count < 1)
+            {
+                return cells;
+            }
+
+            int minMargin = 6;
+            int maxX = map.Size.x - 7;
+            int maxZ = map.Size.z - 7;
+            bool vertical = direction == ZombieHerdDirection.NorthToSouth || direction == ZombieHerdDirection.SouthToNorth;
+            int startFixed = direction == ZombieHerdDirection.NorthToSouth ? maxZ : direction == ZombieHerdDirection.SouthToNorth ? minMargin : direction == ZombieHerdDirection.WestToEast ? minMargin : maxX;
+            int spanStart = vertical ? minMargin : minMargin;
+            int spanEnd = vertical ? maxX : maxZ;
+            float spanLength = Mathf.Max(1f, spanEnd - spanStart);
+
+            for (int i = 0; i < count; i++)
+            {
+                float t = count == 1 ? 0.5f : i / (float)(count - 1);
+                int lane = Mathf.RoundToInt(spanStart + spanLength * t);
+                IntVec3 ideal = vertical ? new IntVec3(Mathf.Clamp(lane, minMargin, maxX), 0, startFixed) : new IntVec3(startFixed, 0, Mathf.Clamp(lane, minMargin, maxZ));
+                IntVec3 resolved = ResolveHerdSpawnCell(map, ideal, direction);
+                if (resolved.IsValid && !cells.Contains(resolved))
+                {
+                    cells.Add(resolved);
+                }
+            }
+
+            return cells;
+        }
+
+        private static IntVec3 ResolveHerdSpawnCell(Map map, IntVec3 ideal, ZombieHerdDirection direction)
+        {
+            if (ideal.InBounds(map) && ideal.Standable(map))
+            {
+                return ideal;
+            }
+
+            int primaryRadius = 8;
+            for (int radius = 1; radius <= primaryRadius; radius++)
+            {
+                foreach (IntVec3 cell in GenRadial.RadialCellsAround(ideal, radius, true))
+                {
+                    if (!cell.InBounds(map) || !cell.Standable(map))
+                    {
+                        continue;
+                    }
+
+                    bool stillNearEdge = direction == ZombieHerdDirection.NorthToSouth || direction == ZombieHerdDirection.SouthToNorth
+                        ? Mathf.Abs(cell.z - ideal.z) <= 4
+                        : Mathf.Abs(cell.x - ideal.x) <= 4;
+                    if (stillNearEdge)
+                    {
+                        return cell;
+                    }
+                }
+            }
+
+            return CellFinder.RandomClosewalkCellNear(ideal, map, 10);
         }
 
         private static IntVec3 ChooseSpawnCell(Map map, IntVec3 edgeCell, Pawn pawn, ZombieSpawnEventType behavior, bool canUseWater)

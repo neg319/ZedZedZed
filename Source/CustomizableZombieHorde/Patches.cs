@@ -131,6 +131,15 @@ namespace CustomizableZombieHorde
         }
 
 
+        public static void Prefix(PawnRenderer __instance)
+        {
+            Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            if (ZombieUtility.IsZombie(pawn))
+            {
+                ZombiePawnFactory.EnsureZombieVisualIntegrity(pawn, markGraphicsDirty: false);
+            }
+        }
+
         public static void Postfix(PawnRenderer __instance, Vector3 drawLoc, Rot4? rotOverride = null, bool neverAimWeapon = false)
         {
             Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
@@ -564,12 +573,18 @@ namespace CustomizableZombieHorde
     {
         public static void Postfix(Corpse __instance)
         {
-            if (__instance?.InnerPawn == null || !ZombieUtility.IsVariant(__instance.InnerPawn, ZombieVariant.Runt))
+            Pawn innerPawn = __instance?.InnerPawn;
+            if (innerPawn == null || !ZombieUtility.IsZombie(innerPawn))
             {
                 return;
             }
 
-            ZombieRuntUtility.NormalizeRuntCorpseForButchering(__instance.InnerPawn);
+            if (ZombieUtility.IsVariant(innerPawn, ZombieVariant.Runt))
+            {
+                ZombieRuntUtility.NormalizeRuntCorpseForButchering(innerPawn);
+            }
+
+            ZombiePawnFactory.EnsureZombieVisualIntegrity(innerPawn);
         }
     }
 

@@ -27,6 +27,7 @@ This repository is the full source package for the mod, along with a GitHub Acti
 - **Huddled packs** gather in place until something wakes them up.
 - **Base pushes** lean harder into direct pressure on the colony.
 - **Ground bursts** can erupt inside your walls and turn a calm moment into a scramble.
+- **Herd crossings** send a broad wall of zombies from one side of the map to the other, usually sized at 10 times your colonists with a floor of 50 and a cap of 75.
 - **Grave events** create an active grave that keeps producing more undead until you destroy it.
 - **Full moons and blood moons** can spike the danger and push the map into a much worse state.
 - **Colony scaled pressure** lets the mod size danger around your current colonist count instead of relying only on flat caps.
@@ -72,7 +73,7 @@ This repository is the full source package for the mod, along with a GitHub Acti
 - **Themed settings menu** with Overview, Events, Variants, Names, Colony, and Debug tabs.
 - **Pause menu shortcut** so you can open Zed Zed Zed settings directly from the in game menu.
 - **Naming controls** for the family name and every strain name.
-- **Event controls** for trickles, pushes, huddles, bursts, graves, full moons, and blood moons.
+- **Event controls** for trickles, pushes, huddles, herd crossings, bursts, graves, full moons, and blood moons.
 - **Population controls** for day, night, moon events, and colony scaling.
 - **Infection timing controls** so you can make the outbreak harsher or more forgiving.
 - **Debug buttons** for forced waves, moon events, grave events, and strain specific test spawns.
@@ -130,7 +131,6 @@ This is the running feature list for the mod. Dates are listed when they can be 
 ### 2026-04-09
 - Captured undead slavery rules added. Standard zombie strains can now be enslaved after capture, while only lurkers are recruitable as full colony members.
 
-
 - A pause menu shortcut was added so players can open Zed Zed Zed settings directly from the game menu.
 - The settings menu got more vertical breathing room to reduce clipping and overlap.
 - Settings descriptions and tab help text were rewritten to sound more natural while staying brief.
@@ -186,7 +186,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 73** of the active development cycle in this build set.
+This source package is currently at **iteration 81** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -244,8 +244,10 @@ Iteration history:
 - Iteration 70: naming controls now live together on their own Names tab, the settings order was cleaned up by importance, and the prioritized double tapping job checklist was rebuilt to stay visible and obvious in the Colony tab.
 - Iteration 71: hardened the prioritized double tapping work type list so it falls back to vanilla work type defs more safely instead of showing an empty state.
 - Iteration 72: changed prioritized double tapping to list every loaded work type in settings so the player can choose any job that should break away and finish fresh zombie corpses.
+- Iteration 80: fixed the zombie bile surgery def for RimWorld 1.6 compatibility, hardened bone biter feeding against live pawn list changes, and sanitized zombie corpse visuals so bad head or tattoo data stops throwing render errors.
 
 ## Changelog
+- 2026-04-10 - Minor update - iteration 80: Fixed the zombie bile surgery def to stop the missing MedicalSleepingSpot and PotentialBillGiver errors, switched bone biter feeding to a safe snapshot so it no longer crashes on collection changes, and sanitized zombie corpse visual data so bad head or tattoo state stops throwing corpse render errors.
 - 2026-04-09: Minor update. Removed stuffed tinting from the rotten leather bed so the placed bed uses its custom texture color instead of being darkened by stuff coloring.
 - 2026-04-09 - Minor update - iteration 77: Reworked zombie corpse reanimation so standard zombie corpses no longer depend on a corpse-side Reanimated marker to get back up. Fresh zombie corpses now schedule their wake on spawn and the global sweep raises any valid zombie corpse unless the head or skull has been ruined.
 
@@ -271,6 +273,12 @@ This changelog treats a **major update** as something that adds substantial new 
 - Added rotten leather furniture and expanded rotten leather floors with multiple variants.
 
 ### Minor updates
+
+#### 2026-04-10 - surgery, bone biter, and corpse render stability
+- Removed the outdated custom surgery user list from the zombie bile operation so RimWorld 1.6 no longer looks for MedicalSleepingSpot or tags invalid bill givers from that def path.
+- Changed bone biter feeding to iterate over a safe pawn snapshot so corpse destruction or prey death during the tick no longer throws a collection modified exception.
+- Added zombie visual sanity cleanup for head, hair, beard, and tattoo data so malformed zombie corpses stop causing portrait and dynamic draw null reference errors.
+
 
 #### 2026-04-09 - zombie bile surgery build fix
 - Fixed the Recipe_InjectZombieBile surgery worker so its AvailableOnNow override matches the current RimWorld API and no longer breaks the GitHub build.
@@ -396,3 +404,5 @@ This changelog treats a **major update** as something that adds substantial new 
 - Made trickles and refill pressure choose direct settlement attacks more often when the map is under target or nighttime pressure is high.
 - Tightened assault pathing so attacking zombies push deeper toward the colony instead of milling around too far from the base.
 - Reduced blood moon command spam so zombies stop constantly having their jobs reset, which should make blood moon movement much smoother.
+- Iteration 81: herd crossings were added as a major map crossing event with a debug button, event timing controls, and automatic sizing at 10 times colonists with a floor of 50 and a cap of 75.
+- Iteration 82: standard biters now take about 50 percent more incoming damage than before, so the basic horde body drops faster under focused fire while bone biters and the heavier specials keep their own tougher profiles.

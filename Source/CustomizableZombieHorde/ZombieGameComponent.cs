@@ -11,6 +11,7 @@ namespace CustomizableZombieHorde
     {
         private int nextTrickleTick = -1;
         private int nextGroundBurstTick = -1;
+        private int nextHerdEventTick = -1;
         private int nextGraveEventTick = -1;
         private int nextGlobalReanimationCheckTick = -1;
         private Dictionary<int, int> corpseWakeTicks = new Dictionary<int, int>();
@@ -36,6 +37,7 @@ namespace CustomizableZombieHorde
         private Dictionary<int, int> lastRainDrownedSpawnTickByMap = new Dictionary<int, int>();
         private Dictionary<int, int> nextPopulationTopUpTickByMap = new Dictionary<int, int>();
         private Dictionary<int, int> zombieBehaviorByPawnId = new Dictionary<int, int>();
+        private Dictionary<int, int> zombieHerdDirectionByPawnId = new Dictionary<int, int>();
         private List<int> infectionHeadFatalPawnIds = new List<int>();
         private List<int> infectionLurkerPawnIds = new List<int>();
 
@@ -47,6 +49,7 @@ namespace CustomizableZombieHorde
         {
             Scribe_Values.Look(ref nextTrickleTick, "nextTrickleTick", -1);
             Scribe_Values.Look(ref nextGroundBurstTick, "nextGroundBurstTick", -1);
+            Scribe_Values.Look(ref nextHerdEventTick, "nextHerdEventTick", -1);
             Scribe_Values.Look(ref nextGraveEventTick, "nextGraveEventTick", -1);
             Scribe_Values.Look(ref nextGlobalReanimationCheckTick, "nextGlobalReanimationCheckTick", -1);
             Scribe_Collections.Look(ref corpseWakeTicks, "corpseWakeTicks", LookMode.Value, LookMode.Value);
@@ -72,6 +75,7 @@ namespace CustomizableZombieHorde
             Scribe_Collections.Look(ref lastRainDrownedSpawnTickByMap, "lastRainDrownedSpawnTickByMap", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref nextPopulationTopUpTickByMap, "nextPopulationTopUpTickByMap", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref zombieBehaviorByPawnId, "zombieBehaviorByPawnId", LookMode.Value, LookMode.Value);
+            Scribe_Collections.Look(ref zombieHerdDirectionByPawnId, "zombieHerdDirectionByPawnId", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref infectionHeadFatalPawnIds, "infectionHeadFatalPawnIds", LookMode.Value);
             Scribe_Collections.Look(ref infectionLurkerPawnIds, "infectionLurkerPawnIds", LookMode.Value);
             base.ExposeData();
@@ -88,6 +92,7 @@ namespace CustomizableZombieHorde
             lastRainDrownedSpawnTickByMap ??= new Dictionary<int, int>();
             nextPopulationTopUpTickByMap ??= new Dictionary<int, int>();
             zombieBehaviorByPawnId ??= new Dictionary<int, int>();
+            zombieHerdDirectionByPawnId ??= new Dictionary<int, int>();
             infectionHeadFatalPawnIds ??= new List<int>();
             infectionLurkerPawnIds ??= new List<int>();
         }
@@ -152,6 +157,7 @@ namespace CustomizableZombieHorde
 
             HandleTrickleSpawns(ticksGame);
             HandleGroundBursts(ticksGame);
+            HandleHerdEvents(ticksGame);
             HandleGraveEvents(ticksGame);
             HandleActiveBloodMoon(ticksGame);
             HandleMoonCycle();
@@ -307,6 +313,31 @@ namespace CustomizableZombieHorde
 
             int count = Mathf.Max(2, CustomizableZombieHordeMod.Settings.trickleMinGroupSize + 1);
             bool result = ZombieSpawnHelper.SpawnEdgeWanderers(map, forcedCount: count, sendLetter: true, ignoreCap: true, ignoreTimeOfDay: true);
+            if (result)
+            {
+                RefreshCurrentMapCount();
+            }
+
+            return result;
+        }
+
+        public bool DebugForceHerd()
+        {
+            Map map = GetDebugTargetMap();
+            if (map == null)
+            {
+                return false;
+            }
+
+            bool result = ZombieSpawnHelper.SpawnHerd(
+                map,
+                forcedCount: ZombieSpawnHelper.GetRecommendedHerdCount(map),
+                sendLetter: true,
+                customLetterLabel: "Debug Herd",
+                customLetterText: "A debug herd is crossing the map in a broad wall of bodies.",
+                ignoreCap: true,
+                applyDifficulty: false,
+                ignoreTimeOfDay: true);
             if (result)
             {
                 RefreshCurrentMapCount();
@@ -646,6 +677,21 @@ namespace CustomizableZombieHorde
 
             zombieBehaviorByPawnId ??= new Dictionary<int, int>();
             zombieBehaviorByPawnId[pawn.thingIDNumber] = (int)behavior;
+            if (behavior != ZombieSpawnEventType.Herd)
+            {
+                zombieHerdDirectionByPawnId?.Remove(pawn.thingIDNumber);
+            }
+        }
+
+        public void RegisterHerdDirection(Pawn pawn, ZombieHerdDirection direction)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            zombieHerdDirectionByPawnId ??= new Dictionary<int, int>();
+            zombieHerdDirectionByPawnId[pawn.thingIDNumber] = (int)direction;
         }
 
         public ZombieSpawnEventType GetAssignedBehavior(Pawn pawn)
@@ -663,14 +709,32 @@ namespace CustomizableZombieHorde
             return ZombieSpawnEventType.AssaultBase;
         }
 
+        public bool TryGetAssignedHerdDirection(Pawn pawn, out ZombieHerdDirection direction)
+        {
+            direction = ZombieHerdDirection.NorthToSouth;
+            if (pawn == null || zombieHerdDirectionByPawnId == null)
+            {
+                return false;
+            }
+
+            if (!zombieHerdDirectionByPawnId.TryGetValue(pawn.thingIDNumber, out int storedValue))
+            {
+                return false;
+            }
+
+            direction = (ZombieHerdDirection)storedValue;
+            return true;
+        }
+
         public void ForgetBehavior(Pawn pawn)
         {
-            if (pawn == null || zombieBehaviorByPawnId == null)
+            if (pawn == null)
             {
                 return;
             }
 
-            zombieBehaviorByPawnId.Remove(pawn.thingIDNumber);
+            zombieBehaviorByPawnId?.Remove(pawn.thingIDNumber);
+            zombieHerdDirectionByPawnId?.Remove(pawn.thingIDNumber);
         }
 
         public bool HasActiveGrabberTongue(Pawn pawn)
@@ -1044,6 +1108,41 @@ namespace CustomizableZombieHorde
             float minDays = settings?.GetEffectiveGroundBurstMinDays() ?? 5f;
             float maxDays = settings?.GetEffectiveGroundBurstMaxDays() ?? minDays;
             nextGroundBurstTick = ticksGame + DaysToTicks(Rand.Range(minDays, maxDays));
+        }
+
+        private void HandleHerdEvents(int ticksGame)
+        {
+            if (!CustomizableZombieHordeMod.Settings.enableHerdEvents)
+            {
+                return;
+            }
+
+            if (nextHerdEventTick < 0)
+            {
+                ScheduleNextHerdEvent(ticksGame);
+                return;
+            }
+
+            if (ticksGame < nextHerdEventTick)
+            {
+                return;
+            }
+
+            List<Map> homeMaps = Find.Maps.Where(map => map.IsPlayerHome).ToList();
+            if (homeMaps.Count > 0)
+            {
+                ZombieSpawnHelper.SpawnHerd(homeMaps.RandomElement());
+            }
+
+            ScheduleNextHerdEvent(ticksGame);
+        }
+
+        private void ScheduleNextHerdEvent(int ticksGame)
+        {
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            float minDays = settings?.GetEffectiveHerdEventMinDays() ?? 10f;
+            float maxDays = settings?.GetEffectiveHerdEventMaxDays() ?? minDays;
+            nextHerdEventTick = ticksGame + DaysToTicks(Rand.Range(minDays, maxDays));
         }
 
         private void HandleGraveEvents(int ticksGame)

@@ -461,7 +461,8 @@ namespace CustomizableZombieHorde
             }
 
             PruneBoneBiterState(map);
-            foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned)
+            List<Pawn> spawnedPawns = map.mapPawns?.AllPawnsSpawned?.ToList() ?? new List<Pawn>();
+            foreach (Pawn pawn in spawnedPawns)
             {
                 if (!IsBoneBiter(pawn) || pawn.Dead || pawn.Destroyed || pawn.Downed)
                 {
@@ -574,6 +575,8 @@ namespace CustomizableZombieHorde
                     return FindHuddleCell(pawn);
                 case ZombieSpawnEventType.GroundBurst:
                     return FindAssaultCell(pawn);
+                case ZombieSpawnEventType.Herd:
+                    return FindHerdCrossingCell(pawn);
                 default:
                     return FindAssaultCell(pawn);
             }
@@ -594,9 +597,61 @@ namespace CustomizableZombieHorde
                     return FindHuddleCell(pawn);
                 case ZombieSpawnEventType.GroundBurst:
                     return FindAssaultCell(pawn);
+                case ZombieSpawnEventType.Herd:
+                    return FindHerdCrossingCell(pawn);
                 default:
                     return FindAssaultCell(pawn);
             }
+        }
+
+        public static IntVec3 FindHerdCrossingCell(Pawn pawn)
+        {
+            Map map = pawn?.MapHeld;
+            if (map == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
+            if (component == null || !component.TryGetAssignedHerdDirection(pawn, out ZombieHerdDirection direction))
+            {
+                return FindAssaultCell(pawn);
+            }
+
+            IntVec3 target;
+            int x = Mathf.Clamp(pawn.PositionHeld.x, 6, map.Size.x - 7);
+            int z = Mathf.Clamp(pawn.PositionHeld.z, 6, map.Size.z - 7);
+            switch (direction)
+            {
+                case ZombieHerdDirection.NorthToSouth:
+                    target = new IntVec3(x, 0, 6);
+                    break;
+                case ZombieHerdDirection.SouthToNorth:
+                    target = new IntVec3(x, 0, map.Size.z - 7);
+                    break;
+                case ZombieHerdDirection.WestToEast:
+                    target = new IntVec3(map.Size.x - 7, 0, z);
+                    break;
+                default:
+                    target = new IntVec3(6, 0, z);
+                    break;
+            }
+
+            if (target.InBounds(map) && target.Standable(map))
+            {
+                return target;
+            }
+
+            for (int radius = 1; radius <= 8; radius++)
+            {
+                IntVec3 nearby = CellFinder.RandomClosewalkCellNear(target, map, radius);
+                if (nearby.IsValid && nearby.Standable(map))
+                {
+                    return nearby;
+                }
+            }
+
+            return FindAssaultCell(pawn);
         }
 
         public static IntVec3 FindAssaultCell(Pawn pawn)

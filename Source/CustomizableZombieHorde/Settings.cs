@@ -55,6 +55,10 @@ namespace CustomizableZombieHorde
         public int groundBurstMinGroupSize = 2;
         public int groundBurstMaxGroupSize = 4;
 
+        public bool enableHerdEvents = true;
+        public float herdEventMinDays = 10f;
+        public float herdEventMaxDays = 18f;
+
         public bool enableGraveEvents = true;
         public float graveEventMinDays = 8f;
         public float graveEventMaxDays = 16f;
@@ -121,6 +125,10 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref groundBurstMaxDays, "groundBurstMaxDays", 10f);
             Scribe_Values.Look(ref groundBurstMinGroupSize, "groundBurstMinGroupSize", 2);
             Scribe_Values.Look(ref groundBurstMaxGroupSize, "groundBurstMaxGroupSize", 4);
+
+            Scribe_Values.Look(ref enableHerdEvents, "enableHerdEvents", true);
+            Scribe_Values.Look(ref herdEventMinDays, "herdEventMinDays", 10f);
+            Scribe_Values.Look(ref herdEventMaxDays, "herdEventMaxDays", 18f);
 
             Scribe_Values.Look(ref enableGraveEvents, "enableGraveEvents", true);
             Scribe_Values.Look(ref graveEventMinDays, "graveEventMinDays", 8f);
@@ -216,6 +224,16 @@ namespace CustomizableZombieHorde
         public float GetEffectiveGroundBurstMaxDays()
         {
             return Mathf.Max(GetEffectiveGroundBurstMinDays(), ScaleDaysByOutbreak(groundBurstMaxDays, GetEffectiveGroundBurstMinDays(), 30f));
+        }
+
+        public float GetEffectiveHerdEventMinDays()
+        {
+            return ScaleDaysByOutbreak(herdEventMinDays, 4f, 30f);
+        }
+
+        public float GetEffectiveHerdEventMaxDays()
+        {
+            return Mathf.Max(GetEffectiveHerdEventMinDays(), ScaleDaysByOutbreak(herdEventMaxDays, GetEffectiveHerdEventMinDays(), 40f));
         }
 
         public int GetEffectiveGroundBurstMinGroupSize()
@@ -326,6 +344,10 @@ namespace CustomizableZombieHorde
             groundBurstMinGroupSize = 2;
             groundBurstMaxGroupSize = 4;
 
+            enableHerdEvents = true;
+            herdEventMinDays = 10f;
+            herdEventMaxDays = 18f;
+
             enableGraveEvents = true;
             graveEventMinDays = 8f;
             graveEventMaxDays = 16f;
@@ -384,6 +406,8 @@ namespace CustomizableZombieHorde
             bloodMoonChance = 0.05f;
             groundBurstMinDays = 8f;
             groundBurstMaxDays = 14f;
+            herdEventMinDays = 14f;
+            herdEventMaxDays = 24f;
             graveEventMinDays = 12f;
             graveEventMaxDays = 20f;
             fastZombieChance = 0.01f;
@@ -404,6 +428,8 @@ namespace CustomizableZombieHorde
             groundBurstMaxDays = 7f;
             groundBurstMinGroupSize = 3;
             groundBurstMaxGroupSize = 6;
+            herdEventMinDays = 7f;
+            herdEventMaxDays = 12f;
             graveEventMinDays = 5f;
             graveEventMaxDays = 12f;
             fastZombieChance = 0.05f;
@@ -468,6 +494,9 @@ namespace CustomizableZombieHorde
             groundBurstMaxDays = Mathf.Clamp(groundBurstMaxDays, groundBurstMinDays, 30f);
             groundBurstMinGroupSize = Mathf.Clamp(groundBurstMinGroupSize, 1, 12);
             groundBurstMaxGroupSize = Mathf.Clamp(groundBurstMaxGroupSize, groundBurstMinGroupSize, 18);
+
+            herdEventMinDays = Mathf.Clamp(herdEventMinDays, 4f, 30f);
+            herdEventMaxDays = Mathf.Clamp(herdEventMaxDays, herdEventMinDays, 40f);
 
             graveEventMinDays = Mathf.Clamp(graveEventMinDays, 3f, 30f);
             graveEventMaxDays = Mathf.Clamp(graveEventMaxDays, graveEventMinDays, 40f);
@@ -614,7 +643,7 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref eventsScrollPosition, ref eventsViewHeight, out Listing_Standard listing, out Rect viewRect);
 
-            DrawInfoCard(listing, "About this tab", "This tab controls when zombie pressure shows up and what form it takes, from steady trickles to moon hordes, ground bursts, and graves.");
+            DrawInfoCard(listing, "About this tab", "This tab controls when zombie pressure shows up and what form it takes, from steady trickles to moon hordes, broad herd crossings, ground bursts, and graves.");
             DrawSectionLabel(listing, "Constant edge trickle", "Small groups drifting in from the map edge keep pressure on the colony between major events. Outbreak intensity automatically speeds this up when you raise it.");
             DrawToggleCard(listing, "Enable edge trickle", "Lets small zombie groups keep wandering in from the map edge. Higher outbreak intensity shortens the gap between trickles and helps the map refill faster toward its target population.", ref enableEdgeTrickle);
             if (enableEdgeTrickle)
@@ -654,6 +683,19 @@ namespace CustomizableZombieHorde
             else
             {
                 DrawInfoCard(listing, "Moon events are off", "Full moon and blood moon attacks will stay out of the normal event rotation until you turn them back on.");
+            }
+
+            DrawSectionLabel(listing, "Herd crossings", "These are the big wall like migrations that cross one whole side of the map to the other. They use 10 times your colonist count, never go below 50, and stop at 75.");
+            DrawToggleCard(listing, "Enable herd events", "Lets massive zombie herds cross the map in a broad line instead of trickling in as a normal wave.", ref enableHerdEvents);
+            if (enableHerdEvents)
+            {
+                DrawFloatStepperCard(listing, "Minimum days between herds", "Shortest possible gap between herd events.", ref herdEventMinDays, 4f, 30f, 0.5f, "days");
+                DrawFloatStepperCard(listing, "Maximum days between herds", "Longest possible gap between herd events.", ref herdEventMaxDays, herdEventMinDays, 40f, 0.5f, "days");
+                DrawInfoCard(listing, "Herd size", "Herd size is automatic. The mod aims for 10 times your colonists, but never below 50 and never above 75.");
+            }
+            else
+            {
+                DrawInfoCard(listing, "Herd events are off", "No map crossing herds will fire from the event system while this is disabled.");
             }
 
             DrawSectionLabel(listing, "Ground bursts", "These are the surprise eruptions that can pop up inside your base. Outbreak intensity also squeezes their timing and group size upward.");
@@ -788,7 +830,7 @@ namespace CustomizableZombieHorde
 
             DrawInfoCard(listing, "About this tab", "Use this tab to force events and test behavior in a live colony. It is meant for testing, not normal play.");
             DrawSectionLabel(listing, "Debug mode", "Use this for testing and screenshots. It is best left off during normal play.");
-            DrawToggleCard(listing, "Enable debug controls", "Shows manual buttons for forced waves, moon events, grave events, and test spawns while a colony is loaded.", ref enableDebugControls);
+            DrawToggleCard(listing, "Enable debug controls", "Shows manual buttons for forced waves, herd crossings, moon events, grave events, and test spawns while a colony is loaded.", ref enableDebugControls);
             DrawSectionLabel(listing, "Debug spawn sizing", "These sizes are only used by manual debug spawns and forced test events.");
             DrawIntStepperCard(listing, "Debug spawn minimum", "Smallest group size used by manual spawns and forced events.", ref minGroupSize, 1, 60, 1);
             DrawIntStepperCard(listing, "Debug spawn maximum", "Largest group size used by manual spawns and forced events.", ref maxGroupSize, minGroupSize, 120, 1);
@@ -812,6 +854,7 @@ namespace CustomizableZombieHorde
                 DrawDebugActionButton(listing, component, "Force huddled pack now", "Forced a huddled pack.", "Could not force a huddled pack.");
                 DrawDebugActionButton(listing, component, "Force base push now", "Forced a base push.", "Could not force a base push.");
                 DrawDebugActionButton(listing, component, "Force edge wanderers now", "Forced edge wanderers.", "Could not force edge wanderers.");
+                DrawDebugActionButton(listing, component, "Force herd now", "Forced a herd crossing.", "Could not force a herd crossing.");
                 DrawDebugActionButton(listing, component, "Force ground burst now", "Forced a ground burst.", "Could not force a ground burst.");
 
                 DrawSectionLabel(listing, "Moon buttons", "Use these to force moon hordes right away while you test night pressure.");
@@ -1111,6 +1154,8 @@ namespace CustomizableZombieHorde
                     return component.DebugForceBasePush();
                 case "Force edge wanderers now":
                     return component.DebugForceEdgeWanderers();
+                case "Force herd now":
+                    return component.DebugForceHerd();
                 case "Force ground burst now":
                     return component.DebugForceGroundBurst();
                 case "Force random grave event now":

@@ -29,4 +29,21 @@
     <baseChance>0.03</baseChance>
     <minRefireDays>15</minRefireDays>
   </IncidentDef>
+
+
+  <IncidentDef>
+    <defName>CZH_ZombieHerd</defName>
+    <label>herd</label>
+    <workerClass>CustomizableZombieHorde.IncidentWorker_ZombieHerd</workerClass>
+    <category>ThreatBig</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <letterLabel>Zombie Herd Crossing</letterLabel>
+    <letterText>A broad herd of zombies is crossing the map in a slow wall of bodies.</letterText>
+    <baseChance>0</baseChance>
+    <pointsScaleable>false</pointsScaleable>
+    <minThreatPoints>35</minThreatPoints>
+  </IncidentDef>
+
 </Defs>
