@@ -1,0 +1,637 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <HediffDef>
+    <defName>CZH_ZombieRot</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>zombie rot</label>
+    <description>This pawn is an undead zombie. Its body is decayed, slow, and unnaturally persistent unless the head is damaged.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <comps>
+      <li Class="CustomizableZombieHorde.HediffCompProperties_ZombieRot" />
+      <li Class="HediffCompProperties_VerbGiver">
+        <verbs>
+          <li>
+            <verbClass>CustomizableZombieHorde.ZombieVerb_GrabberTongue</verbClass>
+            <label>tongue lash</label>
+            <range>12</range>
+            <warmupTime>0.15</warmupTime>
+            <defaultCooldownTime>12.48</defaultCooldownTime>
+            <minRange>2.2</minRange>
+            <hasStandardCommand>false</hasStandardCommand>
+            <defaultProjectile>CZH_GrabberTongueProjectile</defaultProjectile>
+            <forcedMissRadius>0</forcedMissRadius>
+            <accuracyTouch>999</accuracyTouch>
+            <accuracyShort>999</accuracyShort>
+            <accuracyMedium>999</accuracyMedium>
+            <accuracyLong>999</accuracyLong>
+            <targetParams>
+              <canTargetPawns>true</canTargetPawns>
+              <canTargetLocations>false</canTargetLocations>
+              <canTargetBuildings>false</canTargetBuildings>
+              <canTargetSelf>false</canTargetSelf>
+            </targetParams>
+          </li>
+          <li>
+            <verbClass>CustomizableZombieHorde.ZombieVerb_MeleeAttack</verbClass>
+            <label>bite</label>
+            <range>1</range>
+            <meleeDamageDef>Bite</meleeDamageDef>
+            <meleeDamageBaseAmount>3</meleeDamageBaseAmount>
+            <defaultCooldownTime>8.84</defaultCooldownTime>
+          </li>
+          <li>
+            <verbClass>CustomizableZombieHorde.ZombieVerb_MeleeAttack</verbClass>
+            <label>scratch</label>
+            <range>1</range>
+            <meleeDamageDef>Scratch</meleeDamageDef>
+            <meleeDamageBaseAmount>1</meleeDamageBaseAmount>
+            <defaultCooldownTime>7.02</defaultCooldownTime>
+          </li>
+        </verbs>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>rotting</label>
+        <painFactor>0.2</painFactor>
+        <capMods>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.45</offset>
+          </li>
+          <li>
+            <capacity>Manipulation</capacity>
+            <offset>-0.25</offset>
+          </li>
+        </capMods>
+        <statOffsets>
+          <MoveSpeed>-1.35</MoveSpeed>
+          <MeleeDamageFactor>-0.35</MeleeDamageFactor>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieFeignDeath</defName>
+    <hediffClass>CustomizableZombieHorde.Hediff_ZombieFeignDeath</hediffClass>
+    <label>Reanimating</label>
+    <description>This zombie is in a dead state, but it is still alive. It is comatose, reanimating, and building back toward full recovery. At 100% it fully heals and stands back up unless someone Double Taps it or ruins the head first.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <comps>
+      <li Class="CustomizableZombieHorde.HediffCompProperties_ZombieFeignDeath">
+        <minWakeTicks>12000</minWakeTicks>
+        <maxWakeTicks>24000</maxWakeTicks>
+        <healIntervalTicks>180</healIntervalTicks>
+        <healAmount>1.35</healAmount>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>dead state</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-2.00</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-1.00</offset>
+          </li>
+          <li>
+            <capacity>Manipulation</capacity>
+            <offset>-1.00</offset>
+          </li>
+        </capMods>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieLimbDecay</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>limb decay</label>
+    <description>The limb is rotted and weaker than a healthy pawn limb.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>decayed</label>
+        <painFactor>0.1</painFactor>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieOpenWound</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>rotting wound</label>
+    <description>A visible decayed wound left on the zombie's body.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <displayWound>true</displayWound>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>opened</label>
+        <painFactor>0.1</painFactor>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieRunner</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>runner strain</label>
+    <description>This rare zombie strain still moves unnaturally quickly.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>runner</label>
+        <capMods>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>0.18</offset>
+          </li>
+        </capMods>
+        <statOffsets>
+          <MoveSpeed>0.75</MoveSpeed>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieBiter</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>frail biter strain</label>
+    <description>This weak shambling strain tears poorly and falls apart under focused attacks.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>frail</label>
+        <statOffsets>
+          <MeleeDamageFactor>-0.43</MeleeDamageFactor>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieSkeletonBiter</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>skeletal biter strain</label>
+    <description>This skeletal shambling strain is brittle, uncanny, and slower than a standard biter.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>skeletal</label>
+        <statOffsets>
+          <MoveSpeed>-0.80</MoveSpeed>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieRunt</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>runt body</label>
+    <description>This zombie drags itself forward on ruined limbs.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>crawling</label>
+        <statOffsets>
+          <MoveSpeed>-1.15</MoveSpeed>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_RuntAgeSevenMonths</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>7 Months</label>
+    <description>This runt is the youngest and weakest of the litter.</description>
+    <isBad>false</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>7 months</label>
+        <statOffsets>
+          <MoveSpeed>-0.35</MoveSpeed>
+          <MeleeDamageFactor>-0.18</MeleeDamageFactor>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_RuntAgeEightMonths</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>8 Months</label>
+    <description>This runt is still frail, but a little faster and meaner than the youngest littermates.</description>
+    <isBad>false</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>8 months</label>
+        <statOffsets>
+          <MoveSpeed>-0.18</MoveSpeed>
+          <MeleeDamageFactor>-0.10</MeleeDamageFactor>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_RuntAgeNineMonths</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>9 Months</label>
+    <description>This runt is the oldest of the litter and the quickest on its feet, though still far weaker than a full grown corpse.</description>
+    <isBad>false</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>9 months</label>
+        <statOffsets>
+          <MoveSpeed>-0.05</MoveSpeed>
+          <MeleeDamageFactor>-0.04</MeleeDamageFactor>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieBrute</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>brute strain</label>
+    <description>This massive zombie strain is much stronger and larger than normal undead.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>hulking</label>
+        <statOffsets>
+          <MoveSpeed>-0.05</MoveSpeed>
+          <MeleeDamageFactor>0.70</MeleeDamageFactor>
+          <ArmorRating_Blunt>0.12</ArmorRating_Blunt>
+          <ArmorRating_Sharp>0.12</ArmorRating_Sharp>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieDrownedLand</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>drowned on land</label>
+    <description>Out of water, this drowned corpse becomes sluggish and weak.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>land-bound</label>
+        <capMods>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.22</offset>
+          </li>
+        </capMods>
+        <statOffsets>
+          <MoveSpeed>-0.95</MoveSpeed>
+          <MeleeDamageFactor>-0.35</MeleeDamageFactor>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieDrownedWater</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>drowned in water</label>
+    <description>Back in water, this drowned corpse becomes fast and violent.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>water-fed</label>
+        <statOffsets>
+          <MoveSpeed>0.35</MoveSpeed>
+          <MeleeDamageFactor>0.15</MeleeDamageFactor>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieDrownedRain</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>drowned in rain</label>
+    <description>Cold rain swells this drowned corpse into a rushing tide of rot. It surges toward living prey with unnatural speed.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>storm-rushing</label>
+        <statFactors>
+          <MoveSpeed>1.80</MoveSpeed>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieSickness</defName>
+    <hediffClass>CustomizableZombieHorde.Hediff_ZombieInfection</hediffClass>
+    <label>zombie infection</label>
+    <description>Contact with sick zombie blood or a filthy zombie bite has left this pawn infected. Bite caused infections can begin in a specific limb and may be stopped if that limb is amputated before the infection turns terminal. The first four stages are treatable. Terminal stages begin at 60%. At 80%, the victim falls into a living coma. If they survive to 99%, the infection completes a transformation and converts the living pawn into a colony lurker in the same way zombie bile injection does. If the pawn dies earlier from other injuries, the corpse stays dead.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>true</tendable>
+    <makesAlert>true</makesAlert>
+    <initialSeverity>0.01</initialSeverity>
+    <maxSeverity>1.0</maxSeverity>
+    <stages>
+      <li>
+        <minSeverity>0.01</minSeverity>
+        <label>Fresh Bite (Treatable)</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.01</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.02</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.10</minSeverity>
+        <label>Itchy Bite (Treatable)</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.03</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.05</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.30</minSeverity>
+        <label>Infected Bite (Treatable)</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.06</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.10</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.50</minSeverity>
+        <label>Strange Flu (Treatable)</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.10</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.16</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.60</minSeverity>
+        <label>Infected Bloodstream (Terminal)</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.18</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.28</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.70</minSeverity>
+        <label>Necrosis and Dementia (Terminal)</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-0.32</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-0.45</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.80</minSeverity>
+        <label>Coma (Terminal)</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-1.00</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-1.00</offset>
+          </li>
+        </capMods>
+      </li>
+      <li>
+        <minSeverity>0.90</minSeverity>
+        <label>Transformation (Reanimated)</label>
+        <capMods>
+          <li>
+            <capacity>Consciousness</capacity>
+            <offset>-1.00</offset>
+          </li>
+          <li>
+            <capacity>Moving</capacity>
+            <offset>-1.00</offset>
+          </li>
+        </capMods>
+      </li>
+    </stages>
+  </HediffDef>
+  <HediffDef>
+    <defName>CZH_ZombieReanimated</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>fully reanimated</label>
+    <description>This pawn completed the infection and is now fully reanimated. This is a completed turn state and cannot be cured.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <initialSeverity>1.0</initialSeverity>
+    <maxSeverity>1.0</maxSeverity>
+    <stages>
+      <li>
+        <label>reanimated</label>
+      </li>
+    </stages>
+  </HediffDef>
+  <HediffDef>
+    <defName>CZH_ZombieAcidCorrosion</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>zombie acid corrosion</label>
+    <description>Caustic zombie acid is still eating at the flesh and causing ongoing burn damage.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <initialSeverity>0.35</initialSeverity>
+    <maxSeverity>1.0</maxSeverity>
+    <comps>
+      <li Class="CustomizableZombieHorde.HediffCompProperties_DamageOverTime">
+        <tickInterval>300</tickInterval>
+        <damageAmount>1.1</damageAmount>
+        <damageDef>Burn</damageDef>
+        <severityLossPerTick>0.06</severityLossPerTick>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>corroding</label>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieBloodSepsis</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>zombie blood exposure</label>
+    <description>Undead blood is seeping into cuts and causing a weak but lingering damage over time effect.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <initialSeverity>0.10</initialSeverity>
+    <maxSeverity>1.0</maxSeverity>
+    <comps>
+      <li Class="CustomizableZombieHorde.HediffCompProperties_DamageOverTime">
+        <tickInterval>900</tickInterval>
+        <damageAmount>0.35</damageAmount>
+        <damageDef>Cut</damageDef>
+        <severityLossPerTick>0.02</severityLossPerTick>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>contaminated</label>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_PregnantBoomer</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>pregnant boomer</label>
+    <description>This female boomer is swollen with a runt. When it bursts, it is guaranteed to leave one behind.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>ready to burst</label>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_PukedOn</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>puked on</label>
+    <description>This pawn is coated in fresh zombie bile. The stench and dripping mess draw nearby zombies toward them.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <initialSeverity>1.0</initialSeverity>
+    <maxSeverity>1.0</maxSeverity>
+    <comps>
+      <li Class="CustomizableZombieHorde.HediffCompProperties_TemporaryStatus">
+        <durationTicks>1200</durationTicks>
+      </li>
+    </comps>
+    <stages>
+      <li>
+        <label>covered in bile</label>
+      </li>
+    </stages>
+  </HediffDef>
+
+
+  <HediffDef>
+    <defName>CZH_ZombieTank</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>brute strain</label>
+    <description>This massive zombie strain is much stronger and larger than normal undead.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>hulking</label>
+        <statOffsets>
+          <MoveSpeed>-0.05</MoveSpeed>
+          <MeleeDamageFactor>0.70</MeleeDamageFactor>
+          <ArmorRating_Blunt>0.12</ArmorRating_Blunt>
+          <ArmorRating_Sharp>0.12</ArmorRating_Sharp>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
+</Defs>
