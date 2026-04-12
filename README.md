@@ -61,7 +61,7 @@ This repository is the full source package for the mod, along with a GitHub Acti
 - **Zombie bile injection bills** can deliberately turn a living humanlike patient into a colony lurker through the medical bill system.
 - **Terminal and reanimated states** keep the outbreak dangerous while living infected pawns approach transformation.
 - **Living infection progression** now matters most, because a surviving pawn can still fall into coma and complete the transformation at 99%.
-- **Head intact zombies do not truly die** in the current build. They collapse into a fake dead regeneration state, and only a Double Tap or serious head ruin kills them for real. Dead infected non zombies still stay dead while the living infection system runs normally.
+- **Head intact zombies do not truly die** in the current build. They stay alive in a dead state, enter a comatose regeneration cooldown, and only a Double Tap or serious head ruin kills them for real. Dead infected non zombies still stay dead while the living infection system runs normally.
 - **Zombie blood exposure** and **zombie acid corrosion** add lingering damage and contamination pressure on top of direct attacks.
 - **Puked On** makes a pawn stink so badly that nearby zombies are drawn toward them.
 
@@ -471,9 +471,14 @@ This changelog treats a **major update** as something that adds substantial new 
 
 - 2026-04-11 - Minor update - iteration 107: Renamed the final zombie infection stage from "Transformation (Reanimated)" to "Transformation (Reanimating)" in the hediff labels and description.
 
-- Iteration 109: replaced corpse resurrection for zombies with a fake death regeneration state. Head intact zombies now collapse, slowly heal, and stand back up unless someone Double Taps them or destroys the head, while dead infected non zombies still stay dead.
+- Iteration 109: replaced corpse resurrection for zombies with a living dead-state regeneration loop. Head intact zombies now collapse into a comatose cooldown, slowly heal, and stand back up unless someone Double Taps them or destroys the head, while dead infected non zombies still stay dead.
 - Iteration 108: removed zombie corpse resurrection and dead infected corpse reanimation entirely. Living zombie infection stages, coma, and 99% transformation were left in place, while old corpse wake timers and corpse-side reanimation tracking were disabled and cleaned up.
 
 - Iteration 110: tightened fake death compatibility with the rest of the mod. General zombie upkeep, drowned behavior, and colony lurker stabilization now all respect the fake death state instead of accidentally clearing the forced downed flags or assigning new jobs before the zombie is meant to recover.
 
 - Iteration 111: the administer zombie bile operation now uses the same zombie bile item icon in the Operations menu so the action is easier to spot and visually matches the resource it consumes.
+
+
+- Iteration 113: the living dead-state zombie system now shows a visible Reanimating status with percentage progress, and head intact zombies fully heal before standing back up at 100 percent. Zombie durability was also softened again across the variants so they stay easy to put down even though they can recover.
+
+- Iteration 114: every zombie now keeps both the reanimated state and the zombie infection hediff so all variants consistently count as infected undead, zombie infection rolls now only happen when a zombie attack actually opens a bleeding wound instead of on non bleeding impacts like bruises, and zombie attack cadence was slowed to roughly half speed by doubling melee, tongue, and sick spit cooldowns.

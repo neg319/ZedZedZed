@@ -778,12 +778,16 @@ namespace CustomizableZombieHorde
             }
         }
     }
-
-
     [HarmonyPatch(typeof(Pawn_HealthTracker), "PostApplyDamage")]
     public static class Patch_Pawn_HealthTracker_PostApplyDamage
     {
-        public static void Postfix(Pawn_HealthTracker __instance, DamageInfo dinfo, float totalDamageDealt)
+        public static void Prefix(Pawn_HealthTracker __instance, DamageInfo dinfo, ref float __state)
+        {
+            Pawn victim = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            __state = GetBleedingSeverityOnPart(victim, dinfo.HitPart);
+        }
+
+        public static void Postfix(Pawn_HealthTracker __instance, DamageInfo dinfo, float totalDamageDealt, float __state)
         {
             if (totalDamageDealt <= 0.01f)
             {
@@ -823,13 +827,10 @@ namespace CustomizableZombieHorde
             if (!ZombieUtility.IsZombie(victim)
                 && ZombieUtility.IsZombie(attacker)
                 && !victim.Dead
-                && ZombieInfectionUtility.IsZombieBiteDamage(dinfo))
+                && DidZombieOpenBleedingWound(victim, dinfo, __state))
             {
                 BodyPartRecord infectionPart = ZombieInfectionUtility.ResolveAmputationFriendlyInfectionPart(victim, dinfo.HitPart);
-                if (infectionPart != null)
-                {
-                    ZombieTraitUtility.TryApplyZombieSickness(victim, ZombieInfectionUtility.GetZombieBiteInfectionChance(attacker), infectionPart);
-                }
+                ZombieTraitUtility.TryApplyZombieSickness(victim, ZombieInfectionUtility.GetZombieBiteInfectionChance(attacker), infectionPart);
             }
 
             if (!ZombieUtility.IsZombie(victim)
@@ -841,6 +842,40 @@ namespace CustomizableZombieHorde
             {
                 ZombieTraitUtility.TryTriggerQuickEscape(victim, attacker);
             }
+        }
+
+        private static bool DidZombieOpenBleedingWound(Pawn victim, DamageInfo dinfo, float bleedingSeverityBefore)
+        {
+            if (victim?.health?.hediffSet == null)
+            {
+                return false;
+            }
+
+            if (dinfo.Def == DamageDefOf.Bruise)
+            {
+                return false;
+            }
+
+            float bleedingSeverityAfter = GetBleedingSeverityOnPart(victim, dinfo.HitPart);
+            return bleedingSeverityAfter > bleedingSeverityBefore + 0.001f;
+        }
+
+        private static float GetBleedingSeverityOnPart(Pawn pawn, BodyPartRecord part)
+        {
+            if (pawn?.health?.hediffSet?.hediffs == null)
+            {
+                return 0f;
+            }
+
+            IEnumerable<Hediff_Injury> injuries = pawn.health.hediffSet.hediffs.OfType<Hediff_Injury>();
+            if (part != null)
+            {
+                injuries = injuries.Where(injury => injury?.Part == part);
+            }
+
+            return injuries
+                .Where(injury => injury != null && injury.BleedRate > 0f)
+                .Sum(injury => injury.Severity);
         }
     }
 

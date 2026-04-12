@@ -16,7 +16,7 @@ namespace CustomizableZombieHorde
         private static readonly Dictionary<int, PendingSickSpewState> PendingSickSpewsByPawn = new Dictionary<int, PendingSickSpewState>();
         private static readonly Dictionary<int, int> BoneBiterMealTargetByPawn = new Dictionary<int, int>();
         private static readonly Dictionary<int, int> BoneBiterDisturbedUntilTickByPawn = new Dictionary<int, int>();
-        private const int SickSpitCooldownTicks = 468;
+        private const int SickSpitCooldownTicks = 936;
         private const int BoneBiterDisturbedTicks = 900;
         private const float BoneBiterMealSearchRadius = 28f;
         private const float BoneBiterMealTouchRadius = 2.9f;

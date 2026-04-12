@@ -45,6 +45,17 @@ namespace CustomizableZombieHorde
                 && pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieSkeletonBiter);
         }
 
+        public static void EnsureZombieInfectionState(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn?.health == null)
+            {
+                return;
+            }
+
+            ZombieInfectionUtility.ApplyReanimatedState(pawn);
+            ZombieInfectionUtility.EnsureZombieInfection(pawn, 1f);
+        }
+
         public static float GetZombieIncomingDamageMultiplier(Pawn pawn)
         {
             if (!IsZombie(pawn))
@@ -54,45 +65,45 @@ namespace CustomizableZombieHorde
 
             if (IsSkeletonBiter(pawn))
             {
-                return 4f;
+                return 5.5f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Biter))
             {
-                return 9f;
+                return 14f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Runt))
             {
-                return 4f;
+                return 6f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Boomer))
             {
-                return 6.67f;
+                return 10f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Sick))
             {
-                return 2f;
+                return 3f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Drowned))
             {
-                return 4f;
+                return 5.5f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Brute))
             {
-                return 1f;
+                return 1.5f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Grabber))
             {
-                return 2.86f;
+                return 4f;
             }
 
-            return 1.60f;
+            return 2.2f;
         }
 
         public static float GetZombieOutgoingDamageMultiplier(Pawn attacker, Pawn victim)
@@ -1000,6 +1011,7 @@ namespace CustomizableZombieHorde
                 pawn.health.AddHediff(ZombieDefOf.CZH_ZombieRot);
             }
 
+            EnsureZombieInfectionState(pawn);
             ApplyVariantHediffs(pawn);
             RefreshDrownedState(pawn);
             MarkPawnGraphicsDirty(pawn);
@@ -1301,6 +1313,7 @@ namespace CustomizableZombieHorde
             TrimZombieApparel(pawn);
             MarkZombieApparelTainted(pawn, degradeApparel: false);
             SetZombieDisplayName(pawn);
+            EnsureZombieInfectionState(pawn);
             TryRecoverFromSpawnIncap(pawn);
         }
 

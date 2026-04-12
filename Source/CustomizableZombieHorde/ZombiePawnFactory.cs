@@ -353,7 +353,7 @@ namespace CustomizableZombieHorde
                 pawn.health.AddHediff(ZombieDefOf.CZH_ZombieRot);
             }
 
-            ZombieInfectionUtility.ApplyReanimatedState(pawn);
+            ZombieUtility.EnsureZombieInfectionState(pawn);
 
             ZombieVariant variant = ZombieUtility.GetVariant(pawn);
             TryApplyNaturalPregnantBoomerState(pawn, variant, initialSpawn);

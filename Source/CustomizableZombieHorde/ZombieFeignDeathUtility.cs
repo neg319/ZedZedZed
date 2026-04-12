@@ -14,6 +14,31 @@ namespace CustomizableZombieHorde
             return pawn?.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_ZombieFeignDeath) == true;
         }
 
+        public static float GetReanimationProgress(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet == null)
+            {
+                return 0f;
+            }
+
+            HediffWithComps hediff = pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieFeignDeath) as HediffWithComps;
+            return GetReanimationProgress(hediff);
+        }
+
+        public static float GetReanimationProgress(Hediff hediff)
+        {
+            if (hediff is HediffWithComps withComps)
+            {
+                HediffComp_ZombieFeignDeath comp = withComps.TryGetComp<HediffComp_ZombieFeignDeath>();
+                if (comp != null)
+                {
+                    return comp.GetProgress();
+                }
+            }
+
+            return 0f;
+        }
+
         public static bool ShouldPreventZombieDeath(Pawn pawn)
         {
             if (!ZombieUtility.IsZombie(pawn) || pawn == null || pawn.Destroyed || pawn.Dead || pawn.health?.hediffSet == null)
@@ -134,12 +159,7 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            for (int pass = 0; pass < 4; pass++)
-            {
-                RegenerateDuringFeignDeath(pawn, 2.40f);
-            }
-
-            RemoveBloodLoss(pawn);
+            FullyHealForRise(pawn);
 
             try
             {
@@ -195,7 +215,7 @@ namespace CustomizableZombieHorde
                 return null;
             }
 
-            return "Appears dead. This zombie is actually regenerating and can get back up unless someone Double Taps it or ruins the head.";
+            return "Dead state: this zombie is still alive, comatose, and reanimating. Progress: " + GetReanimationProgress(pawn).ToStringPercent() + ". It will fully heal and stand back up at 100% unless someone Double Taps it or ruins the head.";
         }
 
         public static void ForceZombieIntoDownedState(Pawn pawn)
@@ -363,6 +383,33 @@ namespace CustomizableZombieHorde
                 try
                 {
                     pawn.health.RemoveHediff(hediff);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static void FullyHealForRise(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet == null)
+            {
+                return;
+            }
+
+            RemoveRecoverableMissingParts(pawn);
+            RemoveBloodLoss(pawn);
+
+            List<Hediff_Injury> injuries = pawn.health.hediffSet.hediffs
+                .OfType<Hediff_Injury>()
+                .Where(hediff => CanRecoverInjury(pawn, hediff))
+                .ToList();
+
+            foreach (Hediff_Injury injury in injuries)
+            {
+                try
+                {
+                    injury.Heal(999f);
                 }
                 catch
                 {

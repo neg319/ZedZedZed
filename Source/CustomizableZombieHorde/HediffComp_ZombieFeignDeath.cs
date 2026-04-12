@@ -20,6 +20,7 @@ namespace CustomizableZombieHorde
     public sealed class HediffComp_ZombieFeignDeath : HediffComp
     {
         private int wakeTick = -1;
+        private int startTick = -1;
 
         public HediffCompProperties_ZombieFeignDeath Props => (HediffCompProperties_ZombieFeignDeath)props;
 
@@ -33,6 +34,7 @@ namespace CustomizableZombieHorde
         {
             base.CompExposeData();
             Scribe_Values.Look(ref wakeTick, "wakeTick", -1);
+            Scribe_Values.Look(ref startTick, "startTick", -1);
         }
 
         public override void CompPostTick(ref float severityAdjustment)
@@ -42,7 +44,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (wakeTick < 0)
+            if (wakeTick < 0 || startTick < 0 || wakeTick <= startTick)
             {
                 RefreshWakeDelay();
             }
@@ -51,6 +53,8 @@ namespace CustomizableZombieHorde
             {
                 return;
             }
+
+            parent.Severity = GetProgress();
 
             if (!ZombieUtility.IsZombie(Pawn))
             {
@@ -74,9 +78,12 @@ namespace CustomizableZombieHorde
             int currentTick = Find.TickManager?.TicksGame ?? 0;
             if (currentTick >= wakeTick)
             {
+                parent.Severity = 1f;
                 if (!ZombieFeignDeathUtility.TryRiseFromFeignDeath(Pawn, parent))
                 {
+                    startTick = currentTick;
                     wakeTick = currentTick + 1800;
+                    parent.Severity = GetProgress();
                 }
             }
         }
@@ -86,9 +93,26 @@ namespace CustomizableZombieHorde
             int currentTick = Find.TickManager?.TicksGame ?? 0;
             int minTicks = Mathf.Max(2400, Props?.minWakeTicks ?? 15000);
             int maxTicks = Mathf.Max(minTicks, Props?.maxWakeTicks ?? 30000);
+            startTick = currentTick;
             wakeTick = currentTick + Rand.RangeInclusive(minTicks, maxTicks);
+            if (parent != null)
+            {
+                parent.Severity = 0f;
+            }
+        }
+
+        public float GetProgress()
+        {
+            int currentTick = Find.TickManager?.TicksGame ?? 0;
+            if (wakeTick < 0 || startTick < 0 || wakeTick <= startTick)
+            {
+                return 0f;
+            }
+
+            return Mathf.Clamp01((float)(currentTick - startTick) / (wakeTick - startTick));
         }
 
         public int WakeTick => wakeTick;
+        public int StartTick => startTick;
     }
 }

@@ -1853,9 +1853,9 @@ namespace CustomizableZombieHorde
             {
                 foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned.ToList())
                 {
-                    if (ZombieUtility.IsZombie(pawn) && !ZombieInfectionUtility.HasReanimatedState(pawn))
+                    if (ZombieUtility.IsZombie(pawn))
                     {
-                        ZombieInfectionUtility.ApplyReanimatedState(pawn);
+                        ZombieUtility.EnsureZombieInfectionState(pawn);
                     }
 
                     if (!ZombieInfectionUtility.HasZombieInfection(pawn))

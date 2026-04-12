@@ -18,7 +18,7 @@
             <label>tongue lash</label>
             <range>12</range>
             <warmupTime>0.15</warmupTime>
-            <defaultCooldownTime>6.24</defaultCooldownTime>
+            <defaultCooldownTime>12.48</defaultCooldownTime>
             <minRange>2.2</minRange>
             <hasStandardCommand>false</hasStandardCommand>
             <defaultProjectile>CZH_GrabberTongueProjectile</defaultProjectile>
@@ -40,7 +40,7 @@
             <range>1</range>
             <meleeDamageDef>Bite</meleeDamageDef>
             <meleeDamageBaseAmount>3</meleeDamageBaseAmount>
-            <defaultCooldownTime>4.42</defaultCooldownTime>
+            <defaultCooldownTime>8.84</defaultCooldownTime>
           </li>
           <li>
             <verbClass>CustomizableZombieHorde.ZombieVerb_MeleeAttack</verbClass>
@@ -48,7 +48,7 @@
             <range>1</range>
             <meleeDamageDef>Scratch</meleeDamageDef>
             <meleeDamageBaseAmount>1</meleeDamageBaseAmount>
-            <defaultCooldownTime>3.51</defaultCooldownTime>
+            <defaultCooldownTime>7.02</defaultCooldownTime>
           </li>
         </verbs>
       </li>
@@ -77,9 +77,9 @@
 
   <HediffDef>
     <defName>CZH_ZombieFeignDeath</defName>
-    <hediffClass>HediffWithComps</hediffClass>
-    <label>dead</label>
-    <description>This zombie looks dead, but it is actually knitting itself back together. Destroy the head or Double Tap it before it gets back up.</description>
+    <hediffClass>CustomizableZombieHorde.Hediff_ZombieFeignDeath</hediffClass>
+    <label>Reanimating</label>
+    <description>This zombie is in a dead state, but it is still alive. It is comatose, reanimating, and building back toward full recovery. At 100% it fully heals and stands back up unless someone Double Taps it or ruins the head first.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -94,7 +94,7 @@
     </comps>
     <stages>
       <li>
-        <label>regenerating</label>
+        <label>dead state</label>
         <capMods>
           <li>
             <capacity>Consciousness</capacity>

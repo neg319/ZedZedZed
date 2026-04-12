@@ -631,7 +631,7 @@ namespace CustomizableZombieHorde
             DrawInfoCard(listing, "How Danger is calculated", "Danger compares active zombies to your current target population. Daytime target = colonists × outbreak intensity. Night target = daytime target × 1.5. Example: 4 colonists at 2.0 intensity gives a daytime target of 8 zombies. If 6 are active, Danger is 75%.");
 
             DrawSectionLabel(listing, "Core outbreak feel", "These shape how quickly pressure builds and how fast fresh groups refill the map.");
-            DrawInfoCard(listing, "Zombie fake death", "Head intact zombies no longer truly die. They collapse into a fake dead regeneration state and can get back up unless a colonist Double Taps them or ruins the head. Dead infected non zombies still stay dead.");
+            DrawInfoCard(listing, "Zombie dead state", "Head intact zombies do not truly die. They stay alive in a dead state, collapse into a comatose reanimating cooldown, show visible reanimation progress, and fully heal before standing back up at 100% unless a colonist Double Taps them or ruins the head. Dead infected non zombies still stay dead.");
             DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a fresh zombie to become a fast runner.", ref fastZombieChance, 0f, 0.20f, 0.01f);
 
             listing.End();
