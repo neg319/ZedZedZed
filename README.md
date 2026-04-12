@@ -482,3 +482,6 @@ This changelog treats a **major update** as something that adds substantial new 
 - Iteration 113: the living dead-state zombie system now shows a visible Reanimating status with percentage progress, and head intact zombies fully heal before standing back up at 100 percent. Zombie durability was also softened again across the variants so they stay easy to put down even though they can recover.
 
 - Iteration 114: every zombie now keeps both the reanimated state and the zombie infection hediff so all variants consistently count as infected undead, zombie infection rolls now only happen when a zombie attack actually opens a bleeding wound instead of on non bleeding impacts like bruises, and zombie attack cadence was slowed to roughly half speed by doubling melee, tongue, and sick spit cooldowns.
+
+
+- Iteration 115: fixed a RimWorld 1.6 build break by removing the direct DamageDefOf.Bruise reference from the zombie wound infection check. Infection still only rolls when a zombie attack creates a new bleeding wound, so bruises still do not infect because they do not open the skin.

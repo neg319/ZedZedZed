@@ -851,11 +851,6 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            if (dinfo.Def == DamageDefOf.Bruise)
-            {
-                return false;
-            }
-
             float bleedingSeverityAfter = GetBleedingSeverityOnPart(victim, dinfo.HitPart);
             return bleedingSeverityAfter > bleedingSeverityBefore + 0.001f;
         }
