@@ -13,10 +13,10 @@
 
 # Zed Zed Zed
 
-## Iteration 97 - Reanimation Rebuild
-- Rebuilt corpse reanimation so the mod now tries to revive the original corpse pawn in place before falling back to fresh pawn generation.
-- Tightened the global reanimation sweep so ready corpses are checked every few in game seconds instead of waiting on a long random gap.
-- Fixed a dead infection tracking cleanup bug that was deleting active pending entries instead of stale ones.
+## Iteration 106 - Infection Stage Rebuild
+- Reworked zombie infection onto a true 1% to 100% progress scale so the stage labels now line up with the percentages shown to the player.
+- Renamed the infection stages to Fresh Bite, Itchy Bite, Infected Bite, Strange Flu, Infected Bloodstream, Necrosis and Dementia, Coma, and Transformation with the new treatable and terminal breakpoints.
+- Made terminal begin at 60%, living coma begin at 80%, and living transformation happen at 99% by converting the pawn into a colony lurker through the same core path used by zombie bile injection.
 
 Zed Zed Zed is a RimWorld zombie mod built around pressure, atmosphere, and the feeling that the colony is never quite finished cleaning up the last mess before the next one starts. This is not just a single raid that shows up, dies, and goes away. The dead can drift in from the edge of the map, bunch up in quiet packs, push straight at your base, erupt inside the colony, or keep crawling out of graves until you smash the source. If you really want to lean into the horror, you can also use a medical bill to inject zombie bile into a living patient and deliberately turn them into a colony lurker.
 
@@ -59,9 +59,9 @@ This repository is the full source package for the mod, along with a GitHub Acti
 - **Visible infection stages** make it easier to tell how bad things are getting.
 - **Bile med kits** can cure zombie infection before it reaches the terminal point.
 - **Zombie bile injection bills** can deliberately turn a living humanlike patient into a colony lurker through the medical bill system.
-- **Terminal and reanimated states** keep the outbreak dangerous even after a pawn dies.
-- **Post death progression** means infection can keep climbing on a corpse after death instead of stopping there.
-- **Global reanimation sweeps** handle dead reanimated corpses at the game level every few in game seconds once their reanimation delay is finished, so they can still rise again if the head and skull are intact.
+- **Terminal and reanimated states** keep the outbreak dangerous while living infected pawns approach transformation.
+- **Living infection progression** now matters most, because a surviving pawn can still fall into coma and complete the transformation at 99%.
+- **Head intact zombies do not truly die** in the current build. They collapse into a fake dead regeneration state, and only a Double Tap or serious head ruin kills them for real. Dead infected non zombies still stay dead while the living infection system runs normally.
 - **Zombie blood exposure** and **zombie acid corrosion** add lingering damage and contamination pressure on top of direct attacks.
 - **Puked On** makes a pawn stink so badly that nearby zombies are drawn toward them.
 
@@ -94,12 +94,12 @@ This is the running feature list for the mod. Dates are listed when they can be 
 - The base zombie horde incident was already in place.
 - The settings window already had Overview, Events, Variants, Names, Colony, and Debug tabs.
 - Family naming and per strain naming were already supported.
-- Difficulty tuning for group size, runner chance, resurrection timing, and infection timing was already supported.
+- Difficulty tuning for group size, runner chance, and infection timing was already supported.
 - Event tuning for edge trickles, colony pushes, huddled packs, ground bursts, grave events, full moons, and blood moons was already in place.
 - Colony scaled danger logic for day, night, full moon, and blood moon pressure was already in place.
 - The core strain roster already included Biter, Boomer, Sick, Drowned, Brute, Grabber, and Lurker.
 - Variant behavior such as acid bursts, sickness pressure, water based drowned behavior, brute toughness, and grabber attacks was already present.
-- Infection, corpse progression, reanimation, and recurring resurrection checks were already part of the mod.
+- Infection and living transformation remain part of the mod, while corpse resurrection has been removed.
 - Grave spawners that keep producing undead until destroyed were already part of the event pool.
 - Zombie resource processing, bile treatment jobs, filth systems, butchering support, and tainted zombie apparel handling were already present.
 - Lurker arrival, capture, recruit, and tame support were already present.
@@ -468,3 +468,12 @@ This changelog treats a **major update** as something that adds substantial new 
 ## Iteration 105 - Zombie butcher bile retune
 - Sick zombies and boomers now always yield zombie bile when butchered, and they roll a much heavier payout of 3 to 9 bile.
 - All other butchered zombie variants now use a 50% bile chance with a 1 to 3 bile payout while still keeping their normal rotten flesh and rotten leather output.
+
+- 2026-04-11 - Minor update - iteration 107: Renamed the final zombie infection stage from "Transformation (Reanimated)" to "Transformation (Reanimating)" in the hediff labels and description.
+
+- Iteration 109: replaced corpse resurrection for zombies with a fake death regeneration state. Head intact zombies now collapse, slowly heal, and stand back up unless someone Double Taps them or destroys the head, while dead infected non zombies still stay dead.
+- Iteration 108: removed zombie corpse resurrection and dead infected corpse reanimation entirely. Living zombie infection stages, coma, and 99% transformation were left in place, while old corpse wake timers and corpse-side reanimation tracking were disabled and cleaned up.
+
+- Iteration 110: tightened fake death compatibility with the rest of the mod. General zombie upkeep, drowned behavior, and colony lurker stabilization now all respect the fake death state instead of accidentally clearing the forced downed flags or assigning new jobs before the zombie is meant to recover.
+
+- Iteration 111: the administer zombie bile operation now uses the same zombie bile item icon in the Operations menu so the action is easier to spot and visually matches the resource it consumes.

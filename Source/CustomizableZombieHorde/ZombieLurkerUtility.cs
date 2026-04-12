@@ -159,6 +159,12 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            if (ZombieFeignDeathUtility.IsFeigningDeath(pawn))
+            {
+                ZombieFeignDeathUtility.ForceZombieIntoDownedState(pawn);
+                return;
+            }
+
             EnsureLurkerDeadScent(pawn);
             EnsureEmotionlessLurker(pawn);
             EndLurkerMentalState(pawn);

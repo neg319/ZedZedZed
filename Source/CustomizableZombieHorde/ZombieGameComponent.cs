@@ -121,17 +121,6 @@ namespace CustomizableZombieHorde
                 ZombieSpecialUtility.TickPendingSickSpewWarmups();
             }
 
-            if (nextGlobalReanimationCheckTick < 0)
-            {
-                ScheduleNextGlobalReanimationCheck(ticksGame);
-            }
-
-            if (ticksGame >= nextGlobalReanimationCheckTick)
-            {
-                HandleZombieReanimation();
-                ScheduleNextGlobalReanimationCheck(ticksGame);
-            }
-
             if (ticksGame % 300 == 0)
             {
                 RefreshCurrentMapCount();
@@ -1515,6 +1504,13 @@ namespace CustomizableZombieHorde
 
                     ZombieUtility.SetZombieDisplayName(pawn);
 
+                    if (ZombieFeignDeathUtility.IsFeigningDeath(pawn))
+                    {
+                        ZombieFeignDeathUtility.ForceZombieIntoDownedState(pawn);
+                        ZombieUtility.RefreshDrownedState(pawn);
+                        continue;
+                    }
+
                     if (ZombieLurkerUtility.IsLurker(pawn))
                     {
                         ZombieLurkerUtility.EnsureLurkerDeadScent(pawn);
@@ -1575,8 +1571,11 @@ namespace CustomizableZombieHorde
 
         private void HandleZombieReanimation()
         {
-            int ticksGame = Find.TickManager?.TicksGame ?? 0;
-            HashSet<int> seenCorpseIds = new HashSet<int>();
+            corpseWakeTicks?.Clear();
+            infectionReanimationTicks?.Clear();
+            infectionReanimationStartTicks?.Clear();
+            infectionReanimationStartSeverity?.Clear();
+
             foreach (Map map in Find.Maps)
             {
                 List<Corpse> corpses = map.listerThings.ThingsInGroup(ThingRequestGroup.Corpse).OfType<Corpse>().ToList();
@@ -1588,71 +1587,11 @@ namespace CustomizableZombieHorde
                         continue;
                     }
 
-                    seenCorpseIds.Add(corpse.thingIDNumber);
-                    bool isZombie = ZombieUtility.IsZombie(pawn);
-                    if (isZombie && ZombieUtility.IsVariant(pawn, ZombieVariant.Boomer))
-                    {
-                        ClearZombieCorpseWake(corpse);
-                        continue;
-                    }
-
-                    if (isZombie)
-                    {
-                        if (!ZombieRulesUtility.CanReanimate(pawn))
-                        {
-                            ClearZombieCorpseWake(corpse);
-                            continue;
-                        }
-
-                        if (!ZombieInfectionUtility.HasReanimatedState(pawn))
-                        {
-                            ZombieInfectionUtility.ApplyReanimatedState(pawn);
-                        }
-
-                        ScheduleZombieCorpseWake(corpse);
-                        if (!TryGetZombieCorpseWakeTick(corpse, out int wakeTick) || ticksGame < wakeTick)
-                        {
-                            continue;
-                        }
-
-                        if (ZombieResurrectionService.TryRaiseCorpse(corpse, ZombieRaiseMode.ZombieCorpse, this, out Pawn risenZombie))
-                        {
-                            ClearZombieCorpseWake(corpse);
-                            ZombieFeedbackUtility.TrySendReanimationWarning(risenZombie);
-                        }
-                        else
-                        {
-                            ScheduleZombieCorpseWake(corpse, forceReschedule: true);
-                        }
-
-                        continue;
-                    }
-
-                    if (!ZombieInfectionUtility.HasReanimatedState(pawn))
-                    {
-                        continue;
-                    }
-
-                    if (!ZombieInfectionUtility.CanReanimateFromReanimatedState(pawn))
-                    {
-                        ClearInfectionReanimation(corpse);
-                        continue;
-                    }
-
-                    ScheduleInfectionReanimation(corpse);
-                    if (!TryGetInfectionReanimationTick(corpse, out int infectionWakeTick) || ticksGame < infectionWakeTick)
-                    {
-                        continue;
-                    }
-
-                    if (!ZombieInfectionUtility.TryTurnDeadInfectedPawn(pawn, this))
-                    {
-                        ScheduleInfectionReanimation(corpse, forceReschedule: true);
-                    }
+                    ZombieInfectionUtility.RemoveReanimatedState(pawn);
+                    ClearZombieCorpseWake(corpse);
+                    ClearInfectionReanimation(corpse);
                 }
             }
-
-            RemoveStaleCorpseWakeEntries(seenCorpseIds);
         }
 
         public void MarkInfectionHeadFatal(Pawn pawn)
@@ -1715,55 +1654,31 @@ namespace CustomizableZombieHorde
 
         public void RegisterDeadPawnForPostMortemInfection(Pawn pawn)
         {
-            if (pawn == null || !pawn.Dead || pawn.Destroyed || Find.TickManager == null)
+            if (pawn == null)
             {
                 return;
             }
 
-            Hediff infection = ZombieInfectionUtility.GetZombieInfection(pawn);
-            if (infection == null)
-            {
-                return;
-            }
-
-            pendingDeadInfectionSeverityByPawnId ??= new Dictionary<int, float>();
-            pendingDeadInfectionSeverityByPawnId[pawn.thingIDNumber] = Mathf.Clamp01(infection.Severity);
-
+            pendingDeadInfectionSeverityByPawnId?.Remove(pawn.thingIDNumber);
+            ClearInfectionHeadFatal(pawn);
+            ClearInfectionShouldBecomeLurker(pawn);
             Corpse corpse = FindCorpseForPawn(pawn);
-            if (corpse != null && !corpse.Destroyed)
-            {
-                RegisterDeadInfectedCorpse(corpse, infection.Severity, forceReschedule: true);
-            }
+            ClearDeadInfectedCorpse(corpse);
+            ClearInfectionReanimation(corpse);
+            ZombieInfectionUtility.RemoveReanimatedState(pawn);
         }
 
         public void RegisterDeadInfectedCorpse(Corpse corpse, float startSeverity, bool forceReschedule = false)
         {
-            if (corpse == null || corpse.Destroyed || Find.TickManager == null)
+            if (corpse == null)
             {
                 return;
             }
 
-            Pawn innerPawn = corpse.InnerPawn;
-            if (innerPawn == null || !innerPawn.Dead || innerPawn.Destroyed || ZombieInfectionUtility.HasReanimatedState(innerPawn))
-            {
-                return;
-            }
-
-            deadInfectionProgressStartTicks ??= new Dictionary<int, int>();
-            deadInfectionProgressEndTicks ??= new Dictionary<int, int>();
-            deadInfectionProgressStartSeverity ??= new Dictionary<int, float>();
-
-            int corpseId = corpse.thingIDNumber;
-            if (!forceReschedule && deadInfectionProgressEndTicks.ContainsKey(corpseId))
-            {
-                return;
-            }
-
-            int startTick = Find.TickManager.TicksGame;
-            deadInfectionProgressStartTicks[corpseId] = startTick;
-            deadInfectionProgressStartSeverity[corpseId] = Mathf.Clamp(startSeverity, ZombieInfectionUtility.InitialInfectionSeverity, 1f);
-            deadInfectionProgressEndTicks[corpseId] = startTick + Rand.RangeInclusive(GenDate.TicksPerHour, GenDate.TicksPerHour * 3);
-            pendingDeadInfectionSeverityByPawnId?.Remove(innerPawn.thingIDNumber);
+            ClearDeadInfectedCorpse(corpse);
+            ClearInfectionReanimation(corpse);
+            pendingDeadInfectionSeverityByPawnId?.Remove(corpse.InnerPawn?.thingIDNumber ?? -1);
+            ZombieInfectionUtility.RemoveReanimatedState(corpse.InnerPawn);
         }
 
         public void ClearDeadInfectedCorpse(Corpse corpse)
@@ -1780,14 +1695,13 @@ namespace CustomizableZombieHorde
 
         private void HandleDeadInfectedCorpseProgression()
         {
-            if (Current.Game == null || Find.TickManager == null)
-            {
-                return;
-            }
-
-            int ticksGame = Find.TickManager.TicksGame;
-            HashSet<int> seenCorpseIds = new HashSet<int>();
-            HashSet<int> seenPendingPawnIds = new HashSet<int>();
+            deadInfectionProgressStartTicks?.Clear();
+            deadInfectionProgressEndTicks?.Clear();
+            deadInfectionProgressStartSeverity?.Clear();
+            pendingDeadInfectionSeverityByPawnId?.Clear();
+            infectionReanimationTicks?.Clear();
+            infectionReanimationStartTicks?.Clear();
+            infectionReanimationStartSeverity?.Clear();
 
             foreach (Map map in Find.Maps)
             {
@@ -1800,97 +1714,9 @@ namespace CustomizableZombieHorde
                         continue;
                     }
 
-                    int corpseId = corpse.thingIDNumber;
-                    bool hasReanimated = ZombieInfectionUtility.HasReanimatedState(innerPawn);
-                    bool isTracked = deadInfectionProgressEndTicks != null && deadInfectionProgressEndTicks.ContainsKey(corpseId);
-                    Hediff infection = ZombieInfectionUtility.GetZombieInfection(innerPawn);
-                    float pendingStartSeverity = ZombieInfectionUtility.InitialInfectionSeverity;
-                    bool hasPendingSeverity = pendingDeadInfectionSeverityByPawnId != null
-                        && pendingDeadInfectionSeverityByPawnId.TryGetValue(innerPawn.thingIDNumber, out pendingStartSeverity);
-
-                    if (!hasReanimated && (infection != null || isTracked || hasPendingSeverity))
-                    {
-                        seenCorpseIds.Add(corpseId);
-                        if (hasPendingSeverity)
-                        {
-                            seenPendingPawnIds.Add(innerPawn.thingIDNumber);
-                        }
-
-                        if (!isTracked)
-                        {
-                            float pendingOrCurrentSeverity = infection != null ? infection.Severity : pendingStartSeverity;
-                            RegisterDeadInfectedCorpse(corpse, pendingOrCurrentSeverity, forceReschedule: true);
-                            isTracked = true;
-                        }
-
-                        if (infection == null)
-                        {
-                            float restoreSeverity = ZombieInfectionUtility.InitialInfectionSeverity;
-                            if (deadInfectionProgressStartSeverity != null && deadInfectionProgressStartSeverity.TryGetValue(corpseId, out float storedStartSeverity))
-                            {
-                                restoreSeverity = storedStartSeverity;
-                            }
-                            else if (hasPendingSeverity)
-                            {
-                                restoreSeverity = pendingStartSeverity;
-                            }
-
-                            infection = ZombieInfectionUtility.EnsureZombieInfection(innerPawn, restoreSeverity);
-                            if (infection == null)
-                            {
-                                continue;
-                            }
-                        }
-
-                        int startTick = ticksGame;
-                        int endTick = ticksGame;
-                        if (deadInfectionProgressStartTicks != null)
-                        {
-                            deadInfectionProgressStartTicks.TryGetValue(corpseId, out startTick);
-                        }
-                        if (deadInfectionProgressEndTicks != null)
-                        {
-                            deadInfectionProgressEndTicks.TryGetValue(corpseId, out endTick);
-                        }
-
-                        float startSeverity = infection.Severity;
-                        if (deadInfectionProgressStartSeverity != null && deadInfectionProgressStartSeverity.TryGetValue(corpseId, out float storedSeverity))
-                        {
-                            startSeverity = storedSeverity;
-                        }
-
-                        float progress = endTick > startTick ? Mathf.InverseLerp(startTick, endTick, ticksGame) : 1f;
-                        float progressedSeverity = Mathf.Lerp(startSeverity, 1f, progress);
-                        infection.Severity = Mathf.Clamp(Mathf.Max(infection.Severity, progressedSeverity), ZombieInfectionUtility.InitialInfectionSeverity, 1f);
-
-                        if (infection.Severity >= 0.999f)
-                        {
-                            infection.Severity = 1f;
-                            ZombieInfectionUtility.PromoteDeadInfectionToReanimated(innerPawn, this);
-                            ClearDeadInfectedCorpse(corpse);
-                        }
-                    }
-                    else if (hasReanimated)
-                    {
-                        ClearDeadInfectedCorpse(corpse);
-                    }
-                }
-            }
-
-            List<int> staleCorpseIds = deadInfectionProgressEndTicks.Keys.Where(key => !seenCorpseIds.Contains(key)).ToList();
-            foreach (int staleId in staleCorpseIds)
-            {
-                deadInfectionProgressEndTicks.Remove(staleId);
-                deadInfectionProgressStartTicks?.Remove(staleId);
-                deadInfectionProgressStartSeverity?.Remove(staleId);
-            }
-
-            if (pendingDeadInfectionSeverityByPawnId != null)
-            {
-                List<int> stalePendingIds = pendingDeadInfectionSeverityByPawnId.Keys.Where(id => !seenPendingPawnIds.Contains(id)).ToList();
-                foreach (int staleId in stalePendingIds)
-                {
-                    pendingDeadInfectionSeverityByPawnId.Remove(staleId);
+                    ZombieInfectionUtility.RemoveReanimatedState(innerPawn);
+                    ClearInfectionReanimation(corpse);
+                    ClearZombieCorpseWake(corpse);
                 }
             }
         }
@@ -1912,12 +1738,13 @@ namespace CustomizableZombieHorde
 
         public void RegisterDeadPawnForRecurringReanimation(Pawn pawn)
         {
-            if (pawn == null || !pawn.Dead || pawn.Destroyed || ZombieUtility.IsVariant(pawn, ZombieVariant.Boomer))
+            if (pawn == null)
             {
                 return;
             }
 
-            ZombieInfectionUtility.ApplyReanimatedState(pawn);
+            ZombieInfectionUtility.RemoveReanimatedState(pawn);
+            ClearZombieCorpseWake(FindCorpseForPawn(pawn));
         }
 
         private static Corpse FindCorpseForPawn(Pawn pawn)
@@ -1951,38 +1778,8 @@ namespace CustomizableZombieHorde
 
         public void ScheduleInfectionReanimation(Corpse corpse, bool forceReschedule = false, int? fixedDelayTicks = null)
         {
-            if (corpse == null || Find.TickManager == null)
-            {
-                return;
-            }
-
-            infectionReanimationTicks ??= new Dictionary<int, int>();
-            infectionReanimationStartTicks ??= new Dictionary<int, int>();
-            infectionReanimationStartSeverity ??= new Dictionary<int, float>();
-            deadInfectionProgressStartTicks ??= new Dictionary<int, int>();
-            deadInfectionProgressEndTicks ??= new Dictionary<int, int>();
-            deadInfectionProgressStartSeverity ??= new Dictionary<int, float>();
-            pendingDeadInfectionSeverityByPawnId ??= new Dictionary<int, float>();
-            int corpseId = corpse.thingIDNumber;
-            if (!forceReschedule && infectionReanimationTicks.ContainsKey(corpseId))
-            {
-                return;
-            }
-
-            int startTick = Find.TickManager.TicksGame;
-            infectionReanimationStartTicks[corpseId] = startTick;
-            Hediff infection = ZombieInfectionUtility.GetZombieInfection(corpse.InnerPawn);
-            if (infection != null && !ZombieInfectionUtility.HasReanimatedState(corpse.InnerPawn))
-            {
-                infectionReanimationStartSeverity[corpseId] = Mathf.Clamp01(infection.Severity);
-            }
-            else
-            {
-                infectionReanimationStartSeverity.Remove(corpseId);
-            }
-
-            int delayTicks = fixedDelayTicks ?? Mathf.Max(1, Mathf.RoundToInt((CustomizableZombieHordeMod.Settings?.resurrectionDelayHours ?? 5f) * GenDate.TicksPerHour));
-            infectionReanimationTicks[corpseId] = startTick + delayTicks;
+            ClearInfectionReanimation(corpse);
+            ZombieInfectionUtility.RemoveReanimatedState(corpse?.InnerPawn);
         }
 
         public void ClearInfectionReanimation(Corpse corpse)
@@ -2000,30 +1797,13 @@ namespace CustomizableZombieHorde
         public bool TryGetInfectionReanimationTick(Corpse corpse, out int wakeTick)
         {
             wakeTick = -1;
-            if (corpse == null || infectionReanimationTicks == null)
-            {
-                return false;
-            }
-
-            return infectionReanimationTicks.TryGetValue(corpse.thingIDNumber, out wakeTick);
+            return false;
         }
 
         public void ScheduleZombieCorpseWake(Corpse corpse, bool forceReschedule = false)
         {
-            if (corpse == null || Find.TickManager == null)
-            {
-                return;
-            }
-
-            corpseWakeTicks ??= new Dictionary<int, int>();
-            int corpseId = corpse.thingIDNumber;
-            if (!forceReschedule && corpseWakeTicks.ContainsKey(corpseId))
-            {
-                return;
-            }
-
-            int delayTicks = Mathf.Max(1, Mathf.RoundToInt((CustomizableZombieHordeMod.Settings?.resurrectionDelayHours ?? 5f) * GenDate.TicksPerHour));
-            corpseWakeTicks[corpseId] = Find.TickManager.TicksGame + delayTicks;
+            ClearZombieCorpseWake(corpse);
+            ZombieInfectionUtility.RemoveReanimatedState(corpse?.InnerPawn);
         }
 
         public void ClearZombieCorpseWake(Corpse corpse)
@@ -2039,45 +1819,26 @@ namespace CustomizableZombieHorde
         public bool TryGetZombieCorpseWakeTick(Corpse corpse, out int wakeTick)
         {
             wakeTick = -1;
-            return corpse != null
-                && corpseWakeTicks != null
-                && corpseWakeTicks.TryGetValue(corpse.thingIDNumber, out wakeTick);
+            return false;
         }
 
         public bool TryGetCorpseReanimationTick(Corpse corpse, out int wakeTick)
         {
             wakeTick = -1;
-            return TryGetZombieCorpseWakeTick(corpse, out wakeTick) || TryGetInfectionReanimationTick(corpse, out wakeTick);
+            return false;
         }
 
         public bool TryGetInfectionReanimationWindow(Corpse corpse, out int startTick, out int wakeTick)
         {
             startTick = -1;
             wakeTick = -1;
-            if (!TryGetInfectionReanimationTick(corpse, out wakeTick))
-            {
-                return false;
-            }
-
-            if (corpse != null && infectionReanimationStartTicks != null && infectionReanimationStartTicks.TryGetValue(corpse.thingIDNumber, out int storedStartTick))
-            {
-                startTick = storedStartTick;
-            }
-            else
-            {
-                int delayTicks = Mathf.Max(1, Mathf.RoundToInt((CustomizableZombieHordeMod.Settings?.resurrectionDelayHours ?? 5f) * GenDate.TicksPerHour));
-                startTick = wakeTick - delayTicks;
-            }
-
-            return true;
+            return false;
         }
 
         public bool TryGetInfectionReanimationStartSeverity(Corpse corpse, out float startSeverity)
         {
             startSeverity = 0f;
-            return corpse != null
-                && infectionReanimationStartSeverity != null
-                && infectionReanimationStartSeverity.TryGetValue(corpse.thingIDNumber, out startSeverity);
+            return false;
         }
 
         private void HandleZombieInfectionProgression()

@@ -221,18 +221,18 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            Corpse corpse = FindBestCorpseForDoubleTap(pawn, 30f);
-            if (corpse == null)
+            Thing targetThing = FindBestThingForDoubleTap(pawn, 30f);
+            if (targetThing == null)
             {
                 return false;
             }
 
-            if (pawn.CurJob != null && pawn.CurJob.def == ZombieDefOf.CZH_DoubleTapZombieCorpse && pawn.CurJob.targetA.Thing == corpse)
+            if (pawn.CurJob != null && pawn.CurJob.def == ZombieDefOf.CZH_DoubleTapZombieCorpse && pawn.CurJob.targetA.Thing == targetThing)
             {
                 return true;
             }
 
-            Job job = JobMaker.MakeJob(ZombieDefOf.CZH_DoubleTapZombieCorpse, corpse);
+            Job job = JobMaker.MakeJob(ZombieDefOf.CZH_DoubleTapZombieCorpse, targetThing);
             job.expiryInterval = 1800;
             pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
             return true;
@@ -245,18 +245,18 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            Corpse corpse = FindBestCorpseForDoubleTap(pawn);
-            if (corpse == null)
+            Thing targetThing = FindBestThingForDoubleTap(pawn);
+            if (targetThing == null)
             {
                 return false;
             }
 
-            if (pawn.CurJob != null && pawn.CurJob.def == ZombieDefOf.CZH_DoubleTapZombieCorpse && pawn.CurJob.targetA.Thing == corpse)
+            if (pawn.CurJob != null && pawn.CurJob.def == ZombieDefOf.CZH_DoubleTapZombieCorpse && pawn.CurJob.targetA.Thing == targetThing)
             {
                 return true;
             }
 
-            Job job = JobMaker.MakeJob(ZombieDefOf.CZH_DoubleTapZombieCorpse, corpse);
+            Job job = JobMaker.MakeJob(ZombieDefOf.CZH_DoubleTapZombieCorpse, targetThing);
             job.expiryInterval = 3000;
             pawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
             return true;
@@ -297,6 +297,53 @@ namespace CustomizableZombieHorde
             }
 
             return bestCorpse;
+        }
+
+        public static Thing FindBestThingForDoubleTap(Pawn pawn, float maxDistance = 80f)
+        {
+            Map map = pawn?.MapHeld;
+            if (map == null)
+            {
+                return null;
+            }
+
+            float bestDistance = float.MaxValue;
+            Thing bestThing = null;
+            float maxDistanceSquared = maxDistance * maxDistance;
+
+            foreach (Pawn other in map.mapPawns.AllPawnsSpawned)
+            {
+                if (!ZombieFeignDeathUtility.CanAutoDoubleTapPawn(other))
+                {
+                    continue;
+                }
+
+                float distance = pawn.PositionHeld.DistanceToSquared(other.PositionHeld);
+                if (distance > maxDistanceSquared || distance >= bestDistance)
+                {
+                    continue;
+                }
+
+                if (!pawn.CanReserveAndReach(other, PathEndMode.Touch, Danger.Deadly))
+                {
+                    continue;
+                }
+
+                bestDistance = distance;
+                bestThing = other;
+            }
+
+            Corpse bestCorpse = FindBestCorpseForDoubleTap(pawn, maxDistance);
+            if (bestCorpse != null)
+            {
+                float corpseDistance = pawn.PositionHeld.DistanceToSquared(bestCorpse.PositionHeld);
+                if (corpseDistance < bestDistance)
+                {
+                    bestThing = bestCorpse;
+                }
+            }
+
+            return bestThing;
         }
 
         public static bool CanDoubleTapThing(Thing thing)

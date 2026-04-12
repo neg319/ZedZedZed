@@ -630,8 +630,8 @@ namespace CustomizableZombieHorde
             DrawToggleCard(listing, "Show zombie HUD", "Shows a compact readout for active zombies and current danger on your home map.", ref showZombieCounter);
             DrawInfoCard(listing, "How Danger is calculated", "Danger compares active zombies to your current target population. Daytime target = colonists × outbreak intensity. Night target = daytime target × 1.5. Example: 4 colonists at 2.0 intensity gives a daytime target of 8 zombies. If 6 are active, Danger is 75%.");
 
-            DrawSectionLabel(listing, "Core outbreak feel", "These shape how quickly pressure builds, how fast fresh groups refill the map, and how often bodies get a chance to come back.");
-            DrawFloatStepperCard(listing, "Reanimation delay", "How long a fresh corpse stays down before it can get back up.", ref resurrectionDelayHours, 0.5f, 24f, 0.5f, "hours");
+            DrawSectionLabel(listing, "Core outbreak feel", "These shape how quickly pressure builds and how fast fresh groups refill the map.");
+            DrawInfoCard(listing, "Zombie fake death", "Head intact zombies no longer truly die. They collapse into a fake dead regeneration state and can get back up unless a colonist Double Taps them or ruins the head. Dead infected non zombies still stay dead.");
             DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a fresh zombie to become a fast runner.", ref fastZombieChance, 0f, 0.20f, 0.01f);
 
             listing.End();
@@ -783,7 +783,7 @@ namespace CustomizableZombieHorde
             DrawTextEntryCard(listing, "Grabber name", "The in game name used for the grabbing strain.", ref grabberName, "Grabber");
             DrawTextEntryCard(listing, "Runt name", "The in game name used for the dragging runt strain.", ref runtName, "Runt");
 
-            DrawSectionLabel(listing, "Special case names", "These rename special zombies that show up through debug tools, special events, or unusual reanimation paths.");
+            DrawSectionLabel(listing, "Special case names", "These rename special zombies that show up through debug tools or special events.");
             DrawTextEntryCard(listing, "Lurker name", "The in game name used for the passive capturable strain.", ref lurkerName, "Lurker");
             DrawTextEntryCard(listing, "Bone biter name", "The in game name used for the skeletal biter variant.", ref boneBiterName, "Bone Biter");
             DrawTextEntryCard(listing, "Pregnant boomer name", "The in game name used for the boomer variant that can burst into runts.", ref pregnantBoomerName, "Pregnant Boomer");
@@ -800,7 +800,7 @@ namespace CustomizableZombieHorde
             DrawInfoCard(listing, "About this tab", "Use this tab for colony side response, cleanup, and safety. The most important response options are at the top.");
 
             DrawSectionLabel(listing, "Prioritized double tapping", "Choose whether your colony should actively keep fresh zombie corpses down, and pick which jobs are allowed to break away and handle it.");
-            DrawToggleCard(listing, "Enable prioritized double tapping", "When this is on, selected work types will break away and go finish dangerous fresh corpses before they can rise again.", ref enablePrioritizedDoubleTap);
+            DrawToggleCard(listing, "Enable prioritized double tapping", "When this is on, selected work types will break away and go finish dangerous fresh corpses automatically.", ref enablePrioritizedDoubleTap);
             DrawDoubleTapWorkTypeChecklist(listing);
             if (!enablePrioritizedDoubleTap)
             {
@@ -811,7 +811,7 @@ namespace CustomizableZombieHorde
             DrawToggleCard(listing, "Allow zombie corpses by default", "Fresh zombie corpses start out allowed so colonists can haul, butcher, or double tap them without manual clicks.", ref autoAllowZombieCorpses);
 
             DrawSectionLabel(listing, "Zombie infection", "Use this if you want the colony to have more or less time to treat infected pawns before they turn.");
-            DrawIntStepperCard(listing, "Days until infection reaches 100%", "How many in game days it takes an untreated zombie infection to fully turn a pawn. It gets worse in daily steps.", ref infectionDaysToTurn, 1, 30, 1);
+            DrawIntStepperCard(listing, "Days until infection reaches 99% transformation", "How many in game days it takes an untreated zombie infection to reach the final living transformation point. It gets worse in daily steps.", ref infectionDaysToTurn, 1, 30, 1);
 
             DrawSectionLabel(listing, "Reset", "Use this if things get messy and you want to go back to a known good setup.");
             if (DrawActionCard(listing, "Reset settings to recommended defaults", "Puts every setting back to the recommended values."))
@@ -1388,9 +1388,8 @@ namespace CustomizableZombieHorde
             maxGroupSize = (int)listing.Slider(maxGroupSize, 1, 120);
             listing.Label($"Runner strain chance: {fastZombieChance:P0}");
             fastZombieChance = listing.Slider(fastZombieChance, 0f, 0.20f);
-            listing.Label($"Reanimation delay (hours): {resurrectionDelayHours:0.0}");
-            resurrectionDelayHours = listing.Slider(resurrectionDelayHours, 0.5f, 24f);
-            listing.Label($"Days until infection reaches 100%: {infectionDaysToTurn}");
+            listing.Label("Reanimation delay: disabled");
+            listing.Label($"Days until infection reaches 99% transformation: {infectionDaysToTurn}");
             infectionDaysToTurn = (int)listing.Slider(infectionDaysToTurn, 1, 30);
 
             listing.GapLine();

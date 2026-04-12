@@ -91,6 +91,7 @@
     <description>Administer zombie bile to a living humanlike patient. The patient survives, but the procedure turns them into a colony lurker.</description>
     <jobString>administering zombie bile.</jobString>
     <workerClass>CustomizableZombieHorde.Recipe_InjectZombieBile</workerClass>
+    <uiIconPath>Things/Item/Resource/ZombieBile</uiIconPath>
     <workAmount>900</workAmount>
     <workSkill>Medicine</workSkill>
     <recipeUsers>

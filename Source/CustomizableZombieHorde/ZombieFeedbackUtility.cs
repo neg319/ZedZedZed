@@ -60,7 +60,7 @@ namespace CustomizableZombieHorde
                 ? " If that limb is amputated before the infection turns terminal, the infection can be removed with it."
                 : string.Empty;
 
-            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness" + locationText + ". It worsens over time, becomes terminal at 90%, kills the pawn, then continues through the corpse until it reaches 100% and rises unless the skull is destroyed." + cureText, pawn, MessageTypeDefOf.NegativeHealthEvent);
+            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness" + locationText + ". It worsens over time, stays treatable until 60%, becomes terminal after that, falls into a living coma at 80%, and if left untreated transforms into a colony lurker at 99%." + cureText, pawn, MessageTypeDefOf.NegativeHealthEvent);
         }
 
 
@@ -72,9 +72,19 @@ namespace CustomizableZombieHorde
             }
 
             string text = becameLurker
-                ? pawn.LabelShortCap + " dies from zombie infection and rises again as a lurker."
-                : pawn.LabelShortCap + " dies from zombie infection and rises again as part of the horde.";
+                ? pawn.LabelShortCap + " finishes the transformation and becomes a lurker."
+                : pawn.LabelShortCap + " finishes the transformation and joins the horde.";
             Messages.Message(text, pawn, MessageTypeDefOf.NegativeEvent);
+        }
+
+        public static void SendLivingTransformationMessage(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            Messages.Message(pawn.LabelShortCap + " completes the transformation and becomes a colony lurker.", pawn, MessageTypeDefOf.NegativeEvent);
         }
 
         public static void TrySendGrabberPullWarning(Pawn prey, Pawn grabber)
@@ -106,19 +116,6 @@ namespace CustomizableZombieHorde
 
         public static void TrySendReanimationWarning(Pawn pawn)
         {
-            if (pawn == null || pawn.Map == null || !pawn.Map.IsPlayerHome)
-            {
-                return;
-            }
-
-            int ticksGame = Find.TickManager?.TicksGame ?? 0;
-            if (LastReanimationWarningTickByPawn.TryGetValue(pawn.thingIDNumber, out int lastTick) && ticksGame - lastTick < 2500)
-            {
-                return;
-            }
-
-            LastReanimationWarningTickByPawn[pawn.thingIDNumber] = ticksGame;
-            Messages.Message(pawn.LabelShortCap + " rises again. Destroy the head if you want it to stay down.", pawn, MessageTypeDefOf.NegativeEvent);
         }
 
         private static string GetButcherBileInspectLabel(ZombieButcherProfile profile)
@@ -149,6 +146,12 @@ namespace CustomizableZombieHorde
             }
 
             List<string> lines = new List<string>();
+            string feignDeathLine = ZombieFeignDeathUtility.GetFeignDeathInspectString(pawn);
+            if (!feignDeathLine.NullOrEmpty())
+            {
+                lines.Add(feignDeathLine);
+            }
+
             if (ZombieLurkerUtility.IsPassiveLurker(pawn))
             {
                 lines.Add("Passive lurker. It will not attack colonists and other undead ignore it.");
@@ -162,7 +165,7 @@ namespace CustomizableZombieHorde
 
             if (ZombieInfectionUtility.HasReanimatedState(pawn))
             {
-                lines.Add("Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn has fully turned, can no longer be cured, and if killed will be handled by the global reanimation sweep every few in game seconds once the corpse is ready, unless the head or skull is ruined.");
+                lines.Add("Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn has fully turned and can no longer be cured.");
             }
             else if (ZombieInfectionUtility.HasZombieInfection(pawn))
             {
@@ -170,11 +173,11 @@ namespace CustomizableZombieHorde
                 {
                     Hediff localizedInfection = ZombieInfectionUtility.GetZombieInfection(pawn);
                     string localizedPartText = localizedInfection?.Part != null ? " If the infected limb is removed before terminal, that also cures it." : string.Empty;
-                    lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It worsens over time and can be cured with a bile med kit before it reaches terminal at 90%." + localizedPartText);
+                    lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It can be cured with a bile med kit before it reaches the terminal bloodstream stage at 60%." + localizedPartText);
                 }
                 else if (ZombieInfectionUtility.IsTerminal(pawn))
                 {
-                    lines.Add("Zombie sickness: terminal, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. Terminal runs from 90% to 99%, can no longer be cured, and if the pawn dies at any earlier stage the infection keeps climbing from that exact percentage after death until it reaches Reanimated at 100%.");
+                    lines.Add("Zombie sickness: terminal, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. Terminal begins at 60%, coma begins at 80%, and if the pawn survives to 99% they transform into a colony lurker.");
                 }
             }
 
@@ -190,44 +193,17 @@ namespace CustomizableZombieHorde
             }
 
             List<string> lines = new List<string>();
-            if (ZombieRulesUtility.CanReanimate(innerPawn))
-            {
-                lines.Add("This corpse may rise again unless the head is ruined.");
-            }
-
             if (ZombieInfectionUtility.HasReanimatedState(innerPawn) || ZombieInfectionUtility.HasZombieInfection(innerPawn))
             {
-                string infectionLine;
-                if (ZombieInfectionUtility.HasReanimatedState(innerPawn))
-                {
-                    infectionLine = "Reanimated: " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete. This corpse will try to rise again after its reanimation delay, and a global sweep checks for ready corpses every few in game seconds. ";
-                }
-                else
-                {
-                    infectionLine = ZombieInfectionUtility.IsTerminal(innerPawn)
-                        ? "Zombie infection is terminal at " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete and can no longer be cured. After death the corpse keeps progressing upward from its current percentage until it reaches Reanimated at 100%. "
-                        : "Zombie infection is " + ZombieInfectionUtility.GetInfectionCompletionLabel(innerPawn) + " complete and its corpse will keep climbing from this exact percentage after death until it reaches Reanimated at 100%. ";
-                }
-
-                ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
-                if (component != null && component.TryGetCorpseReanimationTick(corpse, out int wakeTick) && Find.TickManager != null)
-                {
-                    int ticksLeft = wakeTick - Find.TickManager.TicksGame;
-                    if (ticksLeft > 0)
-                    {
-                        infectionLine += "It should be ready in about " + ticksLeft.ToStringTicksToPeriod() + ".";
-                    }
-                    else
-                    {
-                        infectionLine += "It should be ready to rise now.";
-                    }
-                }
-                else
-                {
-                    infectionLine += "It will keep being checked by the global reanimation sweep unless the corpse is destroyed or prevented from rising.";
-                }
-
+                string infectionLine = ZombieInfectionUtility.HasReanimatedState(innerPawn)
+                    ? "Transformation completed before death, but dead infected pawns stay dead in the current build."
+                    : "Zombie infection was present at death, but dead infected pawns stay dead in the current build.";
                 lines.Add(infectionLine);
+            }
+
+            if (ZombieRulesUtility.IsZombie(innerPawn))
+            {
+                lines.Add("This zombie is dead for real. Its head was ruined badly enough to stop the fake death regeneration state.");
             }
 
             if (ZombieRulesUtility.IsZombie(innerPawn))

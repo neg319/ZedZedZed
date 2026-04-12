@@ -104,6 +104,11 @@ namespace CustomizableZombieHorde
 
         public static bool TryInjectZombieBile(Pawn patient, Pawn doctor = null)
         {
+            return TryInjectZombieBile(patient, doctor, sendFeedback: true);
+        }
+
+        public static bool TryInjectZombieBile(Pawn patient, Pawn doctor, bool sendFeedback)
+        {
             if (patient == null || patient.Dead || patient.RaceProps?.Humanlike != true)
             {
                 return false;
@@ -131,7 +136,11 @@ namespace CustomizableZombieHorde
                 doctor.skills.Learn(SkillDefOf.Medicine, 300f);
             }
 
-            ZombieFeedbackUtility.SendBileInjectionMessage(patient, doctor);
+            if (sendFeedback)
+            {
+                ZombieFeedbackUtility.SendBileInjectionMessage(patient, doctor);
+            }
+
             return true;
         }
 

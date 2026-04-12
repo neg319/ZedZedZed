@@ -1106,6 +1106,12 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            if (ZombieFeignDeathUtility.IsFeigningDeath(pawn))
+            {
+                ZombieFeignDeathUtility.ForceZombieIntoDownedState(pawn);
+                return;
+            }
+
             if (ZombieLurkerUtility.IsPassiveLurker(pawn))
             {
                 ZombieLurkerUtility.EnsurePassiveLurkerBehavior(pawn);
@@ -1368,6 +1374,11 @@ namespace CustomizableZombieHorde
         private static void TryRecoverFromSpawnIncap(Pawn pawn)
         {
             if (pawn?.health?.hediffSet == null || !pawn.Downed)
+            {
+                return;
+            }
+
+            if (ZombieFeignDeathUtility.IsFeigningDeath(pawn))
             {
                 return;
             }

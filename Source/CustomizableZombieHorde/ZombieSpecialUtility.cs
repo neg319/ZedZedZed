@@ -1771,6 +1771,11 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            if (pawn.Downed || ZombieFeignDeathUtility.IsFeigningDeath(pawn))
+            {
+                return;
+            }
+
             if (ShouldDrownedRoamFreely(pawn))
             {
                 return;

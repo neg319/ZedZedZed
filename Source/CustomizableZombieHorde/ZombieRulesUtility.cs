@@ -39,9 +39,7 @@ namespace CustomizableZombieHorde
 
         public static bool CanReanimate(Pawn pawn)
         {
-            return IsZombie(pawn)
-                && !HasHeadDamageOrDestruction(pawn)
-                && !ZombieInfectionUtility.IsSkullMissing(pawn);
+            return false;
         }
 
         public static bool HasHeadDamageOrDestruction(Pawn pawn)

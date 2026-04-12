@@ -504,12 +504,19 @@ namespace CustomizableZombieHorde
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.Kill))]
     public static class Patch_Pawn_Kill
     {
-        public static void Prefix(Pawn __instance)
+        public static bool Prefix(Pawn __instance)
         {
+            if (ZombieFeignDeathUtility.ShouldPreventZombieDeath(__instance) && ZombieFeignDeathUtility.EnterFeignDeath(__instance))
+            {
+                return false;
+            }
+
             if (ZombieUtility.IsVariant(__instance, ZombieVariant.Boomer))
             {
                 ZombieSpecialUtility.TriggerBoomerBurstOnly(__instance);
             }
+
+            return true;
         }
 
         public static void Postfix(Pawn __instance)
