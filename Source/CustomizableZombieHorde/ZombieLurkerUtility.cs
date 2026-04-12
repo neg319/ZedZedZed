@@ -134,22 +134,8 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (pawn.CurJob != null && pawn.CurJob.def == JobDefOf.Goto && pawn.CurJob.expiryInterval > 0)
-            {
-                return;
-            }
-
-            IntVec3 destination = CellFinder.RandomClosewalkCellNear(pawn.PositionHeld, pawn.MapHeld, 10);
-            if (!destination.IsValid || destination == pawn.PositionHeld)
-            {
-                return;
-            }
-
-            Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, destination);
-            moveJob.expiryInterval = Rand.RangeInclusive(900, 1800);
-            moveJob.checkOverrideOnExpire = true;
-            moveJob.locomotionUrgency = LocomotionUrgency.Amble;
-            pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);
+            StopLurkerAttackJobs(pawn);
+            TryAssignBaseWanderJob(pawn);
         }
 
         public static void EnsureColonyLurkerState(Pawn pawn, bool emergencyStabilize = false, bool stopCurrentJobs = false)
@@ -180,10 +166,61 @@ namespace CustomizableZombieHorde
                 }
             }
 
+            StopLurkerAttackJobs(pawn);
+
             if (emergencyStabilize || NeedsEmergencyStabilization(pawn))
             {
                 StabilizeColonyLurker(pawn);
             }
+
+            TryAssignBaseWanderJob(pawn);
+        }
+
+        private static void StopLurkerAttackJobs(Pawn pawn)
+        {
+            if (pawn?.jobs == null || pawn.CurJob == null)
+            {
+                return;
+            }
+
+            string jobName = pawn.CurJob.def?.defName ?? string.Empty;
+            if (pawn.CurJob.def == JobDefOf.AttackMelee || jobName.IndexOf("attack", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                try
+                {
+                    pawn.jobs.StopAll();
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static void TryAssignBaseWanderJob(Pawn pawn)
+        {
+            if (pawn?.MapHeld == null || pawn.jobs == null || pawn.Downed || ZombieUtility.IsUnderColonyRestraint(pawn))
+            {
+                return;
+            }
+
+            if (pawn.CurJob != null && pawn.CurJob.def == JobDefOf.Goto && pawn.CurJob.expiryInterval > 0)
+            {
+                return;
+            }
+
+            IntVec3 baseCenter = ZombieSpecialUtility.GetPlayerBaseCenter(pawn.MapHeld);
+            IntVec3 origin = baseCenter.IsValid ? baseCenter : pawn.PositionHeld;
+            IntVec3 destination = CellFinder.RandomClosewalkCellNear(origin, pawn.MapHeld, 12);
+            if (!destination.IsValid || destination == pawn.PositionHeld)
+            {
+                return;
+            }
+
+            Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, destination);
+            moveJob.expiryInterval = Rand.RangeInclusive(900, 1800);
+            moveJob.checkOverrideOnExpire = true;
+            moveJob.locomotionUrgency = LocomotionUrgency.Amble;
+            pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);
         }
 
         private static bool HasSuppressedHostileTarget(Pawn pawn)

@@ -33,6 +33,8 @@ namespace CustomizableZombieHorde
         private int bloodMoonActiveUntilTick = -1;
         private int nextBloodMoonRushTick = -1;
         private int nextBloodMoonCommandPulseTick = -1;
+        private int fullMoonActiveUntilTick = -1;
+        private int nextFullMoonCommandPulseTick = -1;
         private Dictionary<int, int> lastNightlySpawnDayByMap = new Dictionary<int, int>();
         private Dictionary<int, int> lastRainDrownedSpawnTickByMap = new Dictionary<int, int>();
         private Dictionary<int, int> nextPopulationTopUpTickByMap = new Dictionary<int, int>();
@@ -71,6 +73,8 @@ namespace CustomizableZombieHorde
             Scribe_Values.Look(ref bloodMoonActiveUntilTick, "bloodMoonActiveUntilTick", -1);
             Scribe_Values.Look(ref nextBloodMoonRushTick, "nextBloodMoonRushTick", -1);
             Scribe_Values.Look(ref nextBloodMoonCommandPulseTick, "nextBloodMoonCommandPulseTick", -1);
+            Scribe_Values.Look(ref fullMoonActiveUntilTick, "fullMoonActiveUntilTick", -1);
+            Scribe_Values.Look(ref nextFullMoonCommandPulseTick, "nextFullMoonCommandPulseTick", -1);
             Scribe_Collections.Look(ref lastNightlySpawnDayByMap, "lastNightlySpawnDayByMap", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref lastRainDrownedSpawnTickByMap, "lastRainDrownedSpawnTickByMap", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref nextPopulationTopUpTickByMap, "nextPopulationTopUpTickByMap", LookMode.Value, LookMode.Value);
@@ -148,6 +152,7 @@ namespace CustomizableZombieHorde
             HandleGroundBursts(ticksGame);
             HandleHerdEvents(ticksGame);
             HandleGraveEvents(ticksGame);
+            HandleActiveFullMoon(ticksGame);
             HandleActiveBloodMoon(ticksGame);
             HandleMoonCycle();
         }
@@ -472,10 +477,7 @@ namespace CustomizableZombieHorde
             }
 
             GenSpawn.Spawn(zombie, spawnCell, map);
-            RegisterBehavior(zombie, ZombieSpawnEventType.AssaultBase);
-            ZombieUtility.PrepareSpawnedZombie(zombie);
-            ZombieUtility.AssignInitialShambleJob(zombie, ZombieSpawnEventType.AssaultBase);
-            ZombieUtility.EnsureZombieAggression(zombie);
+            FinalizeDebugSpawnedHostileZombie(zombie);
             string label = ZombieDefUtility.GetDisplayLabelForPawn(zombie).ToLowerInvariant();
             Messages.Message("A debug " + label + " has been spawned.", zombie, MessageTypeDefOf.NeutralEvent);
             RefreshCurrentMapCount();
@@ -560,6 +562,7 @@ namespace CustomizableZombieHorde
             ZombieUtility.SetZombieDisplayName(boneBiter);
             ZombieUtility.MarkPawnGraphicsDirty(boneBiter);
             GenSpawn.Spawn(boneBiter, spawnCell, map);
+            FinalizeDebugSpawnedHostileZombie(boneBiter);
             Messages.Message("A debug " + ZombieDefUtility.GetBoneBiterLabel().ToLowerInvariant() + " has been spawned.", boneBiter, MessageTypeDefOf.NeutralEvent);
             RefreshCurrentMapCount();
             return true;
@@ -598,9 +601,7 @@ namespace CustomizableZombieHorde
             }
 
             GenSpawn.Spawn(runt, spawnCell, map);
-            RegisterBehavior(runt, ZombieSpawnEventType.AssaultBase);
-            ZombieUtility.AssignInitialShambleJob(runt, ZombieSpawnEventType.AssaultBase);
-            ZombieUtility.EnsureZombieAggression(runt);
+            FinalizeDebugSpawnedHostileZombie(runt);
             Messages.Message("A debug runt has been spawned.", runt, MessageTypeDefOf.NeutralEvent);
             RefreshCurrentMapCount();
             return true;
@@ -647,13 +648,34 @@ namespace CustomizableZombieHorde
             ZombieUtility.SetZombieDisplayName(boomer);
             ZombieUtility.MarkPawnGraphicsDirty(boomer);
             GenSpawn.Spawn(boomer, spawnCell, map);
-            RegisterBehavior(boomer, ZombieSpawnEventType.AssaultBase);
-            ZombieUtility.PrepareSpawnedZombie(boomer);
-            ZombieUtility.AssignInitialShambleJob(boomer, ZombieSpawnEventType.AssaultBase);
-            ZombieUtility.EnsureZombieAggression(boomer);
+            FinalizeDebugSpawnedHostileZombie(boomer);
             Messages.Message("A debug " + ZombieDefUtility.GetPregnantBoomerLabel().ToLowerInvariant() + " has been spawned.", boomer, MessageTypeDefOf.NeutralEvent);
             RefreshCurrentMapCount();
             return true;
+        }
+
+
+        private void FinalizeDebugSpawnedHostileZombie(Pawn zombie)
+        {
+            if (zombie == null || zombie.Destroyed)
+            {
+                return;
+            }
+
+            ZombieSpawnEventType behavior = ZombieRulesUtility.GetNaturalBehavior(zombie);
+            RegisterBehavior(zombie, behavior);
+            ZombieUtility.PrepareSpawnedZombie(zombie);
+
+            try
+            {
+                zombie.jobs?.StopAll();
+            }
+            catch
+            {
+            }
+
+            ZombieUtility.AssignInitialShambleJob(zombie, behavior);
+            ZombieUtility.EnsureZombieAggression(zombie);
         }
 
 
@@ -695,7 +717,7 @@ namespace CustomizableZombieHorde
                 return (ZombieSpawnEventType)storedValue;
             }
 
-            return ZombieSpawnEventType.AssaultBase;
+            return ZombieRulesUtility.GetNaturalBehavior(pawn);
         }
 
         public bool TryGetAssignedHerdDirection(Pawn pawn, out ZombieHerdDirection direction)
@@ -750,6 +772,27 @@ namespace CustomizableZombieHorde
 
             map ??= Find.CurrentMap;
             return map == null || map.IsPlayerHome;
+        }
+
+        public bool IsFullMoonActive(Map map = null)
+        {
+            if (Find.TickManager == null)
+            {
+                return false;
+            }
+
+            if (fullMoonActiveUntilTick < 0 || Find.TickManager.TicksGame >= fullMoonActiveUntilTick)
+            {
+                return false;
+            }
+
+            map ??= Find.CurrentMap;
+            return map == null || map.IsPlayerHome;
+        }
+
+        public bool IsMoonRushActive(Map map = null)
+        {
+            return IsBloodMoonVisualActive(map) || IsFullMoonActive(map);
         }
 
         public Color GetBloodMoonTintColor()
@@ -1267,6 +1310,19 @@ namespace CustomizableZombieHorde
             {
                 StartBloodMoon(map);
             }
+            else
+            {
+                StartFullMoon(map);
+            }
+        }
+
+        private void StartFullMoon(Map map)
+        {
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            int duration = HoursToTicks(Rand.Range(4f, 8f));
+            fullMoonActiveUntilTick = ticksGame + duration;
+            nextFullMoonCommandPulseTick = ticksGame;
+            ForceAllMapZombiesToRush(map);
         }
 
         private void StartBloodMoon(Map map)
@@ -1277,6 +1333,39 @@ namespace CustomizableZombieHorde
             nextBloodMoonRushTick = ticksGame + HoursToTicks(Rand.Range(0.75f, 1.25f));
             nextBloodMoonCommandPulseTick = ticksGame;
             ForceAllMapZombiesToRush(map);
+        }
+
+        private void HandleActiveFullMoon(int ticksGame)
+        {
+            if (fullMoonActiveUntilTick < 0)
+            {
+                return;
+            }
+
+            if (ticksGame >= fullMoonActiveUntilTick)
+            {
+                fullMoonActiveUntilTick = -1;
+                nextFullMoonCommandPulseTick = -1;
+                return;
+            }
+
+            if (nextFullMoonCommandPulseTick < 0)
+            {
+                nextFullMoonCommandPulseTick = ticksGame;
+            }
+
+            if (ticksGame >= nextFullMoonCommandPulseTick)
+            {
+                foreach (Map map in Find.Maps)
+                {
+                    if (map.IsPlayerHome)
+                    {
+                        ForceAllMapZombiesToRush(map);
+                    }
+                }
+
+                nextFullMoonCommandPulseTick = ticksGame + 180;
+            }
         }
 
         private void HandleActiveBloodMoon(int ticksGame)
@@ -1430,7 +1519,7 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                if (lastRainDrownedSpawnTickByMap.TryGetValue(map.uniqueID, out int lastSpawnTick) && ticksGame - lastSpawnTick < GenDate.TicksPerHour)
+                if (lastRainDrownedSpawnTickByMap.TryGetValue(map.uniqueID, out int lastSpawnTick) && ticksGame - lastSpawnTick < GenDate.TicksPerHour / 2)
                 {
                     continue;
                 }
@@ -1441,14 +1530,18 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
+                int colonists = Mathf.Max(1, map.mapPawns?.FreeColonistsSpawnedCount ?? 0);
                 int existingDrowned = map.mapPawns?.AllPawnsSpawned?.Count(pawn => ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned)) ?? 0;
-                int desiredDrowned = ZombieSpecialUtility.MapHasWater(map) ? 3 : 2;
+                int desiredDrowned = ZombieSpecialUtility.MapHasWater(map)
+                    ? Mathf.Clamp(2 + colonists / 2, 4, 8)
+                    : Mathf.Clamp(1 + colonists / 3, 3, 6);
                 if (existingDrowned >= desiredDrowned)
                 {
                     continue;
                 }
 
-                int spawnCount = Mathf.Min(remainingCapacity, existingDrowned == 0 ? 2 : 1);
+                int missingDrowned = desiredDrowned - existingDrowned;
+                int spawnCount = Mathf.Min(remainingCapacity, Mathf.Clamp(missingDrowned, 1, 3));
                 if (spawnCount <= 0)
                 {
                     continue;
@@ -1460,7 +1553,7 @@ namespace CustomizableZombieHorde
                     anchor = map.Center;
                 }
 
-                if (ZombieSpawnHelper.SpawnVariantPackAround(map, anchor, ZombieVariant.Drowned, spawnCount, ZombieSpawnEventType.EdgeWander, ignoreCap: false))
+                if (ZombieSpawnHelper.SpawnVariantPackAround(map, anchor, ZombieVariant.Drowned, spawnCount, ZombieSpawnEventType.AssaultBase, ignoreCap: false))
                 {
                     lastRainDrownedSpawnTickByMap[map.uniqueID] = ticksGame;
                     RefreshCurrentMapCount();

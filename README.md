@@ -1,3 +1,9 @@
+## Iteration 117 - Stage correction and debug spawn cleanup
+- Kept zombie infection and the downed Reanimating status as separate health statuses.
+- Corrected the infection final stage label back to Transformation (Reanimated).
+- Kept coma starting at 80 percent and living lurker conversion at 99 percent.
+- Tightened debug spawned hostile zombies so they get force-reset into a base-push shamble instead of inheriting bad walk-off jobs.
+
 ```text
 ▒███████▒▓█████ ▓█████▄    ▒███████▒▓█████ ▓█████▄    ▒███████▒▓█████ ▓█████▄ 
 ▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌   ▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌   ▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌
@@ -485,3 +491,12 @@ This changelog treats a **major update** as something that adds substantial new 
 
 
 - Iteration 115: fixed a RimWorld 1.6 build break by removing the direct DamageDefOf.Bruise reference from the zombie wound infection check. Infection still only rolls when a zombie attack creates a new bleeding wound, so bruises still do not infect because they do not open the skin.
+
+
+- Iteration 117: corrected the living zombie infection stage label back to "Transformation (Reanimated)" at 90 percent while keeping coma at 80 percent and living lurker conversion at 99 percent. Also tightened debug-spawned zombie setup so manual debug zombies are force-reset into the base-push behavior instead of inheriting bad walk-off jobs.
+
+
+- Iteration 118: aligned zombie AI rules across the whole mod. Biters and the other general hostile variants now use a stable wander-or-base-push fallback, bone biters keep corpse-seeking behavior, drowned keep trying to hold water unless they are actively hunting or a moon override is forcing a rush, lurkers now wander around the base without attacking, full moons now keep pulsing base-push orders the same way blood moons already did, and debug-spawned hostile zombies now get their proper variant behavior instead of immediately peeling off toward a map exit.
+
+
+- Iteration 119: drowned zombies now treat rain as a true rush state. Rain-exposed drowned gain a dedicated speed boost that stacks with their water-fed state, they switch from water-holding behavior into base-push behavior while the rain lasts, and rainy maps now top up drowned spawns faster and in larger groups.

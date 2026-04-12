@@ -957,18 +957,18 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                int nearbyZombies = map.mapPawns.AllPawnsSpawned.Count(pawn => ZombieUtility.IsZombie(pawn) && !pawn.Dead && !pawn.Destroyed && pawn.PositionHeld.DistanceToSquared(corpse.PositionHeld) <= 2.9f * 2.9f);
-                if (nearbyZombies <= 0)
+                int nearbyBoneBiters = map.mapPawns.AllPawnsSpawned.Count(pawn => IsBoneBiter(pawn) && !pawn.Dead && !pawn.Destroyed && pawn.PositionHeld.DistanceToSquared(corpse.PositionHeld) <= 2.9f * 2.9f);
+                if (nearbyBoneBiters <= 0)
                 {
                     continue;
                 }
 
-                for (int i = 0; i < nearbyZombies; i++)
+                for (int i = 0; i < nearbyBoneBiters; i++)
                 {
                     FilthMaker.TryMakeFilth(corpse.PositionHeld, map, ZombieDefOf.CZH_Filth_ZombieBlood ?? ThingDefOf.Filth_Blood);
                 }
 
-                if (Rand.Chance(0.10f * nearbyZombies))
+                if (Rand.Chance(0.10f * nearbyBoneBiters))
                 {
                     corpse.Destroy(DestroyMode.Vanish);
                 }

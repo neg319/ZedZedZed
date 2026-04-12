@@ -42,6 +42,43 @@ namespace CustomizableZombieHorde
             return false;
         }
 
+        public static ZombieSpawnEventType GetNaturalBehavior(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return ZombieSpawnEventType.AssaultBase;
+            }
+
+            if (ZombieLurkerUtility.IsLurker(pawn))
+            {
+                return ZombieSpawnEventType.EdgeWander;
+            }
+
+            if (ZombieSpecialUtility.IsBoneBiter(pawn))
+            {
+                return ZombieSpawnEventType.EdgeWander;
+            }
+
+            if (ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned))
+            {
+                return ZombieSpecialUtility.IsRainActive(pawn.MapHeld)
+                    ? ZombieSpawnEventType.AssaultBase
+                    : ZombieSpawnEventType.EdgeWander;
+            }
+
+            return pawn.thingIDNumber % 2 == 0 ? ZombieSpawnEventType.EdgeWander : ZombieSpawnEventType.AssaultBase;
+        }
+
+        public static bool ShouldWanderOrPushBase(Pawn pawn)
+        {
+            return pawn != null && !ZombieSpecialUtility.IsBoneBiter(pawn) && !ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) && !ZombieLurkerUtility.IsLurker(pawn);
+        }
+
+        public static bool ShouldPrioritizeCorpseFeeding(Pawn pawn)
+        {
+            return pawn != null && ZombieSpecialUtility.IsBoneBiter(pawn);
+        }
+
         public static bool HasHeadDamageOrDestruction(Pawn pawn)
         {
             if (pawn?.health?.hediffSet == null)

@@ -9,15 +9,7 @@ namespace CustomizableZombieHorde
         {
             get
             {
-                string stage = CurStage?.label;
-                string progress = ZombieInfectionUtility.GetInfectionCompletion(this).ToStringPercent();
-
-                if (stage.NullOrEmpty())
-                {
-                    return progress;
-                }
-
-                return stage + ", " + progress;
+                return CurStage?.label;
             }
         }
 

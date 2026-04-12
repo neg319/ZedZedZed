@@ -359,6 +359,25 @@
   </HediffDef>
 
   <HediffDef>
+    <defName>CZH_ZombieDrownedRain</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>drowned in rain</label>
+    <description>Cold rain swells this drowned corpse into a rushing tide of rot. It surges toward living prey with unnatural speed.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>storm-rushing</label>
+        <statFactors>
+          <MoveSpeed>1.80</MoveSpeed>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
     <defName>CZH_ZombieSickness</defName>
     <hediffClass>CustomizableZombieHorde.Hediff_ZombieInfection</hediffClass>
     <label>zombie infection</label>
@@ -470,7 +489,7 @@
       </li>
       <li>
         <minSeverity>0.90</minSeverity>
-        <label>Transformation (Reanimating)</label>
+        <label>Transformation (Reanimated)</label>
         <capMods>
           <li>
             <capacity>Consciousness</capacity>
@@ -486,9 +505,9 @@
   </HediffDef>
   <HediffDef>
     <defName>CZH_ZombieReanimated</defName>
-    <hediffClass>CustomizableZombieHorde.Hediff_ZombieInfection</hediffClass>
-    <label>Transformation (Reanimating)</label>
-    <description>This pawn completed the infection and entered the permanent Reanimating state. It marks a completed turn and cannot be cured.</description>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>fully reanimated</label>
+    <description>This pawn completed the infection and is now fully reanimated. This is a completed turn state and cannot be cured.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>

@@ -1057,6 +1057,7 @@ namespace CustomizableZombieHorde
             bool rainFed = IsExposedToRain(pawn);
             bool hasWater = pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieDrownedWater);
             bool hasLand = pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieDrownedLand);
+            bool hasRain = pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieDrownedRain);
 
             if (inWater || rainFed)
             {
@@ -1081,6 +1082,18 @@ namespace CustomizableZombieHorde
                 {
                     pawn.health.AddHediff(ZombieDefOf.CZH_ZombieDrownedLand);
                 }
+            }
+
+            if (rainFed)
+            {
+                if (!hasRain)
+                {
+                    pawn.health.AddHediff(ZombieDefOf.CZH_ZombieDrownedRain);
+                }
+            }
+            else if (hasRain)
+            {
+                pawn.health.RemoveHediff(pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieDrownedRain));
             }
         }
 
@@ -1130,6 +1143,8 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            bool moonRush = Current.Game?.GetComponent<ZombieGameComponent>()?.IsMoonRushActive(pawn.MapHeld) == true;
+
             if (IsPlayerAlignedZombie(pawn))
             {
                 EnsureFriendlyZombieState(pawn);
@@ -1141,7 +1156,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (IsVariant(pawn, ZombieVariant.Drowned) && ZombieSpecialUtility.ShouldDrownedHoldWater(pawn))
+            if (!moonRush && IsVariant(pawn, ZombieVariant.Drowned) && ZombieSpecialUtility.ShouldDrownedHoldWater(pawn))
             {
                 PrepareSpawnedZombie(pawn);
                 if (pawn.CurJob != null && (pawn.CurJob.def == JobDefOf.AttackMelee || pawn.CurJob.def == JobDefOf.Goto))
@@ -1158,7 +1173,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (ZombieSpecialUtility.HandleBoneBiterBehavior(pawn))
+            if (!moonRush && ZombieSpecialUtility.HandleBoneBiterBehavior(pawn))
             {
                 return;
             }
@@ -1324,6 +1339,11 @@ namespace CustomizableZombieHorde
                 return LocomotionUrgency.Amble;
             }
 
+            if (IsVariant(pawn, ZombieVariant.Drowned) && IsExposedToRain(pawn))
+            {
+                return LocomotionUrgency.Jog;
+            }
+
             return IsVariant(pawn, ZombieVariant.Grabber) ? LocomotionUrgency.Walk : LocomotionUrgency.Walk;
         }
 
@@ -1338,6 +1358,11 @@ namespace CustomizableZombieHorde
             if (pawn?.MapHeld == null || pawn.jobs == null || pawn.Downed)
             {
                 return;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Drowned) && ZombieSpecialUtility.IsRainActive(pawn.MapHeld) && behavior != ZombieSpawnEventType.Herd)
+            {
+                behavior = ZombieSpawnEventType.AssaultBase;
             }
 
             IntVec3 targetCell = ZombieSpecialUtility.FindInitialBehaviorCell(pawn, behavior);
@@ -1449,13 +1474,20 @@ namespace CustomizableZombieHorde
             }
 
             ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
-            ZombieSpawnEventType behavior = component?.GetAssignedBehavior(pawn) ?? ZombieSpawnEventType.AssaultBase;
+            ZombieSpawnEventType behavior = component?.GetAssignedBehavior(pawn) ?? ZombieRulesUtility.GetNaturalBehavior(pawn);
+            bool moonRush = component?.IsMoonRushActive(pawn.MapHeld) == true;
+            bool rainRushingDrowned = IsVariant(pawn, ZombieVariant.Drowned) && ZombieSpecialUtility.IsRainActive(pawn.MapHeld);
+            if ((moonRush || rainRushingDrowned) && behavior != ZombieSpawnEventType.Herd)
+            {
+                behavior = ZombieSpawnEventType.AssaultBase;
+            }
+
             float preyRadius = behavior == ZombieSpawnEventType.Herd ? (ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) ? 9f : 7f) : (ZombieUtility.IsVariant(pawn, ZombieVariant.Grabber) ? 26f : 12f);
             if (behavior == ZombieSpawnEventType.AssaultBase || behavior == ZombieSpawnEventType.GroundBurst)
             {
                 preyRadius = Mathf.Max(preyRadius, 28f);
             }
-            else if (component?.IsBloodMoonVisualActive(pawn.MapHeld) == true && behavior != ZombieSpawnEventType.Herd)
+            else if (moonRush && behavior != ZombieSpawnEventType.Herd)
             {
                 preyRadius = Mathf.Max(preyRadius, 34f);
             }
@@ -1495,24 +1527,32 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            Corpse corpse = ZombieSpecialUtility.FindNearbyFreshCorpse(pawn, 5f);
-            if (corpse != null)
+            if (!moonRush && ZombieRulesUtility.ShouldPrioritizeCorpseFeeding(pawn))
             {
-                try
+                Corpse corpse = ZombieSpecialUtility.FindNearbyFreshCorpse(pawn, 8f);
+                if (corpse != null)
                 {
-                    Job feedJob = JobMaker.MakeJob(JobDefOf.Goto, corpse.Position);
-                    feedJob.expiryInterval = 450;
-                    feedJob.checkOverrideOnExpire = true;
-                    feedJob.locomotionUrgency = GetZombieUrgency(pawn);
-                    pawn.jobs.TryTakeOrderedJob(feedJob, JobTag.Misc);
-                    return;
-                }
-                catch
-                {
+                    try
+                    {
+                        Job feedJob = JobMaker.MakeJob(JobDefOf.Goto, corpse.Position);
+                        feedJob.expiryInterval = 450;
+                        feedJob.checkOverrideOnExpire = true;
+                        feedJob.locomotionUrgency = GetZombieUrgency(pawn);
+                        pawn.jobs.TryTakeOrderedJob(feedJob, JobTag.Misc);
+                        return;
+                    }
+                    catch
+                    {
+                    }
                 }
             }
 
-            ZombieSpawnEventType fallbackBehavior = Current.Game?.GetComponent<ZombieGameComponent>()?.GetAssignedBehavior(pawn) ?? ZombieSpawnEventType.AssaultBase;
+            ZombieSpawnEventType fallbackBehavior = component?.GetAssignedBehavior(pawn) ?? ZombieRulesUtility.GetNaturalBehavior(pawn);
+            if ((moonRush || rainRushingDrowned) && fallbackBehavior != ZombieSpawnEventType.Herd)
+            {
+                fallbackBehavior = ZombieSpawnEventType.AssaultBase;
+            }
+
             IntVec3 shambleCell = ZombieSpecialUtility.FindBehaviorCell(pawn, fallbackBehavior);
             if (!shambleCell.IsValid || shambleCell == pawn.PositionHeld)
             {
