@@ -1137,13 +1137,13 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (ZombieLurkerUtility.IsPassiveLurker(pawn))
+            bool moonRush = Current.Game?.GetComponent<ZombieGameComponent>()?.IsMoonRushActive(pawn.MapHeld) == true;
+
+            if (ZombieLurkerUtility.IsPassiveLurker(pawn) && !moonRush)
             {
                 ZombieLurkerUtility.EnsurePassiveLurkerBehavior(pawn);
                 return;
             }
-
-            bool moonRush = Current.Game?.GetComponent<ZombieGameComponent>()?.IsMoonRushActive(pawn.MapHeld) == true;
 
             if (IsPlayerAlignedZombie(pawn))
             {
@@ -1195,7 +1195,7 @@ namespace CustomizableZombieHorde
                 pawn.jobs.StopAll();
             }
 
-            AssignBehaviorJob(pawn);
+            AssignBehaviorJob(pawn, moonRush);
         }
 
         public static void EnsureFriendlyZombieState(Pawn pawn, bool stopCurrentJobs = false)
@@ -1374,7 +1374,7 @@ namespace CustomizableZombieHorde
             try
             {
                 Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, targetCell);
-                moveJob.expiryInterval = behavior == ZombieSpawnEventType.HuddledPack ? 1500 : (behavior == ZombieSpawnEventType.Herd ? 1800 : 1100);
+                moveJob.expiryInterval = GetBehaviorMoveJobDurationTicks(behavior);
                 moveJob.checkOverrideOnExpire = true;
                 moveJob.locomotionUrgency = GetZombieUrgency(pawn);
                 pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);
@@ -1392,15 +1392,19 @@ namespace CustomizableZombieHorde
             }
 
             string defName = job.def?.defName ?? string.Empty;
-            if (defName.Contains("ExitMap") || defName.Contains("LeaveMap"))
+            if (defName.IndexOf("ExitMap", StringComparison.OrdinalIgnoreCase) >= 0
+                || defName.IndexOf("LeaveMap", StringComparison.OrdinalIgnoreCase) >= 0
+                || defName.IndexOf("GotoDestMap", StringComparison.OrdinalIgnoreCase) >= 0
+                || defName.IndexOf("Travel", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 return true;
             }
 
             if (map != null && job.def == JobDefOf.Goto && job.targetA.IsValid)
             {
+                bool corpseTarget = job.targetA.HasThing && job.targetA.Thing is Corpse;
                 IntVec3 cell = job.targetA.Cell;
-                if (!cell.IsValid || !cell.InBounds(map) || ZombieSpecialUtility.DistanceToNearestEdge(cell, map) < 5)
+                if (!cell.IsValid || !cell.InBounds(map) || (!corpseTarget && ZombieSpecialUtility.DistanceToNearestEdge(cell, map) < 7))
                 {
                     return true;
                 }
@@ -1466,7 +1470,7 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private static void AssignBehaviorJob(Pawn pawn)
+        private static void AssignBehaviorJob(Pawn pawn, bool moonRush)
         {
             if (pawn?.MapHeld == null || pawn.jobs == null)
             {
@@ -1475,7 +1479,6 @@ namespace CustomizableZombieHorde
 
             ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
             ZombieSpawnEventType behavior = component?.GetAssignedBehavior(pawn) ?? ZombieRulesUtility.GetNaturalBehavior(pawn);
-            bool moonRush = component?.IsMoonRushActive(pawn.MapHeld) == true;
             bool rainRushingDrowned = IsVariant(pawn, ZombieVariant.Drowned) && ZombieSpecialUtility.IsRainActive(pawn.MapHeld);
             if ((moonRush || rainRushingDrowned) && behavior != ZombieSpawnEventType.Herd)
             {
@@ -1547,13 +1550,12 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            ZombieSpawnEventType fallbackBehavior = component?.GetAssignedBehavior(pawn) ?? ZombieRulesUtility.GetNaturalBehavior(pawn);
-            if ((moonRush || rainRushingDrowned) && fallbackBehavior != ZombieSpawnEventType.Herd)
+            if (HasValidBehaviorMoveJob(pawn, behavior))
             {
-                fallbackBehavior = ZombieSpawnEventType.AssaultBase;
+                return;
             }
 
-            IntVec3 shambleCell = ZombieSpecialUtility.FindBehaviorCell(pawn, fallbackBehavior);
+            IntVec3 shambleCell = ZombieSpecialUtility.FindBehaviorCell(pawn, behavior);
             if (!shambleCell.IsValid || shambleCell == pawn.PositionHeld)
             {
                 return;
@@ -1562,13 +1564,60 @@ namespace CustomizableZombieHorde
             try
             {
                 Job moveJob = JobMaker.MakeJob(JobDefOf.Goto, shambleCell);
-                moveJob.expiryInterval = fallbackBehavior == ZombieSpawnEventType.HuddledPack ? 1500 : (fallbackBehavior == ZombieSpawnEventType.Herd ? 1800 : 900);
+                moveJob.expiryInterval = GetBehaviorMoveJobDurationTicks(behavior);
                 moveJob.checkOverrideOnExpire = true;
                 moveJob.locomotionUrgency = GetZombieUrgency(pawn);
                 pawn.jobs.TryTakeOrderedJob(moveJob, JobTag.Misc);
             }
             catch
             {
+            }
+        }
+
+        private static bool HasValidBehaviorMoveJob(Pawn pawn, ZombieSpawnEventType behavior)
+        {
+            if (pawn?.MapHeld == null || pawn.CurJob == null || pawn.CurJob.def != JobDefOf.Goto || !pawn.CurJob.targetA.IsValid)
+            {
+                return false;
+            }
+
+            IntVec3 targetCell = pawn.CurJob.targetA.Cell;
+            if (!targetCell.IsValid || !targetCell.InBounds(pawn.MapHeld) || !targetCell.Standable(pawn.MapHeld))
+            {
+                return false;
+            }
+
+            if (behavior != ZombieSpawnEventType.Herd && ZombieSpecialUtility.DistanceToNearestEdge(targetCell, pawn.MapHeld) < 7)
+            {
+                return false;
+            }
+
+            if (behavior == ZombieSpawnEventType.AssaultBase || behavior == ZombieSpawnEventType.GroundBurst)
+            {
+                IntVec3 baseCenter = ZombieSpecialUtility.GetPlayerBaseCenter(pawn.MapHeld);
+                if (baseCenter.IsValid && targetCell.DistanceToSquared(baseCenter) > 40f * 40f)
+                {
+                    return false;
+                }
+            }
+
+            return pawn.CurJob.expiryInterval > 0;
+        }
+
+        private static int GetBehaviorMoveJobDurationTicks(ZombieSpawnEventType behavior)
+        {
+            switch (behavior)
+            {
+                case ZombieSpawnEventType.EdgeWander:
+                    return Rand.RangeInclusive(600, 1800);
+                case ZombieSpawnEventType.HuddledPack:
+                    return Rand.RangeInclusive(900, 1800);
+                case ZombieSpawnEventType.Herd:
+                    return 1800;
+                case ZombieSpawnEventType.GroundBurst:
+                    return Rand.RangeInclusive(450, 900);
+                default:
+                    return Rand.RangeInclusive(600, 1200);
             }
         }
 
