@@ -1728,8 +1728,7 @@ namespace CustomizableZombieHorde
 
                         if (ZombieSpecialUtility.IsHerdReadyToLeaveMap(pawn))
                         {
-                            ClearBehavior(pawn);
-                            ClearHerdDirection(pawn);
+                            ForgetBehavior(pawn);
                             try
                             {
                                 pawn.Destroy(DestroyMode.Vanish);

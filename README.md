@@ -1,3 +1,19 @@
+```text
+▒███████▒▓█████ ▓█████▄    ▒███████▒▓█████ ▓█████▄    ▒███████▒▓█████ ▓█████▄ 
+▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌   ▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌   ▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌
+░ ▒ ▄▀▒░ ▒███   ░██   █▌   ░ ▒ ▄▀▒░ ▒███   ░██   █▌   ░ ▒ ▄▀▒░ ▒███   ░██   █▌
+  ▄▀▒   ░▒▓█  ▄ ░▓█▄   ▌     ▄▀▒   ░▒▓█  ▄ ░▓█▄   ▌     ▄▀▒   ░▒▓█  ▄ ░▓█▄   ▌
+▒███████▒░▒████▒░▒████▓    ▒███████▒░▒████▒░▒████▓    ▒███████▒░▒████▒░▒████▓ 
+░▒▒ ▓░▒░▒░░ ▒░ ░ ▒▒▓  ▒    ░▒▒ ▓░▒░▒░░ ▒░ ░ ▒▒▓  ▒    ░▒▒ ▓░▒░▒░░ ▒░ ░ ▒▒▓  ▒ 
+░░▒ ▒ ░ ▒ ░ ░  ░ ░ ▒  ▒    ░░▒ ▒ ░ ▒ ░ ░  ░ ░ ▒  ▒    ░░▒ ▒ ░ ▒ ░ ░  ░ ░ ▒  ▒ 
+░ ░ ░ ░ ░   ░    ░ ░  ░    ░ ░ ░ ░ ░   ░    ░ ░  ░    ░ ░ ░ ░ ░   ░    ░ ░  ░ 
+  ░ ░       ░  ░   ░         ░ ░       ░  ░   ░         ░ ░       ░  ░   ░    
+░                ░         ░                ░         ░                ░      
+```
+
+## Iteration 132 - README banner pinned to top
+- Pinned the Zed Zed Zed ASCII banner to the top of the README so it always appears before all changelog and project text.
+
 ## Iteration 131 - Night rush speed boost
 - Loud ranged fire now pulls nearby zombies toward the shooter, while quiet melee only strongly provokes the zombie that got hit.
 - Drowned zombies now keep a real wet mood boost in water, in rain, and while carrying other wet style statuses.
@@ -13,19 +29,6 @@
 - Corrected the infection final stage label back to Transformation (Reanimated).
 - Kept coma starting at 80 percent and living lurker conversion at 99 percent.
 - Tightened debug spawned hostile zombies so they get force-reset into a base-push shamble instead of inheriting bad walk-off jobs.
-
-```text
-▒███████▒▓█████ ▓█████▄    ▒███████▒▓█████ ▓█████▄    ▒███████▒▓█████ ▓█████▄ 
-▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌   ▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌   ▒ ▒ ▒ ▄▀░▓█   ▀ ▒██▀ ██▌
-░ ▒ ▄▀▒░ ▒███   ░██   █▌   ░ ▒ ▄▀▒░ ▒███   ░██   █▌   ░ ▒ ▄▀▒░ ▒███   ░██   █▌
-  ▄▀▒   ░▒▓█  ▄ ░▓█▄   ▌     ▄▀▒   ░▒▓█  ▄ ░▓█▄   ▌     ▄▀▒   ░▒▓█  ▄ ░▓█▄   ▌
-▒███████▒░▒████▒░▒████▓    ▒███████▒░▒████▒░▒████▓    ▒███████▒░▒████▒░▒████▓ 
-░▒▒ ▓░▒░▒░░ ▒░ ░ ▒▒▓  ▒    ░▒▒ ▓░▒░▒░░ ▒░ ░ ▒▒▓  ▒    ░▒▒ ▓░▒░▒░░ ▒░ ░ ▒▒▓  ▒ 
-░░▒ ▒ ░ ▒ ░ ░  ░ ░ ▒  ▒    ░░▒ ▒ ░ ▒ ░ ░  ░ ░ ▒  ▒    ░░▒ ▒ ░ ▒ ░ ░  ░ ░ ▒  ▒ 
-░ ░ ░ ░ ░   ░    ░ ░  ░    ░ ░ ░ ░ ░   ░    ░ ░  ░    ░ ░ ░ ░ ░   ░    ░ ░  ░ 
-  ░ ░       ░  ░   ░         ░ ░       ░  ░   ░         ░ ░       ░  ░   ░    
-░                ░         ░                ░         ░                ░      
-```
 
 # Zed Zed Zed
 
