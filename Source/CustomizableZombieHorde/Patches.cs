@@ -48,6 +48,35 @@ namespace CustomizableZombieHorde
         }
     }
 
+    [HarmonyPatch]
+    public static class Patch_Verb_TryStartCastOn_ZombieNoiseAttraction
+    {
+        public static MethodBase TargetMethod()
+        {
+            return typeof(Verb).GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .FirstOrDefault(method => method.Name == "TryStartCastOn"
+                    && method.ReturnType == typeof(bool)
+                    && method.GetParameters().Length >= 1
+                    && method.GetParameters()[0].ParameterType == typeof(LocalTargetInfo));
+        }
+
+        public static void Postfix(Verb __instance, LocalTargetInfo __0, bool __result)
+        {
+            if (!__result)
+            {
+                return;
+            }
+
+            Pawn attacker = __instance?.CasterPawn;
+            if (attacker == null)
+            {
+                return;
+            }
+
+            ZombieSpecialUtility.NotifyWeaponFired(attacker, __instance, __0);
+        }
+    }
+
     internal static class ZombieButcherSearchState
     {
         [ThreadStatic]
@@ -841,9 +870,23 @@ namespace CustomizableZombieHorde
             Pawn attacker = ZombieTraitUtility.ResolveDamageInstigatorPawn(dinfo.Instigator);
             ZombieSpecialUtility.NotifyBoneBiterDisturbed(victim);
 
+            if (ZombieUtility.IsZombie(victim) && attacker != null && !ZombieUtility.IsZombie(attacker))
+            {
+                bool loudAttack = ZombieTraitUtility.IsRangedAttack(attacker, dinfo);
+                ZombieSpecialUtility.NotifyCombatAttraction(attacker, victim, loudAttack);
+            }
+
             if (victim.Dead && ZombieInfectionUtility.HasZombieInfection(victim) && ZombieInfectionUtility.IsHeadOrChildPart(dinfo.HitPart, victim))
             {
                 Current.Game?.GetComponent<ZombieGameComponent>()?.MarkInfectionHeadFatal(victim);
+            }
+
+            if (ZombieUtility.IsZombie(victim)
+                && !victim.Dead
+                && ZombieFeignDeathUtility.ShouldCollapseIntoReanimationComa(victim, dinfo, totalDamageDealt))
+            {
+                ZombieFeignDeathUtility.EnterFeignDeath(victim);
+                return;
             }
 
             if (ZombieUtility.IsVariant(attacker, ZombieVariant.Boomer) && victim.IsColonist && !victim.Dead)

@@ -929,6 +929,194 @@ namespace CustomizableZombieHorde
             return labelText.Contains("armor") || labelText.Contains("helmet") || labelText.Contains("flak") || labelText.Contains("shield belt");
         }
 
+        public static void NormalizeRareBiterClothing(Pawn pawn, bool initialSpawn)
+        {
+            if (!initialSpawn || !IsVariant(pawn, ZombieVariant.Biter) || ZombieSpecialUtility.IsBoneBiter(pawn) || pawn?.apparel == null)
+            {
+                return;
+            }
+
+            List<Apparel> worn = pawn.apparel.WornApparel?.ToList() ?? new List<Apparel>();
+            foreach (Apparel apparel in worn)
+            {
+                try
+                {
+                    pawn.apparel.Remove(apparel);
+                }
+                catch
+                {
+                }
+
+                try
+                {
+                    apparel.Destroy(DestroyMode.Vanish);
+                }
+                catch
+                {
+                }
+            }
+
+            if (!Rand.Chance(0.05f))
+            {
+                return;
+            }
+
+            Apparel apparelToWear = TryCreateRandomBiterClothing(pawn);
+            if (apparelToWear == null)
+            {
+                return;
+            }
+
+            try
+            {
+                pawn.apparel.Wear(apparelToWear, false);
+            }
+            catch
+            {
+                try
+                {
+                    apparelToWear.Destroy(DestroyMode.Vanish);
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static Apparel TryCreateRandomBiterClothing(Pawn pawn)
+        {
+            List<ThingDef> candidates = DefDatabase<ThingDef>.AllDefsListForReading
+                .Where(def => def?.IsApparel == true
+                    && def.apparel != null
+                    && !def.apparel.bodyPartGroups.NullOrEmpty()
+                    && IsHumanBasicClothingDef(def)
+                    && CanZombieWearApparel(pawn, def))
+                .ToList();
+            if (candidates.Count == 0)
+            {
+                return null;
+            }
+
+            for (int attempt = 0; attempt < 20; attempt++)
+            {
+                ThingDef def = candidates.RandomElement();
+                ThingDef stuff = null;
+                if (def.MadeFromStuff)
+                {
+                    List<ThingDef> stuffs = DefDatabase<ThingDef>.AllDefsListForReading
+                        .Where(thingDef => thingDef != null && thingDef.IsStuff && GenStuff.AllowedStuffsFor(def).Contains(thingDef))
+                        .ToList();
+                    if (stuffs.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    stuff = stuffs.RandomElement();
+                }
+
+                Apparel apparel = null;
+                try
+                {
+                    apparel = ThingMaker.MakeThing(def, stuff) as Apparel;
+                }
+                catch
+                {
+                }
+
+                if (apparel == null)
+                {
+                    continue;
+                }
+
+                SetRandomBiterQuality(apparel);
+                SetApparelTainted(apparel);
+                apparel.HitPoints = Math.Max(1, Mathf.RoundToInt(apparel.MaxHitPoints * Rand.Range(0.25f, 0.85f)));
+                return apparel;
+            }
+
+            return null;
+        }
+
+        private static bool IsHumanBasicClothingDef(ThingDef def)
+        {
+            if (def?.apparel == null)
+            {
+                return false;
+            }
+
+            float armorValue = 0f;
+            foreach (StatModifier modifier in def.statBases ?? Enumerable.Empty<StatModifier>())
+            {
+                string statName = modifier?.stat?.defName ?? string.Empty;
+                if (statName == "ArmorRating_Sharp" || statName == "ArmorRating_Blunt" || statName == "ArmorRating_Heat")
+                {
+                    armorValue += modifier.value;
+                }
+            }
+
+            if (armorValue >= 0.35f)
+            {
+                return false;
+            }
+
+            string text = ((def.defName ?? string.Empty) + " " + (def.label ?? string.Empty)).ToLowerInvariant();
+            if (text.Contains("armor") || text.Contains("helmet") || text.Contains("flak") || text.Contains("shield belt") || text.Contains("power"))
+            {
+                return false;
+            }
+
+            return def.apparel.bodyPartGroups.Any(group =>
+            {
+                string name = ((group?.defName ?? string.Empty) + " " + (group?.label ?? string.Empty)).ToLowerInvariant();
+                return name.Contains("torso") || name.Contains("legs") || name.Contains("waist") || name.Contains("shoulder");
+            });
+        }
+
+        private static bool CanZombieWearApparel(Pawn pawn, ThingDef def)
+        {
+            return pawn != null && def != null;
+        }
+
+        private static void SetRandomBiterQuality(Apparel apparel)
+        {
+            CompQuality qualityComp = apparel?.TryGetComp<CompQuality>();
+            if (qualityComp == null)
+            {
+                return;
+            }
+
+            QualityCategory quality;
+            float roll = Rand.Value;
+            if (roll < 0.28f)
+            {
+                quality = QualityCategory.Awful;
+            }
+            else if (roll < 0.60f)
+            {
+                quality = QualityCategory.Poor;
+            }
+            else if (roll < 0.86f)
+            {
+                quality = QualityCategory.Normal;
+            }
+            else if (roll < 0.96f)
+            {
+                quality = QualityCategory.Good;
+            }
+            else
+            {
+                quality = QualityCategory.Excellent;
+            }
+
+            try
+            {
+                qualityComp.SetQuality(quality, ArtGenerationContext.Outsider);
+            }
+            catch
+            {
+            }
+        }
+
         public static void MarkZombieApparelTainted(Pawn pawn, bool degradeApparel)
         {
             if (pawn?.apparel?.WornApparel == null)
@@ -1095,6 +1283,45 @@ namespace CustomizableZombieHorde
             {
                 pawn.health.RemoveHediff(pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieDrownedRain));
             }
+
+            ApplyDrownedMoodBoost(pawn, inWater, rainFed);
+        }
+
+        public static void RefreshNightSpeedBoost(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn?.health?.hediffSet == null)
+            {
+                return;
+            }
+
+            Hediff existing = ZombieDefOf.CZH_ZombieNightRush == null
+                ? null
+                : pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieNightRush);
+            bool shouldHaveNightRush = pawn.Spawned && pawn.MapHeld != null && ZombieSpawnHelper.IsNight(pawn.MapHeld);
+
+            if (shouldHaveNightRush)
+            {
+                if (existing == null && ZombieDefOf.CZH_ZombieNightRush != null)
+                {
+                    try
+                    {
+                        pawn.health.AddHediff(ZombieDefOf.CZH_ZombieNightRush);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+            else if (existing != null)
+            {
+                try
+                {
+                    pawn.health.RemoveHediff(existing);
+                }
+                catch
+                {
+                }
+            }
         }
 
         public static void HandleDrownedRegeneration(Pawn pawn)
@@ -1121,7 +1348,47 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            injury.Heal(inWater ? 0.40f : 0.24f);
+            injury.Heal(inWater ? 0.65f : 0.35f);
+        }
+
+        private static void ApplyDrownedMoodBoost(Pawn pawn, bool inWater, bool rainFed)
+        {
+            Need_Mood mood = pawn?.needs?.mood;
+            if (!IsVariant(pawn, ZombieVariant.Drowned) || mood == null)
+            {
+                return;
+            }
+
+            bool wet = inWater || rainFed || HasWetStatus(pawn);
+            if (!wet)
+            {
+                return;
+            }
+
+            float minimumMood = inWater ? 0.78f : 0.64f;
+            if (mood.CurLevel < minimumMood)
+            {
+                mood.CurLevel = minimumMood;
+            }
+        }
+
+        private static bool HasWetStatus(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet?.hediffs == null)
+            {
+                return false;
+            }
+
+            foreach (Hediff hediff in pawn.health.hediffSet.hediffs)
+            {
+                string text = ((hediff?.def?.defName ?? string.Empty) + " " + (hediff?.def?.label ?? string.Empty)).ToLowerInvariant();
+                if (text.Contains("wet") || text.Contains("soak") || text.Contains("waterlogged"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static void EnsureZombieAggression(Pawn pawn)
@@ -1159,9 +1426,21 @@ namespace CustomizableZombieHorde
             if (!moonRush && IsVariant(pawn, ZombieVariant.Drowned) && ZombieSpecialUtility.ShouldDrownedHoldWater(pawn))
             {
                 PrepareSpawnedZombie(pawn);
-                if (pawn.CurJob != null && (pawn.CurJob.def == JobDefOf.AttackMelee || pawn.CurJob.def == JobDefOf.Goto))
+
+                if (IsWaterCell(pawn.PositionHeld, pawn.MapHeld))
                 {
-                    pawn.jobs.StopAll();
+                    Pawn waterTarget = pawn.CurJob?.targetA.Thing as Pawn;
+                    if (pawn.CurJob?.def == JobDefOf.AttackMelee && (waterTarget == null || waterTarget.Dead || ShouldZombieIgnoreTarget(pawn, waterTarget)))
+                    {
+                        pawn.jobs.StopAll();
+                    }
+
+                    return;
+                }
+
+                if (!ZombieSpecialUtility.HasValidDrownedWaterReturnJob(pawn))
+                {
+                    ZombieSpecialUtility.TryStartDrownedReturnToWater(pawn);
                 }
 
                 return;
@@ -1404,7 +1683,7 @@ namespace CustomizableZombieHorde
             }
 
             ZombieSpawnEventType behavior = Current.Game?.GetComponent<ZombieGameComponent>()?.GetAssignedBehavior(pawn) ?? ZombieRulesUtility.GetNaturalBehavior(pawn);
-            bool allowEdgeTravel = behavior == ZombieSpawnEventType.Herd;
+            bool allowEdgeTravel = false;
             bool allowCorpseEdgeTarget = ZombieRulesUtility.ShouldPrioritizeCorpseFeeding(pawn)
                 && job.targetA.IsValid
                 && job.targetA.HasThing
@@ -1415,7 +1694,7 @@ namespace CustomizableZombieHorde
                 && map != null
                 && ZombieUtility.IsWaterCell(job.targetA.Cell, map);
 
-            if (!allowEdgeTravel && IsMapExitStyleJob(job))
+            if (IsMapExitStyleJob(job))
             {
                 return true;
             }
@@ -1426,6 +1705,11 @@ namespace CustomizableZombieHorde
                 if (!cell.IsValid || !cell.InBounds(map))
                 {
                     return true;
+                }
+
+                if (behavior == ZombieSpawnEventType.Herd)
+                {
+                    return !ZombieSpecialUtility.IsValidHerdTravelTarget(pawn, cell);
                 }
 
                 if (!allowEdgeTravel && !allowCorpseEdgeTarget && !allowDrownedWaterTarget)
@@ -1706,7 +1990,14 @@ namespace CustomizableZombieHorde
                 return pawn.CurJob.expiryInterval > 0;
             }
 
-            if (behavior != ZombieSpawnEventType.Herd)
+            if (behavior == ZombieSpawnEventType.Herd)
+            {
+                if (!ZombieSpecialUtility.IsValidHerdTravelTarget(pawn, targetCell))
+                {
+                    return false;
+                }
+            }
+            else
             {
                 int targetEdgeDistance = ZombieSpecialUtility.DistanceToNearestEdge(targetCell, pawn.MapHeld);
                 int currentEdgeDistance = ZombieSpecialUtility.DistanceToNearestEdge(pawn.PositionHeld, pawn.MapHeld);
@@ -1743,7 +2034,7 @@ namespace CustomizableZombieHorde
                 case ZombieSpawnEventType.HuddledPack:
                     return Rand.RangeInclusive(900, 1800);
                 case ZombieSpawnEventType.Herd:
-                    return 1800;
+                    return Rand.RangeInclusive(600, 900);
                 case ZombieSpawnEventType.GroundBurst:
                     return Rand.RangeInclusive(450, 900);
                 default:

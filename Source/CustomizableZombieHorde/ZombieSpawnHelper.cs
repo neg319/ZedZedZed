@@ -994,7 +994,7 @@ namespace CustomizableZombieHorde
             int maxZ = map.Size.z - 7;
             bool vertical = direction == ZombieHerdDirection.NorthToSouth || direction == ZombieHerdDirection.SouthToNorth;
             int startFixed = direction == ZombieHerdDirection.NorthToSouth ? maxZ : direction == ZombieHerdDirection.SouthToNorth ? minMargin : direction == ZombieHerdDirection.WestToEast ? minMargin : maxX;
-            int spanStart = vertical ? minMargin : minMargin;
+            int spanStart = minMargin;
             int spanEnd = vertical ? maxX : maxZ;
             float spanLength = Mathf.Max(1f, spanEnd - spanStart);
 
@@ -1002,7 +1002,22 @@ namespace CustomizableZombieHorde
             {
                 float t = count == 1 ? 0.5f : i / (float)(count - 1);
                 int lane = Mathf.RoundToInt(spanStart + spanLength * t);
-                IntVec3 ideal = vertical ? new IntVec3(Mathf.Clamp(lane, minMargin, maxX), 0, startFixed) : new IntVec3(startFixed, 0, Mathf.Clamp(lane, minMargin, maxZ));
+                int laneJitter = Rand.RangeInclusive(-2, 2);
+                int inwardStagger = Rand.RangeInclusive(0, 3);
+                int waveOffset = Mathf.RoundToInt(Mathf.Sin((i * 0.45f) + Rand.Value * 0.6f) * 2f);
+                int resolvedLane = lane + laneJitter + waveOffset;
+                IntVec3 ideal;
+                if (vertical)
+                {
+                    int fixedZ = direction == ZombieHerdDirection.NorthToSouth ? startFixed - inwardStagger : startFixed + inwardStagger;
+                    ideal = new IntVec3(Mathf.Clamp(resolvedLane, minMargin, maxX), 0, Mathf.Clamp(fixedZ, minMargin, maxZ));
+                }
+                else
+                {
+                    int fixedX = direction == ZombieHerdDirection.WestToEast ? startFixed + inwardStagger : startFixed - inwardStagger;
+                    ideal = new IntVec3(Mathf.Clamp(fixedX, minMargin, maxX), 0, Mathf.Clamp(resolvedLane, minMargin, maxZ));
+                }
+
                 IntVec3 resolved = ResolveHerdSpawnCell(map, ideal, direction);
                 if (resolved.IsValid && !cells.Contains(resolved))
                 {

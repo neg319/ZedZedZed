@@ -83,7 +83,7 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            StabilizeZombieAfterNearDeath(pawn);
+            StabilizeZombieForReanimationComa(pawn);
 
             Hediff existing = pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieFeignDeath);
             if (existing == null)
@@ -266,7 +266,59 @@ namespace CustomizableZombieHorde
             return ZombieUtility.IsZombie(pawn) && IsFeigningDeath(pawn) && ZombieDoubleTapUtility.CanDoubleTapPawn(pawn);
         }
 
-        private static void StabilizeZombieAfterNearDeath(Pawn pawn)
+        public static bool ShouldCollapseIntoReanimationComa(Pawn pawn, DamageInfo dinfo, float totalDamageDealt)
+        {
+            if (!ShouldPreventZombieDeath(pawn) || IsFeigningDeath(pawn) || totalDamageDealt <= 0.01f)
+            {
+                return false;
+            }
+
+            if (ZombieInfectionUtility.IsHeadOrChildPart(dinfo.HitPart, pawn))
+            {
+                return false;
+            }
+
+            if (pawn.Downed)
+            {
+                return true;
+            }
+
+            float torsoTrauma = 0f;
+            float bodyTrauma = 0f;
+            BodyPartRecord torso = pawn.RaceProps?.body?.corePart;
+            foreach (Hediff_Injury injury in pawn.health.hediffSet.hediffs.OfType<Hediff_Injury>())
+            {
+                if (injury?.Part == null || injury.IsPermanent())
+                {
+                    continue;
+                }
+
+                if (ZombieInfectionUtility.IsHeadOrChildPart(injury.Part, pawn))
+                {
+                    continue;
+                }
+
+                bodyTrauma += injury.Severity;
+                if (injury.Part == torso)
+                {
+                    torsoTrauma += injury.Severity;
+                }
+            }
+
+            if (torsoTrauma >= 12f)
+            {
+                return true;
+            }
+
+            if (bodyTrauma >= 26f)
+            {
+                return true;
+            }
+
+            return totalDamageDealt >= 8f && bodyTrauma >= 14f;
+        }
+
+        private static void StabilizeZombieForReanimationComa(Pawn pawn)
         {
             if (pawn?.health?.hediffSet == null)
             {
@@ -282,27 +334,24 @@ namespace CustomizableZombieHorde
                 .OrderByDescending(hediff => hediff.Severity)
                 .ToList();
 
-            for (int pass = 0; pass < 3; pass++)
+            for (int i = 0; i < injuries.Count; i++)
             {
-                for (int i = 0; i < injuries.Count; i++)
+                Hediff_Injury injury = injuries[i];
+                if (injury == null)
                 {
-                    Hediff_Injury injury = injuries[i];
-                    if (injury == null)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    float factor = IsHeadRegionInjury(pawn, injury) ? 0.70f : 0.38f;
-                    injury.Severity *= factor;
-                    if (injury.Severity < 0.25f)
+                float factor = IsHeadRegionInjury(pawn, injury) ? 0.92f : 0.74f;
+                injury.Severity *= factor;
+                if (injury.Severity < 0.12f)
+                {
+                    try
                     {
-                        try
-                        {
-                            pawn.health.RemoveHediff(injury);
-                        }
-                        catch
-                        {
-                        }
+                        pawn.health.RemoveHediff(injury);
+                    }
+                    catch
+                    {
                     }
                 }
             }

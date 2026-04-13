@@ -20,6 +20,8 @@ namespace CustomizableZombieHorde
         public static HediffDef CZH_ZombieDrownedLand;
         public static HediffDef CZH_ZombieDrownedWater;
         public static HediffDef CZH_ZombieDrownedRain;
+        public static HediffDef CZH_ZombieNightRush;
+        public static HediffDef CZH_ZombieHerdMomentum;
         public static HediffDef CZH_ZombieSickness;
         public static HediffDef CZH_ZombieReanimated;
         public static HediffDef CZH_ZombieFeignDeath;

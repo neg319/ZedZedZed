@@ -16,6 +16,7 @@ namespace CustomizableZombieHorde
         private static readonly Dictionary<int, PendingSickSpewState> PendingSickSpewsByPawn = new Dictionary<int, PendingSickSpewState>();
         private static readonly Dictionary<int, int> BoneBiterMealTargetByPawn = new Dictionary<int, int>();
         private static readonly Dictionary<int, int> BoneBiterDisturbedUntilTickByPawn = new Dictionary<int, int>();
+        private static readonly Dictionary<int, CombatNoiseFocus> CombatNoiseFocusByZombie = new Dictionary<int, CombatNoiseFocus>();
         private const int SickSpitCooldownTicks = 936;
         private const int BoneBiterDisturbedTicks = 900;
         private const float BoneBiterMealSearchRadius = 28f;
@@ -38,6 +39,13 @@ namespace CustomizableZombieHorde
             public int ExecuteTick;
             public int NextPreviewTick;
             public IntVec3 LastTargetCell;
+        }
+
+        private sealed class CombatNoiseFocus
+        {
+            public int TargetPawnId;
+            public int ExpireTick;
+            public bool Loud;
         }
 
 
@@ -110,11 +118,194 @@ namespace CustomizableZombieHorde
             }
         }
 
+        public static void NotifyWeaponFired(Pawn attacker, Verb verb, LocalTargetInfo targetInfo)
+        {
+            if (attacker == null || attacker.Dead || attacker.Destroyed || !attacker.Spawned || attacker.MapHeld == null)
+            {
+                return;
+            }
+
+            if (ZombieUtility.IsZombie(attacker) || !IsLoudWeaponFire(attacker, verb))
+            {
+                return;
+            }
+
+            IntVec3 focusCell = targetInfo.IsValid ? targetInfo.Cell : attacker.PositionHeld;
+            if (!focusCell.IsValid || !focusCell.InBounds(attacker.MapHeld))
+            {
+                focusCell = attacker.PositionHeld;
+            }
+
+            AttractNearbyZombiesToTarget(attacker, focusCell, loud: true, damagedZombie: null);
+        }
+
+        public static void NotifyCombatAttraction(Pawn attacker, Pawn victim, bool loud)
+        {
+            if (attacker == null || victim == null || attacker.Dead || victim.Dead || attacker.Destroyed || victim.Destroyed)
+            {
+                return;
+            }
+
+            if (ZombieUtility.IsZombie(attacker) || !ZombieUtility.IsZombie(victim) || attacker.MapHeld == null || attacker.MapHeld != victim.MapHeld)
+            {
+                return;
+            }
+
+            IntVec3 focusCell = victim.Spawned ? victim.PositionHeld : attacker.PositionHeld;
+            AttractNearbyZombiesToTarget(attacker, focusCell, loud, victim);
+        }
+
+        public static Pawn GetFocusedPrey(Pawn zombie, float fallbackRadius)
+        {
+            if (zombie?.MapHeld?.mapPawns?.AllPawnsSpawned == null)
+            {
+                return null;
+            }
+
+            int zombieId = zombie.thingIDNumber;
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            if (!CombatNoiseFocusByZombie.TryGetValue(zombieId, out CombatNoiseFocus focus))
+            {
+                return null;
+            }
+
+            if (focus == null || ticksGame > focus.ExpireTick)
+            {
+                CombatNoiseFocusByZombie.Remove(zombieId);
+                return null;
+            }
+
+            Pawn target = zombie.MapHeld.mapPawns.AllPawnsSpawned.FirstOrDefault(pawn => pawn != null && pawn.thingIDNumber == focus.TargetPawnId);
+            if (target == null || target.Dead || target.Destroyed || target.MapHeld != zombie.MapHeld || ZombieUtility.ShouldZombieIgnoreTarget(zombie, target))
+            {
+                CombatNoiseFocusByZombie.Remove(zombieId);
+                return null;
+            }
+
+            float allowedRadius = Mathf.Max(fallbackRadius, focus.Loud ? 42f : 8f);
+            if (zombie.PositionHeld.DistanceToSquared(target.PositionHeld) > allowedRadius * allowedRadius)
+            {
+                return null;
+            }
+
+            return target;
+        }
+
+        public static bool IsLoudWeaponFire(Pawn attacker, Verb verb)
+        {
+            if (attacker == null)
+            {
+                return false;
+            }
+
+            if (attacker.equipment?.Primary?.def?.IsRangedWeapon == true)
+            {
+                return true;
+            }
+
+            if (verb?.verbProps?.range > 1.45f)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void AttractNearbyZombiesToTarget(Pawn attacker, IntVec3 focusCell, bool loud, Pawn damagedZombie)
+        {
+            Map map = attacker?.MapHeld;
+            if (map?.mapPawns?.AllPawnsSpawned == null)
+            {
+                return;
+            }
+
+            float radius = loud ? 34f : 4.5f;
+            float radiusSquared = radius * radius;
+            int expireTick = (Find.TickManager?.TicksGame ?? 0) + (loud ? 1500 : 300);
+
+            foreach (Pawn zombie in map.mapPawns.AllPawnsSpawned)
+            {
+                if (!ZombieUtility.IsZombie(zombie) || zombie.Dead || zombie.Destroyed || !zombie.Spawned || zombie.Downed || zombie.jobs == null)
+                {
+                    continue;
+                }
+
+                if (ZombieUtility.IsPlayerAlignedZombie(zombie) || ZombieLurkerUtility.IsColonyLurker(zombie) || ZombieLurkerUtility.IsPassiveLurker(zombie))
+                {
+                    continue;
+                }
+
+                if (!loud && zombie != damagedZombie)
+                {
+                    continue;
+                }
+
+                float distance = zombie.PositionHeld.DistanceToSquared(focusCell);
+                if (distance > radiusSquared)
+                {
+                    continue;
+                }
+
+                if (!loud && !GenSight.LineOfSight(zombie.PositionHeld, attacker.PositionHeld, map))
+                {
+                    continue;
+                }
+
+                CombatNoiseFocusByZombie[zombie.thingIDNumber] = new CombatNoiseFocus
+                {
+                    TargetPawnId = attacker.thingIDNumber,
+                    ExpireTick = expireTick,
+                    Loud = loud
+                };
+
+                TryForceNoiseReaction(zombie, attacker, loud);
+            }
+        }
+
+        private static void TryForceNoiseReaction(Pawn zombie, Pawn attacker, bool loud)
+        {
+            if (zombie == null || attacker == null || zombie.MapHeld != attacker.MapHeld || zombie.jobs == null)
+            {
+                return;
+            }
+
+            if (ZombieUtility.ShouldZombieIgnoreTarget(zombie, attacker))
+            {
+                return;
+            }
+
+            try
+            {
+                zombie.jobs.StopAll();
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                Job attackJob = JobMaker.MakeJob(JobDefOf.AttackMelee, attacker);
+                attackJob.expiryInterval = loud ? 900 : 360;
+                attackJob.checkOverrideOnExpire = true;
+                attackJob.locomotionUrgency = ZombieUtility.GetZombieUrgency(zombie);
+                zombie.jobs.TryTakeOrderedJob(attackJob, JobTag.Misc);
+            }
+            catch
+            {
+            }
+        }
+
         public static Pawn FindClosestLivingPrey(Pawn pawn, float radius)
         {
             if (pawn?.MapHeld?.mapPawns?.AllPawnsSpawned == null)
             {
                 return null;
+            }
+
+            Pawn focusedTarget = GetFocusedPrey(pawn, radius);
+            if (focusedTarget != null)
+            {
+                return focusedTarget;
             }
 
             Pawn bileTarget = FindBestLivingPrey(pawn, Mathf.Max(radius, 22f), true);
@@ -618,23 +809,40 @@ namespace CustomizableZombieHorde
                 return FindAssaultCell(pawn);
             }
 
+            int minMargin = 6;
+            int maxX = map.Size.x - 7;
+            int maxZ = map.Size.z - 7;
+            int seed = Mathf.Abs(pawn.thingIDNumber * 31);
+            int laneOffset = (seed % 7) - 3;
+            int waveOffset = Mathf.RoundToInt(Mathf.Sin(((Find.TickManager?.TicksGame ?? 0) * 0.01f) + (seed * 0.17f)) * 2f);
             IntVec3 target;
-            int x = Mathf.Clamp(pawn.PositionHeld.x, 6, map.Size.x - 7);
-            int z = Mathf.Clamp(pawn.PositionHeld.z, 6, map.Size.z - 7);
+
             switch (direction)
             {
                 case ZombieHerdDirection.NorthToSouth:
-                    target = new IntVec3(x, 0, 6);
+                {
+                    int x = Mathf.Clamp(pawn.PositionHeld.x + laneOffset + waveOffset, minMargin, maxX);
+                    target = new IntVec3(x, 0, minMargin);
                     break;
+                }
                 case ZombieHerdDirection.SouthToNorth:
-                    target = new IntVec3(x, 0, map.Size.z - 7);
+                {
+                    int x = Mathf.Clamp(pawn.PositionHeld.x + laneOffset + waveOffset, minMargin, maxX);
+                    target = new IntVec3(x, 0, maxZ);
                     break;
+                }
                 case ZombieHerdDirection.WestToEast:
-                    target = new IntVec3(map.Size.x - 7, 0, z);
+                {
+                    int z = Mathf.Clamp(pawn.PositionHeld.z + laneOffset + waveOffset, minMargin, maxZ);
+                    target = new IntVec3(maxX, 0, z);
                     break;
+                }
                 default:
-                    target = new IntVec3(6, 0, z);
+                {
+                    int z = Mathf.Clamp(pawn.PositionHeld.z + laneOffset + waveOffset, minMargin, maxZ);
+                    target = new IntVec3(minMargin, 0, z);
                     break;
+                }
             }
 
             if (target.InBounds(map) && target.Standable(map))
@@ -642,7 +850,7 @@ namespace CustomizableZombieHorde
                 return target;
             }
 
-            for (int radius = 1; radius <= 8; radius++)
+            for (int radius = 1; radius <= 10; radius++)
             {
                 IntVec3 nearby = CellFinder.RandomClosewalkCellNear(target, map, radius);
                 if (nearby.IsValid && nearby.Standable(map))
@@ -652,6 +860,61 @@ namespace CustomizableZombieHorde
             }
 
             return FindAssaultCell(pawn);
+        }
+
+        public static bool IsValidHerdTravelTarget(Pawn pawn, IntVec3 target)
+        {
+            Map map = pawn?.MapHeld;
+            if (map == null || !target.IsValid || !target.InBounds(map) || !target.Standable(map))
+            {
+                return false;
+            }
+
+            ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
+            if (component == null || !component.TryGetAssignedHerdDirection(pawn, out ZombieHerdDirection direction))
+            {
+                return false;
+            }
+
+            const int minimumProgress = 2;
+            switch (direction)
+            {
+                case ZombieHerdDirection.NorthToSouth:
+                    return target.z <= pawn.PositionHeld.z - minimumProgress || target.z <= 8;
+                case ZombieHerdDirection.SouthToNorth:
+                    return target.z >= pawn.PositionHeld.z + minimumProgress || target.z >= map.Size.z - 9;
+                case ZombieHerdDirection.WestToEast:
+                    return target.x >= pawn.PositionHeld.x + minimumProgress || target.x >= map.Size.x - 9;
+                default:
+                    return target.x <= pawn.PositionHeld.x - minimumProgress || target.x <= 8;
+            }
+        }
+
+        public static bool IsHerdReadyToLeaveMap(Pawn pawn)
+        {
+            Map map = pawn?.MapHeld;
+            if (map == null)
+            {
+                return false;
+            }
+
+            ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
+            if (component == null || !component.TryGetAssignedHerdDirection(pawn, out ZombieHerdDirection direction))
+            {
+                return false;
+            }
+
+            switch (direction)
+            {
+                case ZombieHerdDirection.NorthToSouth:
+                    return pawn.PositionHeld.z <= 4;
+                case ZombieHerdDirection.SouthToNorth:
+                    return pawn.PositionHeld.z >= map.Size.z - 5;
+                case ZombieHerdDirection.WestToEast:
+                    return pawn.PositionHeld.x >= map.Size.x - 5;
+                default:
+                    return pawn.PositionHeld.x <= 4;
+            }
         }
 
         public static IntVec3 FindAssaultCell(Pawn pawn)
@@ -1996,6 +2259,49 @@ namespace CustomizableZombieHorde
             return prey == null;
         }
 
+        public static bool HasValidDrownedWaterReturnJob(Pawn pawn)
+        {
+            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || pawn.jobs == null)
+            {
+                return false;
+            }
+
+            Job currentJob = pawn.CurJob;
+            if (currentJob == null || currentJob.def != JobDefOf.Goto || !currentJob.targetA.IsValid)
+            {
+                return false;
+            }
+
+            IntVec3 targetCell = currentJob.targetA.Cell;
+            return targetCell.IsValid && targetCell.InBounds(pawn.MapHeld) && ZombieUtility.IsWaterCell(targetCell, pawn.MapHeld);
+        }
+
+        public static bool TryStartDrownedReturnToWater(Pawn pawn, float radius = 35f)
+        {
+            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || pawn.jobs == null)
+            {
+                return false;
+            }
+
+            if (HasValidDrownedWaterReturnJob(pawn))
+            {
+                return true;
+            }
+
+            IntVec3 waterCell = FindNearestWaterCell(pawn.PositionHeld, pawn.MapHeld, radius);
+            if (!waterCell.IsValid || !waterCell.InBounds(pawn.MapHeld) || waterCell == pawn.PositionHeld)
+            {
+                return false;
+            }
+
+            Job returnToWater = JobMaker.MakeJob(JobDefOf.Goto, waterCell);
+            returnToWater.expiryInterval = 1500;
+            returnToWater.checkOverrideOnExpire = true;
+            returnToWater.locomotionUrgency = ZombieUtility.GetZombieUrgency(pawn);
+            pawn.jobs.TryTakeOrderedJob(returnToWater, JobTag.Misc);
+            return true;
+        }
+
         public static void HandleDrownedBehavior(Pawn pawn)
         {
             if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || pawn.jobs == null || ZombieUtility.IsUnderColonyRestraint(pawn))
@@ -2030,7 +2336,7 @@ namespace CustomizableZombieHorde
             {
                 if (inWater)
                 {
-                    if (pawn.CurJob != null && (pawn.CurJob.def == JobDefOf.AttackMelee || pawn.CurJob.def == JobDefOf.Goto))
+                    if (pawn.CurJob != null && pawn.CurJob.def == JobDefOf.AttackMelee)
                     {
                         pawn.jobs.StopAll();
                     }
@@ -2038,30 +2344,13 @@ namespace CustomizableZombieHorde
                     return;
                 }
 
-                IntVec3 waterCell = FindNearestWaterCell(pawn.PositionHeld, pawn.MapHeld, 35f);
-                if (waterCell.IsValid && (pawn.CurJob == null || pawn.CurJob.def != JobDefOf.Goto || pawn.CurJob.targetA.Cell != waterCell))
-                {
-                    Job returnToWater = JobMaker.MakeJob(JobDefOf.Goto, waterCell);
-                    returnToWater.expiryInterval = 900;
-                    returnToWater.checkOverrideOnExpire = true;
-                    returnToWater.locomotionUrgency = ZombieUtility.GetZombieUrgency(pawn);
-                    pawn.jobs.TryTakeOrderedJob(returnToWater, JobTag.Misc);
-                }
-
+                TryStartDrownedReturnToWater(pawn);
                 return;
             }
 
             if (!inWater && prey != null && pawn.PositionHeld.DistanceToSquared(prey.PositionHeld) > 24f * 24f)
             {
-                IntVec3 waterCell = FindNearestWaterCell(pawn.PositionHeld, pawn.MapHeld, 35f);
-                if (waterCell.IsValid)
-                {
-                    Job returnToWater = JobMaker.MakeJob(JobDefOf.Goto, waterCell);
-                    returnToWater.expiryInterval = 900;
-                    returnToWater.checkOverrideOnExpire = true;
-                    returnToWater.locomotionUrgency = ZombieUtility.GetZombieUrgency(pawn);
-                    pawn.jobs.TryTakeOrderedJob(returnToWater, JobTag.Misc);
-                }
+                TryStartDrownedReturnToWater(pawn);
             }
         }
 

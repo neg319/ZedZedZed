@@ -459,7 +459,7 @@ namespace CustomizableZombieHorde
                 outbreakIntensity = difficultyLevel >= 0 ? (1f + (Mathf.Clamp(difficultyLevel, 0, 8) * 0.25f)) : 4f;
             }
 
-            outbreakIntensity = Mathf.Clamp(outbreakIntensity, 0.5f, 8f);
+            outbreakIntensity = Mathf.Clamp(outbreakIntensity, 0.5f, 12f);
             difficultyLevel = -999;
 
             minGroupSize = Mathf.Clamp(minGroupSize, 1, 60);
@@ -1048,11 +1048,11 @@ namespace CustomizableZombieHorde
 
         private void DrawDifficultyCard(Listing_Standard listing)
         {
-            string description = "Sets the normal daytime target population. Daytime target = colonists × outbreak intensity. At night, the target rises by 50 percent. This setting also speeds up trickles, refill pressure, bursts, and grave timing so the rest of the outbreak keeps pace automatically. Default 4.0 means the mod tries to keep about four times your colonist count on the map during the day and about six times at night.";
+            string description = "Sets the normal daytime target population. Daytime target = colonists × outbreak intensity. At night, the target rises by 50 percent. This setting also speeds up trickles, refill pressure, bursts, and grave timing so the rest of the outbreak keeps pace automatically. Default 4.0 means the mod tries to keep about four times your colonist count on the map during the day and about six times at night. You can now push this as high as 12.0 for very dense outbreaks.";
             float cardHeight = CalculateStepperCardHeight(listing, description);
             Rect row = DrawCard(listing, cardHeight);
             DrawCardText(row, "Outbreak intensity", description, null, 236f);
-            DrawStepperControls(row, ref outbreakIntensity, 0.5f, 8f, 0.5f, $"{outbreakIntensity:0.0}x day  |  {NighttimeTargetMultiplier:0.0}x night");
+            DrawStepperControls(row, ref outbreakIntensity, 0.5f, 12f, 0.5f, $"{outbreakIntensity:0.0}x day  |  {NighttimeTargetMultiplier:0.0}x night");
         }
 
         private void DrawIntStepperCard(Listing_Standard listing, string label, string description, ref int value, int min, int max, int step)
@@ -1380,7 +1380,7 @@ namespace CustomizableZombieHorde
 
             listing.GapLine();
             listing.Label($"Outbreak intensity: {outbreakIntensity:0.0}x day, {NighttimeTargetMultiplier:0.0}x night");
-            outbreakIntensity = listing.Slider(outbreakIntensity, 0.5f, 8f);
+            outbreakIntensity = listing.Slider(outbreakIntensity, 0.5f, 12f);
             outbreakIntensity = Mathf.Round(outbreakIntensity * 2f) / 2f;
             listing.Label($"Debug spawn minimum: {minGroupSize}");
             minGroupSize = (int)listing.Slider(minGroupSize, 1, 60);

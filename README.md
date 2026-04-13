@@ -1,4 +1,9 @@
-## Iteration 126 - Visitor style zombie pathing
+## Iteration 131 - Night rush speed boost
+- Loud ranged fire now pulls nearby zombies toward the shooter, while quiet melee only strongly provokes the zombie that got hit.
+- Drowned zombies now keep a real wet mood boost in water, in rain, and while carrying other wet style statuses.
+- Biters now normalize to a 5% chance to spawn with exactly one random basic clothing item at a random quality.
+
+## Iteration 127 - Body damage coma and head fatality fix
 - Reworked normal zombie wandering and base push destination picking so zombies keep their slow shamble but choose movement cells more like stable map visitors.
 - Added custom destination scoring that favors reachable interior cells, open walkable lanes, and roads or paths when available, without giving zombies any leave the map traveler behavior.
 - Applied the new scoring to base pushes, base wandering, corner wandering, and huddled pack movement while keeping herds as the only zombies that deliberately cross the map and leave.
@@ -204,7 +209,7 @@ The GitHub workflow produces:
 
 ## Iteration log
 
-This source package is currently at **iteration 92** of the active development cycle in this build set.
+This source package is currently at **iteration 127** of the active development cycle in this build set.
 
 Iteration history:
 - Iteration 1 to 4: early compile fixes, XML cleanup, butchering repair, and the first sick spew overhaul.
@@ -273,6 +278,7 @@ Iteration history:
 - Iteration 89: zombie bites can now cause rare limb based infections instead of only generic full body sickness, so fast amputation of the infected arm or leg can save a pawn before the infection turns terminal.
 
 ## Changelog
+- 2026-04-12 - Minor update - iteration 127: zombies now keep body damage long enough to visibly collapse into a reanimation coma instead of shrugging off non head lethality, while head damage still kills them for real.
 - 2026-04-10 - Minor update - iteration 89: zombie bites now only rarely spread infection, and when they do the infection is attached to the bitten limb so quick amputation can remove it before the sickness becomes terminal.
 - 2026-04-10 - Minor update - iteration 86: Reworked huddled pack pathing so they stop lingering forever at the map edge, steadily pick deeper interior rally points, and eventually aim for meaningful interior map space instead of milling around the same border strip.
 - 2026-04-10 - Minor update - iteration 80: Fixed the zombie bile surgery def to stop the missing MedicalSleepingSpot and PotentialBillGiver errors, switched bone biter feeding to a safe snapshot so it no longer crashes on collection changes, and sanitized zombie corpse visual data so bad head or tattoo state stops throwing corpse render errors.
@@ -283,6 +289,7 @@ This changelog treats a **major update** as something that adds substantial new 
 
 ### Major updates
 
+- Iteration 131: all zombies now gain a hidden night rush status after dark that increases move speed by 50 percent, while daytime movement remains unchanged.
 #### 2026-04-09 - captured zombie slavery and colony alignment
 - Standard captured zombie strains now roll medium to high will so they can be broken into slavery instead of instantly folding once imprisoned.
 - Standard zombie strains are no longer recruitable through normal prisoner recruitment. Lurkers remain the only strain that can fully join the colony as people.

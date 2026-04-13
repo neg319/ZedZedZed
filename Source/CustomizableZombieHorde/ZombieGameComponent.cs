@@ -128,6 +128,7 @@ namespace CustomizableZombieHorde
             if (ticksGame % 30 == 0)
             {
                 StabilizeZombieMovementJobs();
+                HandleHerdCrossingProgress();
             }
 
             if (ticksGame % 300 == 0)
@@ -1591,6 +1592,7 @@ namespace CustomizableZombieHorde
                     }
 
                     ZombieUtility.SetZombieDisplayName(pawn);
+                    ZombieUtility.RefreshNightSpeedBoost(pawn);
 
                     if (ZombieFeignDeathUtility.IsFeigningDeath(pawn))
                     {
@@ -1663,8 +1665,12 @@ namespace CustomizableZombieHorde
 
                     ZombieSpawnEventType behavior = GetAssignedBehavior(pawn);
                     int currentEdgeDistance = ZombieSpecialUtility.DistanceToNearestEdge(pawn.PositionHeld, map);
-                    bool pinnedToEdge = behavior != ZombieSpawnEventType.Herd && currentEdgeDistance < 6;
-                    bool strandedNearEdge = behavior != ZombieSpawnEventType.Herd
+                    bool allowDrownedWaterHold = ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned)
+                        && ZombieSpecialUtility.ShouldDrownedHoldWater(pawn)
+                        && (ZombieUtility.IsWaterCell(pawn.PositionHeld, map) || ZombieSpecialUtility.HasValidDrownedWaterReturnJob(pawn));
+                    bool pinnedToEdge = !allowDrownedWaterHold && behavior != ZombieSpawnEventType.Herd && currentEdgeDistance < 6;
+                    bool strandedNearEdge = !allowDrownedWaterHold
+                        && behavior != ZombieSpawnEventType.Herd
                         && currentEdgeDistance < 12
                         && (pawn.CurJob == null
                             || pawn.CurJob.def != JobDefOf.Goto
@@ -1685,6 +1691,79 @@ namespace CustomizableZombieHorde
                     }
 
                     ZombieUtility.EnsureZombieAggression(pawn);
+                }
+            }
+        }
+
+        private void HandleHerdCrossingProgress()
+        {
+            foreach (Map map in Find.Maps)
+            {
+                if (map?.mapPawns?.AllPawnsSpawned == null)
+                {
+                    continue;
+                }
+
+                foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned.ToList())
+                {
+                    if (!ZombieUtility.IsZombie(pawn) || pawn.Dead || pawn.Destroyed)
+                    {
+                        continue;
+                    }
+
+                    bool isHerd = GetAssignedBehavior(pawn) == ZombieSpawnEventType.Herd;
+                    Hediff herdMomentum = pawn.health?.hediffSet?.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieHerdMomentum);
+                    if (isHerd)
+                    {
+                        if (herdMomentum == null && ZombieDefOf.CZH_ZombieHerdMomentum != null)
+                        {
+                            try
+                            {
+                                pawn.health?.AddHediff(ZombieDefOf.CZH_ZombieHerdMomentum);
+                            }
+                            catch
+                            {
+                            }
+                        }
+
+                        if (ZombieSpecialUtility.IsHerdReadyToLeaveMap(pawn))
+                        {
+                            ClearBehavior(pawn);
+                            ClearHerdDirection(pawn);
+                            try
+                            {
+                                pawn.Destroy(DestroyMode.Vanish);
+                            }
+                            catch
+                            {
+                            }
+
+                            continue;
+                        }
+
+                        if (pawn.CurJob == null || ZombieUtility.IsBadZombieJob(pawn, pawn.CurJob, map))
+                        {
+                            try
+                            {
+                                pawn.jobs?.StopAll();
+                            }
+                            catch
+                            {
+                            }
+
+                            ZombieUtility.EnsureZombieAggression(pawn);
+                        }
+                    }
+                    else if (herdMomentum != null)
+                    {
+                        try
+                        {
+                            pawn.health?.RemoveHediff(herdMomentum);
+                        }
+                        catch
+                        {
+                        }
+                    }
                 }
             }
         }

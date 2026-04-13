@@ -377,6 +377,46 @@
     </stages>
   </HediffDef>
 
+
+
+  <HediffDef>
+    <defName>CZH_ZombieNightRush</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>night rush</label>
+    <description>Darkness drives this zombie into a faster shambling surge.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>surging in darkness</label>
+        <statFactors>
+          <MoveSpeed>1.50</MoveSpeed>
+        </statFactors>
+      </li>
+    </stages>
+  </HediffDef>
+
+  <HediffDef>
+    <defName>CZH_ZombieHerdMomentum</defName>
+    <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
+    <label>herd momentum</label>
+    <description>This zombie has been swept into the forward pressure of a crossing herd.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>surging</label>
+        <statOffsets>
+          <MoveSpeed>0.50</MoveSpeed>
+        </statOffsets>
+      </li>
+    </stages>
+  </HediffDef>
+
   <HediffDef>
     <defName>CZH_ZombieSickness</defName>
     <hediffClass>CustomizableZombieHorde.Hediff_ZombieInfection</hediffClass>

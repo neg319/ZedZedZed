@@ -411,6 +411,7 @@ namespace CustomizableZombieHorde
 
             ZombieUtility.StripAllUsableItems(pawn);
             ZombieUtility.TrimZombieApparel(pawn);
+            ZombieUtility.NormalizeRareBiterClothing(pawn, initialSpawn);
             ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: initialSpawn);
             ZombieUtility.ApplyLimbDecay(pawn);
             ZombieUtility.ApplyVariantHediffs(pawn);
