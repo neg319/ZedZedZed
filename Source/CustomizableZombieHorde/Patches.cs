@@ -10,6 +10,44 @@ using Verse.AI;
 
 namespace CustomizableZombieHorde
 {
+
+    [HarmonyPatch(typeof(Pawn_JobTracker), "StartJob")]
+    public static class Patch_Pawn_JobTracker_StartJob_BlockZombieMapExit
+    {
+        public static bool Prefix(Pawn ___pawn, ref Job newJob)
+        {
+            Pawn pawn = ___pawn;
+            if (pawn == null || newJob == null || !ZombieUtility.IsZombie(pawn) || pawn.Dead || pawn.Destroyed)
+            {
+                return true;
+            }
+
+            if (ZombieUtility.IsPlayerAlignedZombie(pawn) || ZombieLurkerUtility.IsColonyLurker(pawn))
+            {
+                return true;
+            }
+
+            if (!ZombieUtility.IsBadZombieJob(pawn, newJob, pawn.MapHeld))
+            {
+                return true;
+            }
+
+            Job replacementJob = ZombieUtility.CreateReplacementZombieMoveJob(pawn);
+            if (replacementJob != null)
+            {
+                newJob = replacementJob;
+                return true;
+            }
+
+            Job idleJob = JobMaker.MakeJob(JobDefOf.Wait, pawn.PositionHeld);
+            idleJob.expiryInterval = 90;
+            idleJob.checkOverrideOnExpire = true;
+            idleJob.locomotionUrgency = LocomotionUrgency.Walk;
+            newJob = idleJob;
+            return true;
+        }
+    }
+
     internal static class ZombieButcherSearchState
     {
         [ThreadStatic]

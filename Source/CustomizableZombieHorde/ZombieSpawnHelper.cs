@@ -1054,6 +1054,15 @@ namespace CustomizableZombieHorde
                 }
             }
 
+            if (behavior != ZombieSpawnEventType.Herd)
+            {
+                IntVec3 interiorApproach = FindInteriorApproachSpawnCell(map, edgeCell, pawn, behavior);
+                if (interiorApproach.IsValid)
+                {
+                    return interiorApproach;
+                }
+            }
+
             if (behavior == ZombieSpawnEventType.HuddledPack)
             {
                 IntVec3 huddleCell = ZombieSpecialUtility.FindInteriorNearEdgeCell(map, edgeCell);
@@ -1079,6 +1088,48 @@ namespace CustomizableZombieHorde
             if (fallbackEdge.IsValid)
             {
                 return fallbackEdge;
+            }
+
+            return FindAnyStandableCell(map);
+        }
+
+        private static IntVec3 FindInteriorApproachSpawnCell(Map map, IntVec3 preferredAnchor, Pawn pawn, ZombieSpawnEventType behavior)
+        {
+            if (map == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            IntVec3 baseCenter = ZombieSpecialUtility.GetPlayerBaseCenter(map);
+            if (baseCenter.IsValid)
+            {
+                List<IntVec3> baseBand = GenRadial.RadialCellsAround(baseCenter, 38f, true)
+                    .Where(cell => cell.InBounds(map)
+                        && cell.Standable(map)
+                        && !cell.Fogged(map)
+                        && ZombieSpecialUtility.DistanceToNearestEdge(cell, map) >= 12
+                        && cell.DistanceToSquared(baseCenter) >= 12f * 12f)
+                    .ToList();
+                if (baseBand.Count > 0)
+                {
+                    return baseBand.RandomElement();
+                }
+            }
+
+            IntVec3 wanderAnchor = ZombieSpecialUtility.FindEdgePatrolCell(pawn);
+            if (wanderAnchor.IsValid && wanderAnchor.InBounds(map) && wanderAnchor.Standable(map) && ZombieSpecialUtility.DistanceToNearestEdge(wanderAnchor, map) >= 10)
+            {
+                return wanderAnchor;
+            }
+
+            List<IntVec3> interiorCells = map.AllCells
+                .Where(cell => cell.Standable(map)
+                    && !cell.Fogged(map)
+                    && ZombieSpecialUtility.DistanceToNearestEdge(cell, map) >= 12)
+                .ToList();
+            if (interiorCells.Count > 0)
+            {
+                return interiorCells.RandomElement();
             }
 
             return FindAnyStandableCell(map);

@@ -663,30 +663,25 @@ namespace CustomizableZombieHorde
             }
 
             IntVec3 targetCenter = GetPlayerBaseCenter(map);
+            List<IntVec3> assaultOptions = GenRadial.RadialCellsAround(targetCenter, 22f, true)
+                .Where(cell => cell.InBounds(map)
+                    && cell.Standable(map)
+                    && DistanceToNearestEdge(cell, map) >= 10
+                    && cell.DistanceToSquared(targetCenter) >= 9f)
+                .ToList();
+
+            IntVec3 visitorStyleCell = SelectVisitorStyleDestination(pawn, assaultOptions, targetCenter, preferRoads: true, preferOpenGround: true, minAnchorDistanceSquared: 9f, maxAnchorDistanceSquared: 22f * 22f, ticksPerStep: 600);
+            if (visitorStyleCell.IsValid)
+            {
+                return visitorStyleCell;
+            }
+
             if (targetCenter.IsValid && targetCenter.InBounds(map) && targetCenter.Standable(map))
             {
                 return targetCenter;
             }
 
-            List<IntVec3> innerOptions = GenRadial.RadialCellsAround(targetCenter, 10f, true)
-                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 4)
-                .OrderBy(cell => cell.DistanceToSquared(targetCenter))
-                .ToList();
-            if (innerOptions.Count > 0)
-            {
-                return innerOptions.First();
-            }
-
-            List<IntVec3> fallbackOptions = GenRadial.RadialCellsAround(targetCenter, 18f, true)
-                .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 4)
-                .OrderBy(cell => cell.DistanceToSquared(targetCenter))
-                .ToList();
-            if (fallbackOptions.Count > 0)
-            {
-                return fallbackOptions.First();
-            }
-
-            return targetCenter;
+            return map.Center;
         }
 
         public static IntVec3 FindHuddleCell(Pawn pawn)
@@ -788,7 +783,8 @@ namespace CustomizableZombieHorde
                 return IntVec3.Invalid;
             }
 
-            return PickRollingCellForPawn(pawn, options, 1800);
+            IntVec3 chosen = SelectVisitorStyleDestination(pawn, options, anchor, preferRoads: false, preferOpenGround: true, minAnchorDistanceSquared: 36f, maxAnchorDistanceSquared: searchRadius * searchRadius, ticksPerStep: 1800);
+            return chosen.IsValid ? chosen : PickRollingCellForPawn(pawn, options, 1800);
         }
 
         private static IntVec3 FindDeepHuddleThreatCell(Pawn pawn, IntVec3 packCenter)
@@ -812,7 +808,8 @@ namespace CustomizableZombieHorde
 
             if (baseOptions.Count > 0)
             {
-                return PickRollingCellForPawn(pawn, baseOptions, 2400);
+                IntVec3 chosen = SelectVisitorStyleDestination(pawn, baseOptions, baseCenter, preferRoads: true, preferOpenGround: true, minAnchorDistanceSquared: 0f, maxAnchorDistanceSquared: 18f * 18f, ticksPerStep: 2400);
+                return chosen.IsValid ? chosen : PickRollingCellForPawn(pawn, baseOptions, 2400);
             }
 
             List<IntVec3> interiorOptions = GenRadial.RadialCellsAround(map.Center, 28f, true)
@@ -822,7 +819,8 @@ namespace CustomizableZombieHorde
                 .ToList();
             if (interiorOptions.Count > 0)
             {
-                return PickRollingCellForPawn(pawn, interiorOptions, 2400);
+                IntVec3 chosen = SelectVisitorStyleDestination(pawn, interiorOptions, map.Center, preferRoads: true, preferOpenGround: true, minAnchorDistanceSquared: 0f, maxAnchorDistanceSquared: 28f * 28f, ticksPerStep: 2400);
+                return chosen.IsValid ? chosen : PickRollingCellForPawn(pawn, interiorOptions, 2400);
             }
 
             return FindAssaultCell(pawn);
@@ -849,14 +847,14 @@ namespace CustomizableZombieHorde
                 return IntVec3.Invalid;
             }
 
-            bool preferBase = ZombieLurkerUtility.IsLurker(pawn) || Rand.Chance(0.60f);
-            IntVec3 baseCell = FindBaseWanderCell(map, pawn?.PositionHeld ?? IntVec3.Invalid);
+            bool preferBase = ShouldFavorBaseWander(pawn);
+            IntVec3 baseCell = FindBaseWanderCell(map, pawn);
+            IntVec3 cornerCell = FindCornerWanderCell(map, pawn);
             if (preferBase && baseCell.IsValid)
             {
                 return baseCell;
             }
 
-            IntVec3 cornerCell = FindCornerWanderCell(map, pawn);
             if (cornerCell.IsValid)
             {
                 return cornerCell;
@@ -869,12 +867,11 @@ namespace CustomizableZombieHorde
 
             List<IntVec3> interiorOptions = GenRadial.RadialCellsAround(map.Center, 28f, true)
                 .Where(cell => cell.InBounds(map) && cell.Standable(map) && DistanceToNearestEdge(cell, map) >= 10)
-                .OrderBy(cell => cell.x)
-                .ThenBy(cell => cell.z)
                 .ToList();
-            if (interiorOptions.Count > 0)
+            IntVec3 interiorCell = SelectVisitorStyleDestination(pawn, interiorOptions, map.Center, preferRoads: true, preferOpenGround: true, minAnchorDistanceSquared: 16f, maxAnchorDistanceSquared: 28f * 28f, ticksPerStep: 900);
+            if (interiorCell.IsValid)
             {
-                return interiorOptions.RandomElement();
+                return interiorCell;
             }
 
             return FindAssaultCell(pawn);
@@ -892,7 +889,8 @@ namespace CustomizableZombieHorde
                 .ToList();
             if (options.Count > 0)
             {
-                return options.RandomElement();
+                IntVec3 chosen = SelectVisitorStyleDestination(null, options, anchor, preferRoads: true, preferOpenGround: true, minAnchorDistanceSquared: 0f, maxAnchorDistanceSquared: 16f * 16f, ticksPerStep: 900);
+                return chosen.IsValid ? chosen : options.RandomElement();
             }
 
             foreach (IntVec3 cell in map.AllCells.InRandomOrder())
@@ -906,7 +904,7 @@ namespace CustomizableZombieHorde
             return map.Center;
         }
 
-        private static IntVec3 FindBaseWanderCell(Map map, IntVec3 origin)
+        private static IntVec3 FindBaseWanderCell(Map map, Pawn pawn)
         {
             if (map == null)
             {
@@ -916,20 +914,21 @@ namespace CustomizableZombieHorde
             IntVec3 baseCenter = GetPlayerBaseCenter(map);
             if (baseCenter.IsValid)
             {
-                List<IntVec3> options = GenRadial.RadialCellsAround(baseCenter, 28f, true)
+                List<IntVec3> options = GenRadial.RadialCellsAround(baseCenter, 30f, true)
                     .Where(cell => cell.InBounds(map)
                         && cell.Standable(map)
                         && DistanceToNearestEdge(cell, map) >= 10
-                        && cell.DistanceToSquared(baseCenter) >= 16f
-                        && cell.DistanceToSquared(baseCenter) <= 28f * 28f)
+                        && cell.DistanceToSquared(baseCenter) >= 25f
+                        && cell.DistanceToSquared(baseCenter) <= 30f * 30f)
                     .ToList();
-                if (options.Count > 0)
+                IntVec3 chosen = SelectVisitorStyleDestination(pawn, options, baseCenter, preferRoads: true, preferOpenGround: true, minAnchorDistanceSquared: 25f, maxAnchorDistanceSquared: 30f * 30f, ticksPerStep: 900);
+                if (chosen.IsValid)
                 {
-                    return options.RandomElement();
+                    return chosen;
                 }
             }
 
-            IntVec3 fallbackAnchor = origin.IsValid ? origin : map.Center;
+            IntVec3 fallbackAnchor = pawn != null && pawn.PositionHeld.IsValid ? pawn.PositionHeld : map.Center;
             return FindInteriorNearEdgeCell(map, fallbackAnchor);
         }
 
@@ -940,15 +939,15 @@ namespace CustomizableZombieHorde
                 return IntVec3.Invalid;
             }
 
-            int margin = 12;
-            var anchors = new List<IntVec3>
+            int margin = 16;
+            List<IntVec3> anchors = new List<IntVec3>
             {
                 new IntVec3(margin, 0, margin),
                 new IntVec3(map.Size.x - 1 - margin, 0, margin),
                 new IntVec3(margin, 0, map.Size.z - 1 - margin),
                 new IntVec3(map.Size.x - 1 - margin, 0, map.Size.z - 1 - margin)
             }
-                .Where(cell => cell.InBounds(map) && cell.Standable(map))
+                .Where(cell => cell.InBounds(map))
                 .ToList();
 
             if (anchors.Count == 0)
@@ -956,17 +955,169 @@ namespace CustomizableZombieHorde
                 return IntVec3.Invalid;
             }
 
-            IntVec3 anchor = anchors.RandomElement();
-            for (int radius = 1; radius <= 8; radius++)
+            int pawnOffset = pawn == null ? 0 : Mathf.Abs(pawn.thingIDNumber);
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            IntVec3 anchor = anchors[(pawnOffset / 11 + ticksGame / 900) % anchors.Count];
+            List<IntVec3> options = GenRadial.RadialCellsAround(anchor, 16f, true)
+                .Where(cell => cell.InBounds(map)
+                    && cell.Standable(map)
+                    && DistanceToNearestEdge(cell, map) >= 10
+                    && cell.DistanceToSquared(anchor) >= 9f)
+                .ToList();
+
+            IntVec3 chosen = SelectVisitorStyleDestination(pawn, options, anchor, preferRoads: false, preferOpenGround: true, minAnchorDistanceSquared: 9f, maxAnchorDistanceSquared: 16f * 16f, ticksPerStep: 900);
+            if (chosen.IsValid)
             {
-                IntVec3 candidate = CellFinder.RandomClosewalkCellNear(anchor, map, radius);
-                if (candidate.IsValid && candidate.Standable(map) && DistanceToNearestEdge(candidate, map) >= 8)
-                {
-                    return candidate;
-                }
+                return chosen;
             }
 
-            return anchor;
+            return anchor.Standable(map) ? anchor : IntVec3.Invalid;
+        }
+
+        private static bool ShouldFavorBaseWander(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return true;
+            }
+
+            if (ZombieLurkerUtility.IsLurker(pawn))
+            {
+                return true;
+            }
+
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            int roll = Mathf.Abs((pawn.thingIDNumber / 5) + (ticksGame / 900)) % 10;
+            return roll < 7;
+        }
+
+        private static IntVec3 SelectVisitorStyleDestination(Pawn pawn, IEnumerable<IntVec3> candidates, IntVec3 anchor, bool preferRoads, bool preferOpenGround, float minAnchorDistanceSquared, float maxAnchorDistanceSquared, int ticksPerStep)
+        {
+            Map map = pawn?.MapHeld;
+            if (map == null || candidates == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            List<(IntVec3 Cell, float Score)> scored = new List<(IntVec3, float)>();
+            foreach (IntVec3 cell in candidates)
+            {
+                if (!cell.IsValid || !cell.InBounds(map) || !cell.Standable(map) || cell == pawn.PositionHeld)
+                {
+                    continue;
+                }
+
+                float anchorDistanceSquared = anchor.IsValid ? cell.DistanceToSquared(anchor) : 0f;
+                if (anchor.IsValid && anchorDistanceSquared < minAnchorDistanceSquared)
+                {
+                    continue;
+                }
+
+                if (anchor.IsValid && maxAnchorDistanceSquared > 0f && anchorDistanceSquared > maxAnchorDistanceSquared)
+                {
+                    continue;
+                }
+
+                bool reachable;
+                try
+                {
+                    reachable = pawn.CanReach(cell, PathEndMode.OnCell, Danger.Deadly);
+                }
+                catch
+                {
+                    reachable = cell.Walkable(map);
+                }
+
+                if (!reachable)
+                {
+                    continue;
+                }
+
+                float score = ScoreVisitorStyleCell(map, cell, anchor, preferRoads, preferOpenGround);
+                if (score <= float.MinValue / 4f)
+                {
+                    continue;
+                }
+
+                scored.Add((cell, score));
+            }
+
+            if (scored.Count == 0)
+            {
+                return IntVec3.Invalid;
+            }
+
+            List<(IntVec3 Cell, float Score)> ordered = scored
+                .OrderByDescending(entry => entry.Score)
+                .Take(8)
+                .ToList();
+            int ticksGame = Find.TickManager?.TicksGame ?? 0;
+            int step = ticksPerStep <= 0 ? 0 : ticksGame / ticksPerStep;
+            int pawnOffset = pawn == null ? 0 : Mathf.Abs(pawn.thingIDNumber / 3);
+            return ordered[(pawnOffset + step) % ordered.Count].Cell;
+        }
+
+        private static float ScoreVisitorStyleCell(Map map, IntVec3 cell, IntVec3 anchor, bool preferRoads, bool preferOpenGround)
+        {
+            if (map == null || !cell.IsValid || !cell.InBounds(map) || !cell.Standable(map))
+            {
+                return float.MinValue;
+            }
+
+            int edgeDistance = DistanceToNearestEdge(cell, map);
+            if (edgeDistance < 8)
+            {
+                return float.MinValue;
+            }
+
+            float score = edgeDistance * 10f;
+            if (anchor.IsValid)
+            {
+                float anchorDistance = Mathf.Sqrt(cell.DistanceToSquared(anchor));
+                score -= anchorDistance * 0.55f;
+            }
+
+            int openNeighbors = CountWalkableCardinalNeighbors(cell, map);
+            score += openNeighbors * (preferOpenGround ? 9f : 4f);
+
+            TerrainDef terrain = cell.GetTerrain(map);
+            if (terrain != null)
+            {
+                string terrainName = ((terrain.defName ?? string.Empty) + " " + (terrain.label ?? string.Empty)).ToLowerInvariant();
+                if (preferRoads && (terrainName.Contains("road") || terrainName.Contains("path") || terrainName.Contains("paved") || terrainName.Contains("bridge")))
+                {
+                    score += 22f;
+                }
+
+                score -= Mathf.Max(0f, terrain.pathCost) * 0.35f;
+            }
+
+            Building edifice = cell.GetEdifice(map);
+            if (edifice != null)
+            {
+                score -= 8f;
+            }
+
+            return score;
+        }
+
+        private static int CountWalkableCardinalNeighbors(IntVec3 cell, Map map)
+        {
+            if (map == null)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            IntVec3 north = new IntVec3(cell.x, 0, cell.z + 1);
+            IntVec3 south = new IntVec3(cell.x, 0, cell.z - 1);
+            IntVec3 east = new IntVec3(cell.x + 1, 0, cell.z);
+            IntVec3 west = new IntVec3(cell.x - 1, 0, cell.z);
+            if (north.InBounds(map) && north.Walkable(map)) count++;
+            if (south.InBounds(map) && south.Walkable(map)) count++;
+            if (east.InBounds(map) && east.Walkable(map)) count++;
+            if (west.InBounds(map) && west.Walkable(map)) count++;
+            return count;
         }
 
         public static IntVec3 GetPlayerBaseCenter(Map map)

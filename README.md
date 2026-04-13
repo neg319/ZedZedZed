@@ -1,3 +1,8 @@
+## Iteration 126 - Visitor style zombie pathing
+- Reworked normal zombie wandering and base push destination picking so zombies keep their slow shamble but choose movement cells more like stable map visitors.
+- Added custom destination scoring that favors reachable interior cells, open walkable lanes, and roads or paths when available, without giving zombies any leave the map traveler behavior.
+- Applied the new scoring to base pushes, base wandering, corner wandering, and huddled pack movement while keeping herds as the only zombies that deliberately cross the map and leave.
+
 ## Iteration 117 - Stage correction and debug spawn cleanup
 - Kept zombie infection and the downed Reanimating status as separate health statuses.
 - Corrected the infection final stage label back to Transformation (Reanimated).

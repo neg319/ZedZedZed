@@ -125,6 +125,11 @@ namespace CustomizableZombieHorde
                 ZombieSpecialUtility.TickPendingSickSpewWarmups();
             }
 
+            if (ticksGame % 30 == 0)
+            {
+                StabilizeZombieMovementJobs();
+            }
+
             if (ticksGame % 300 == 0)
             {
                 RefreshCurrentMapCount();
@@ -1030,12 +1035,7 @@ namespace CustomizableZombieHorde
         private ZombieSpawnEventType PickRandomTrickleBehavior()
         {
             float roll = Rand.Value;
-            if (roll < 0.40f)
-            {
-                return ZombieSpawnEventType.EdgeWander;
-            }
-
-            if (roll < 0.70f)
+            if (roll < 0.55f)
             {
                 return ZombieSpawnEventType.HuddledPack;
             }
@@ -1046,14 +1046,9 @@ namespace CustomizableZombieHorde
         private ZombieSpawnEventType PickNightlyBehavior()
         {
             float roll = Rand.Value;
-            if (roll < 0.45f)
+            if (roll < 0.60f)
             {
                 return ZombieSpawnEventType.AssaultBase;
-            }
-
-            if (roll < 0.75f)
-            {
-                return ZombieSpawnEventType.EdgeWander;
             }
 
             return ZombieSpawnEventType.HuddledPack;
@@ -1089,11 +1084,6 @@ namespace CustomizableZombieHorde
             if (roll < Mathf.Clamp01(assaultChance))
             {
                 return ZombieSpawnEventType.AssaultBase;
-            }
-
-            if (roll < Mathf.Clamp01(assaultChance + 0.25f))
-            {
-                return ZombieSpawnEventType.EdgeWander;
             }
 
             return ZombieSpawnEventType.HuddledPack;
@@ -1446,22 +1436,27 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
+                RegisterBehavior(pawn, ZombieSpawnEventType.AssaultBase);
+
                 if (pawn.CurJob != null)
                 {
-                    if (pawn.CurJob.def == JobDefOf.AttackMelee && pawn.CurJob.targetA.HasThing && pawn.CurJob.targetA.Thing is Pawn target && !target.Dead && !ZombieUtility.IsZombie(target))
+                    bool keepLiveAttack = pawn.CurJob.def == JobDefOf.AttackMelee
+                        && pawn.CurJob.targetA.HasThing
+                        && pawn.CurJob.targetA.Thing is Pawn target
+                        && !target.Dead
+                        && !ZombieUtility.IsZombie(target);
+                    if (!keepLiveAttack)
                     {
-                        RegisterBehavior(pawn, ZombieSpawnEventType.AssaultBase);
-                        continue;
-                    }
-
-                    if (pawn.CurJob.def == JobDefOf.Goto && pawn.CurJob.targetA.IsValid && pawn.CurJob.targetA.Cell.InBounds(map) && ZombieSpecialUtility.DistanceToNearestEdge(pawn.CurJob.targetA.Cell, map) >= 4)
-                    {
-                        RegisterBehavior(pawn, ZombieSpawnEventType.AssaultBase);
-                        continue;
+                        try
+                        {
+                            pawn.jobs?.StopAll();
+                        }
+                        catch
+                        {
+                        }
                     }
                 }
 
-                RegisterBehavior(pawn, ZombieSpawnEventType.AssaultBase);
                 ZombieUtility.EnsureZombieAggression(pawn);
             }
         }
@@ -1641,6 +1636,55 @@ namespace CustomizableZombieHorde
                 foreach (int staleId in staleIds)
                 {
                     zombieBehaviorByPawnId.Remove(staleId);
+                }
+            }
+        }
+
+        private void StabilizeZombieMovementJobs()
+        {
+            foreach (Map map in Find.Maps)
+            {
+                if (map?.mapPawns?.AllPawnsSpawned == null)
+                {
+                    continue;
+                }
+
+                foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned)
+                {
+                    if (!ZombieUtility.IsZombie(pawn) || pawn.Dead || pawn.Destroyed || pawn.Downed)
+                    {
+                        continue;
+                    }
+
+                    if (ZombieUtility.IsPlayerAlignedZombie(pawn) || ZombieLurkerUtility.IsColonyLurker(pawn))
+                    {
+                        continue;
+                    }
+
+                    ZombieSpawnEventType behavior = GetAssignedBehavior(pawn);
+                    int currentEdgeDistance = ZombieSpecialUtility.DistanceToNearestEdge(pawn.PositionHeld, map);
+                    bool pinnedToEdge = behavior != ZombieSpawnEventType.Herd && currentEdgeDistance < 6;
+                    bool strandedNearEdge = behavior != ZombieSpawnEventType.Herd
+                        && currentEdgeDistance < 12
+                        && (pawn.CurJob == null
+                            || pawn.CurJob.def != JobDefOf.Goto
+                            || !pawn.CurJob.targetA.IsValid
+                            || !pawn.CurJob.targetA.Cell.InBounds(map)
+                            || ZombieSpecialUtility.DistanceToNearestEdge(pawn.CurJob.targetA.Cell, map) <= currentEdgeDistance);
+                    if (!pinnedToEdge && !strandedNearEdge && !ZombieUtility.IsBadZombieJob(pawn, pawn.CurJob, map))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        pawn.jobs?.StopAll();
+                    }
+                    catch
+                    {
+                    }
+
+                    ZombieUtility.EnsureZombieAggression(pawn);
                 }
             }
         }
