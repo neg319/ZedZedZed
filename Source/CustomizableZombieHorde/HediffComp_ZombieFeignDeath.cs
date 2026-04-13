@@ -21,6 +21,7 @@ namespace CustomizableZombieHorde
     {
         private int wakeTick = -1;
         private int startTick = -1;
+        private int lastHealTick = -1;
 
         public HediffCompProperties_ZombieFeignDeath Props => (HediffCompProperties_ZombieFeignDeath)props;
 
@@ -35,6 +36,7 @@ namespace CustomizableZombieHorde
             base.CompExposeData();
             Scribe_Values.Look(ref wakeTick, "wakeTick", -1);
             Scribe_Values.Look(ref startTick, "startTick", -1);
+            Scribe_Values.Look(ref lastHealTick, "lastHealTick", -1);
         }
 
         public override void CompPostTick(ref float severityAdjustment)
@@ -55,37 +57,6 @@ namespace CustomizableZombieHorde
             }
 
             parent.Severity = GetProgress();
-
-            if (!ZombieUtility.IsZombie(Pawn))
-            {
-                try
-                {
-                    Pawn.health?.RemoveHediff(parent);
-                }
-                catch
-                {
-                }
-
-                return;
-            }
-
-            int interval = Mathf.Max(60, Props?.healIntervalTicks ?? 180);
-            if (Pawn.IsHashIntervalTick(interval))
-            {
-                ZombieFeignDeathUtility.RegenerateDuringFeignDeath(Pawn, Mathf.Max(0.25f, Props?.healAmount ?? 1.35f));
-            }
-
-            int currentTick = Find.TickManager?.TicksGame ?? 0;
-            if (currentTick >= wakeTick)
-            {
-                parent.Severity = 1f;
-                if (!ZombieFeignDeathUtility.TryRiseFromFeignDeath(Pawn, parent))
-                {
-                    startTick = currentTick;
-                    wakeTick = currentTick + 1800;
-                    parent.Severity = GetProgress();
-                }
-            }
         }
 
         public void RefreshWakeDelay()
@@ -94,6 +65,7 @@ namespace CustomizableZombieHorde
             int minTicks = Mathf.Max(2400, Props?.minWakeTicks ?? 15000);
             int maxTicks = Mathf.Max(minTicks, Props?.maxWakeTicks ?? 30000);
             startTick = currentTick;
+            lastHealTick = currentTick;
             wakeTick = currentTick + Rand.RangeInclusive(minTicks, maxTicks);
             if (parent != null)
             {
@@ -114,5 +86,35 @@ namespace CustomizableZombieHorde
 
         public int WakeTick => wakeTick;
         public int StartTick => startTick;
+        public bool ShouldHealNow(int currentTick)
+        {
+            int interval = Mathf.Max(60, Props?.healIntervalTicks ?? 180);
+            if (lastHealTick < 0)
+            {
+                lastHealTick = startTick >= 0 ? startTick : currentTick;
+            }
+
+            if (currentTick - lastHealTick < interval)
+            {
+                return false;
+            }
+
+            lastHealTick = currentTick;
+            return true;
+        }
+
+        public void DelayWake(int ticks)
+        {
+            int currentTick = Find.TickManager?.TicksGame ?? 0;
+            int delay = Mathf.Max(180, ticks);
+            startTick = currentTick;
+            lastHealTick = currentTick;
+            wakeTick = currentTick + delay;
+            if (parent != null)
+            {
+                parent.Severity = 0f;
+            }
+        }
+
     }
 }

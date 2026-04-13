@@ -127,8 +127,13 @@ namespace CustomizableZombieHorde
 
             if (ticksGame % 30 == 0)
             {
-                StabilizeZombieMovementJobs();
+                HandleActiveFeignDeath(ticksGame);
                 HandleHerdCrossingProgress();
+            }
+
+            if (ticksGame % 90 == 0)
+            {
+                StabilizeZombieMovementJobs();
             }
 
             if (ticksGame % 300 == 0)
@@ -1623,7 +1628,6 @@ namespace CustomizableZombieHorde
 
                     ZombieUtility.StripAllUsableItems(pawn);
                     ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: false);
-                    ZombieUtility.NormalizeZombieCosmeticDamage(pawn);
                     ZombieUtility.RefreshDrownedState(pawn);
                     ZombieUtility.HandleDrownedRegeneration(pawn);
                     ZombieUtility.EnsureZombieAggression(pawn);
@@ -1638,6 +1642,27 @@ namespace CustomizableZombieHorde
                 foreach (int staleId in staleIds)
                 {
                     zombieBehaviorByPawnId.Remove(staleId);
+                }
+            }
+        }
+
+        private void HandleActiveFeignDeath(int currentTick)
+        {
+            foreach (Map map in Find.Maps)
+            {
+                if (map?.mapPawns?.AllPawnsSpawned == null)
+                {
+                    continue;
+                }
+
+                foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned)
+                {
+                    if (!ZombieUtility.IsZombie(pawn) || pawn.Dead || pawn.Destroyed)
+                    {
+                        continue;
+                    }
+
+                    ZombieFeignDeathUtility.ProcessFeignDeathState(pawn, currentTick);
                 }
             }
         }
@@ -1668,10 +1693,10 @@ namespace CustomizableZombieHorde
                     bool allowDrownedWaterHold = ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned)
                         && ZombieSpecialUtility.ShouldDrownedHoldWater(pawn)
                         && (ZombieUtility.IsWaterCell(pawn.PositionHeld, map) || ZombieSpecialUtility.HasValidDrownedWaterReturnJob(pawn));
-                    bool pinnedToEdge = !allowDrownedWaterHold && behavior != ZombieSpawnEventType.Herd && currentEdgeDistance < 6;
+                    bool pinnedToEdge = !allowDrownedWaterHold && behavior != ZombieSpawnEventType.Herd && currentEdgeDistance < 4;
                     bool strandedNearEdge = !allowDrownedWaterHold
                         && behavior != ZombieSpawnEventType.Herd
-                        && currentEdgeDistance < 12
+                        && currentEdgeDistance < 8
                         && (pawn.CurJob == null
                             || pawn.CurJob.def != JobDefOf.Goto
                             || !pawn.CurJob.targetA.IsValid

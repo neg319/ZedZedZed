@@ -17,6 +17,7 @@ namespace CustomizableZombieHorde
         private static readonly Dictionary<int, int> BoneBiterMealTargetByPawn = new Dictionary<int, int>();
         private static readonly Dictionary<int, int> BoneBiterDisturbedUntilTickByPawn = new Dictionary<int, int>();
         private static readonly Dictionary<int, CombatNoiseFocus> CombatNoiseFocusByZombie = new Dictionary<int, CombatNoiseFocus>();
+        private static readonly Dictionary<int, int> LastForcedNoiseRetargetTickByZombie = new Dictionary<int, int>();
         private const int SickSpitCooldownTicks = 936;
         private const int BoneBiterDisturbedTicks = 900;
         private const float BoneBiterMealSearchRadius = 28f;
@@ -258,8 +259,76 @@ namespace CustomizableZombieHorde
                     Loud = loud
                 };
 
-                TryForceNoiseReaction(zombie, attacker, loud);
+                if (ShouldForceNoiseReaction(zombie, attacker, loud, damagedZombie))
+                {
+                    TryForceNoiseReaction(zombie, attacker, loud);
+                }
             }
+        }
+
+        private static bool ShouldForceNoiseReaction(Pawn zombie, Pawn attacker, bool loud, Pawn damagedZombie)
+        {
+            if (zombie == null || attacker == null || zombie.jobs == null)
+            {
+                return false;
+            }
+
+            if (zombie == damagedZombie)
+            {
+                Pawn directTarget = zombie.CurJob?.targetA.Thing as Pawn;
+                return zombie.CurJob?.def != JobDefOf.AttackMelee || directTarget != attacker;
+            }
+
+            Pawn currentTarget = zombie.CurJob?.targetA.Thing as Pawn;
+            if (currentTarget == attacker && zombie.CurJob?.def == JobDefOf.AttackMelee)
+            {
+                return false;
+            }
+
+            if (currentTarget != null && !currentTarget.Dead && !currentTarget.Destroyed && !ZombieUtility.ShouldZombieIgnoreTarget(zombie, currentTarget))
+            {
+                return false;
+            }
+
+            JobDef jobDef = zombie.CurJob?.def;
+            if (jobDef == null || jobDef == JobDefOf.Wait)
+            {
+                return true;
+            }
+
+            if (jobDef == JobDefOf.Goto)
+            {
+                if (!loud)
+                {
+                    return true;
+                }
+
+                if (zombie.PositionHeld.DistanceToSquared(attacker.PositionHeld) <= 14f * 14f)
+                {
+                    int closeRangeTick = Find.TickManager?.TicksGame ?? 0;
+                    if (LastForcedNoiseRetargetTickByZombie.TryGetValue(zombie.thingIDNumber, out int closeRangeLastTick) && closeRangeTick - closeRangeLastTick < 300)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (!loud)
+            {
+                return true;
+            }
+
+            int currentTick = Find.TickManager?.TicksGame ?? 0;
+            if (LastForcedNoiseRetargetTickByZombie.TryGetValue(zombie.thingIDNumber, out int lastTick) && currentTick - lastTick < 300)
+            {
+                return false;
+            }
+
+            return currentTarget == null;
         }
 
         private static void TryForceNoiseReaction(Pawn zombie, Pawn attacker, bool loud)
@@ -274,13 +343,8 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            try
-            {
-                zombie.jobs.StopAll();
-            }
-            catch
-            {
-            }
+            int currentTick = Find.TickManager?.TicksGame ?? 0;
+            LastForcedNoiseRetargetTickByZombie[zombie.thingIDNumber] = currentTick;
 
             try
             {

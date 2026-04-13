@@ -65,45 +65,45 @@ namespace CustomizableZombieHorde
 
             if (IsSkeletonBiter(pawn))
             {
-                return 5.5f;
+                return 9f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Biter))
             {
-                return 14f;
+                return 20f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Runt))
             {
-                return 6f;
+                return 11f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Boomer))
             {
-                return 10f;
+                return 15f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Sick))
             {
-                return 3f;
+                return 9f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Drowned))
             {
-                return 5.5f;
+                return 10f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Brute))
             {
-                return 1.5f;
+                return 3f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Grabber))
             {
-                return 4f;
+                return 8f;
             }
 
-            return 2.2f;
+            return 6f;
         }
 
         public static float GetZombieOutgoingDamageMultiplier(Pawn attacker, Pawn victim)
@@ -577,8 +577,8 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            TrimExcessLimbDecay(pawn);
-            TrimExcessOpenWounds(pawn);
+            // Cosmetic wound normalization is for spawn generation only.
+            // Living zombies should keep the wounds they earn in combat.
         }
 
         private static void TrimExcessLimbDecay(Pawn pawn)
@@ -1472,12 +1472,20 @@ namespace CustomizableZombieHorde
             ZombieSpawnEventType currentBehavior = Current.Game?.GetComponent<ZombieGameComponent>()?.GetAssignedBehavior(pawn) ?? ZombieRulesUtility.GetNaturalBehavior(pawn);
             if (currentBehavior != ZombieSpawnEventType.Herd && ZombieSpecialUtility.DistanceToNearestEdge(pawn.PositionHeld, pawn.MapHeld) < 4)
             {
-                try
+                bool needsEdgeRescue = pawn.CurJob == null
+                    || pawn.CurJob.def != JobDefOf.Goto
+                    || !pawn.CurJob.targetA.IsValid
+                    || !pawn.CurJob.targetA.Cell.InBounds(pawn.MapHeld)
+                    || ZombieSpecialUtility.DistanceToNearestEdge(pawn.CurJob.targetA.Cell, pawn.MapHeld) <= ZombieSpecialUtility.DistanceToNearestEdge(pawn.PositionHeld, pawn.MapHeld);
+                if (needsEdgeRescue)
                 {
-                    pawn.jobs.StopAll();
-                }
-                catch
-                {
+                    try
+                    {
+                        pawn.jobs.StopAll();
+                    }
+                    catch
+                    {
+                    }
                 }
             }
 
@@ -1719,7 +1727,7 @@ namespace CustomizableZombieHorde
                         ? ZombieSpecialUtility.DistanceToNearestEdge(pawn.PositionHeld, map)
                         : 0;
 
-                    if (targetEdgeDistance < 10)
+                    if (targetEdgeDistance < 6)
                     {
                         return true;
                     }
@@ -1733,7 +1741,7 @@ namespace CustomizableZombieHorde
                         }
                     }
                     else if ((behavior == ZombieSpawnEventType.AssaultBase || behavior == ZombieSpawnEventType.GroundBurst)
-                        && targetEdgeDistance < Mathf.Max(10, currentEdgeDistance))
+                        && targetEdgeDistance < Mathf.Max(6, currentEdgeDistance + 1))
                     {
                         return true;
                     }
@@ -2001,13 +2009,13 @@ namespace CustomizableZombieHorde
             {
                 int targetEdgeDistance = ZombieSpecialUtility.DistanceToNearestEdge(targetCell, pawn.MapHeld);
                 int currentEdgeDistance = ZombieSpecialUtility.DistanceToNearestEdge(pawn.PositionHeld, pawn.MapHeld);
-                if (targetEdgeDistance < 7)
+                if (targetEdgeDistance < 5)
                 {
                     return false;
                 }
 
                 if ((behavior == ZombieSpawnEventType.EdgeWander || behavior == ZombieSpawnEventType.HuddledPack)
-                    && targetEdgeDistance < Mathf.Max(12, currentEdgeDistance + 1))
+                    && targetEdgeDistance < Mathf.Max(10, currentEdgeDistance + 1))
                 {
                     return false;
                 }

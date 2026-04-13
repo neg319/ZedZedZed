@@ -189,6 +189,24 @@ namespace CustomizableZombieHorde
             }
 
             ZombieUtility.PrepareSpawnedZombie(pawn);
+
+            try
+            {
+                AccessTools.Method(pawn.health.GetType(), "Notify_HediffChanged")?.Invoke(pawn.health, new object[] { null });
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                Traverse.Create(pawn.health).Field("forceIncap").SetValue(false);
+                Traverse.Create(pawn.health).Field("forceDowned").SetValue(false);
+            }
+            catch
+            {
+            }
+
             ZombieUtility.MarkPawnGraphicsDirty(pawn);
 
             if (pawn.Downed)
@@ -206,6 +224,38 @@ namespace CustomizableZombieHorde
             }
 
             return true;
+        }
+
+        public static void ProcessFeignDeathState(Pawn pawn, int currentTick)
+        {
+            if (!IsFeigningDeath(pawn) || pawn == null || pawn.Dead || pawn.Destroyed || pawn.health?.hediffSet == null)
+            {
+                return;
+            }
+
+            HediffWithComps hediff = pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieFeignDeath) as HediffWithComps;
+            HediffComp_ZombieFeignDeath comp = hediff?.TryGetComp<HediffComp_ZombieFeignDeath>();
+            if (hediff == null || comp == null)
+            {
+                return;
+            }
+
+            ForceZombieIntoDownedState(pawn);
+            if (comp.ShouldHealNow(currentTick))
+            {
+                RegenerateDuringFeignDeath(pawn, Math.Max(0.25f, comp.Props?.healAmount ?? 1.35f));
+            }
+
+            if (currentTick < comp.WakeTick)
+            {
+                return;
+            }
+
+            if (!TryRiseFromFeignDeath(pawn, hediff))
+            {
+                ForceZombieIntoDownedState(pawn);
+                comp.DelayWake(600);
+            }
         }
 
         public static string GetFeignDeathInspectString(Pawn pawn)
@@ -305,17 +355,22 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            if (torsoTrauma >= 12f)
+            bool brute = ZombieUtility.IsVariant(pawn, ZombieVariant.Brute);
+            float hitThreshold = brute ? 9f : 4f;
+            float torsoThreshold = brute ? 9f : 4.5f;
+            float bodyThreshold = brute ? 16f : 7f;
+
+            if (torsoTrauma >= torsoThreshold)
             {
                 return true;
             }
 
-            if (bodyTrauma >= 26f)
+            if (bodyTrauma >= bodyThreshold)
             {
                 return true;
             }
 
-            return totalDamageDealt >= 8f && bodyTrauma >= 14f;
+            return totalDamageDealt >= hitThreshold;
         }
 
         private static void StabilizeZombieForReanimationComa(Pawn pawn)
@@ -325,36 +380,9 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            RemoveRecoverableMissingParts(pawn);
+            // Keep combat damage on the zombie so gunfire still matters.
+            // The coma should preserve visible trauma instead of erasing it.
             RemoveBloodLoss(pawn);
-
-            List<Hediff_Injury> injuries = pawn.health.hediffSet.hediffs
-                .OfType<Hediff_Injury>()
-                .Where(hediff => CanRecoverInjury(pawn, hediff))
-                .OrderByDescending(hediff => hediff.Severity)
-                .ToList();
-
-            for (int i = 0; i < injuries.Count; i++)
-            {
-                Hediff_Injury injury = injuries[i];
-                if (injury == null)
-                {
-                    continue;
-                }
-
-                float factor = IsHeadRegionInjury(pawn, injury) ? 0.92f : 0.74f;
-                injury.Severity *= factor;
-                if (injury.Severity < 0.12f)
-                {
-                    try
-                    {
-                        pawn.health.RemoveHediff(injury);
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
         }
 
         private static float GetRecoveryPriority(Pawn pawn, Hediff_Injury injury)
