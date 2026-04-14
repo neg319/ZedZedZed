@@ -56,7 +56,7 @@
     <stages>
       <li>
         <label>rotting</label>
-        <painFactor>0.2</painFactor>
+        <painFactor>0.0</painFactor>
         <capMods>
           <li>
             <capacity>Moving</capacity>
@@ -125,7 +125,7 @@
     <stages>
       <li>
         <label>decayed</label>
-        <painFactor>0.1</painFactor>
+        <painFactor>0.0</painFactor>
       </li>
     </stages>
   </HediffDef>
@@ -143,7 +143,7 @@
     <stages>
       <li>
         <label>opened</label>
-        <painFactor>0.1</painFactor>
+        <painFactor>0.0</painFactor>
       </li>
     </stages>
   </HediffDef>
@@ -392,7 +392,7 @@
       <li>
         <label>surging in darkness</label>
         <statFactors>
-          <MoveSpeed>1.50</MoveSpeed>
+          <MoveSpeed>2.00</MoveSpeed>
         </statFactors>
       </li>
     </stages>

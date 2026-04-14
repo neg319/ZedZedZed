@@ -741,12 +741,12 @@ namespace CustomizableZombieHorde
             }
 
             ZombieGameComponent component = Current.Game.GetComponent<ZombieGameComponent>();
-            if (component == null)
+            int currentCount = ZombieSpawnHelper.GetCurrentZombieCount(Find.CurrentMap);
+            if (component != null)
             {
-                return;
+                component.NotifyZombieCountChanged();
             }
 
-            int currentCount = component.GetCurrentMapZombieCount();
             int cap = ZombieSpawnHelper.GetDynamicZombieCap(Find.CurrentMap);
             float capPercent = cap > 0 ? (currentCount / (float)cap) * 100f : 0f;
             string familyLabel = GetCounterDisplayLabel();
@@ -1758,5 +1758,46 @@ namespace CustomizableZombieHorde
             ZombiePrisonerEnslavementUtility.TryFinishZombieEnslavement(recipient);
         }
     }
+
+
+
+    [HarmonyPatch(typeof(HediffSet), "get_PainTotal")]
+    public static class Patch_HediffSet_PainTotal_ZombieIndifference
+    {
+        public static void Postfix(HediffSet __instance, ref float __result)
+        {
+            Pawn pawn = null;
+            try
+            {
+                pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            }
+            catch
+            {
+            }
+
+            if (pawn != null && ZombieUtility.IsZombie(pawn))
+            {
+                __result = 0f;
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(ThoughtWorker), "CurrentState", new[] { typeof(Pawn) })]
+    public static class Patch_ThoughtWorker_CurrentState_ZombieIndifference
+    {
+        public static void Postfix(ThoughtWorker __instance, Pawn p, ref ThoughtState __result)
+        {
+            if (!__result.Active || !ZombieUtility.IsZombie(p))
+            {
+                return;
+            }
+
+            if (ZombieUtility.ShouldSuppressZombieThought(__instance?.def))
+            {
+                __result = ThoughtState.Inactive;
+            }
+        }
+    }
+
 
 }

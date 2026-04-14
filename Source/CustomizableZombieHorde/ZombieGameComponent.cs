@@ -196,16 +196,29 @@ namespace CustomizableZombieHorde
         {
             if (Find.TickManager == null)
             {
-                return 0;
+                return Find.CurrentMap == null ? 0 : ZombieSpawnHelper.GetCurrentZombieCount(Find.CurrentMap);
             }
 
             int ticksGame = Find.TickManager.TicksGame;
-            if (cachedZombieCountTick < 0 || ticksGame - cachedZombieCountTick > 300)
+            if (cachedZombieCountTick < 0 || ticksGame - cachedZombieCountTick > 60)
             {
                 RefreshCurrentMapCount();
             }
 
             return cachedCurrentMapZombieCount;
+        }
+
+        public void NotifyZombieCountChanged()
+        {
+            if (Find.TickManager == null)
+            {
+                cachedCurrentMapZombieCount = Find.CurrentMap == null ? 0 : ZombieSpawnHelper.GetCurrentZombieCount(Find.CurrentMap);
+                cachedZombieCountTick = -1;
+                return;
+            }
+
+            cachedCurrentMapZombieCount = Find.CurrentMap == null ? 0 : ZombieSpawnHelper.GetCurrentZombieCount(Find.CurrentMap);
+            cachedZombieCountTick = Find.TickManager.TicksGame;
         }
 
         public bool IsBloodMoonActive

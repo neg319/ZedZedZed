@@ -13,14 +13,14 @@
 
 Zed Zed Zed is a RimWorld zombie mod built around steady pressure, ugly cleanup, and nights that can get out of hand fast. The goal is not to spam one kind of raid over and over. The goal is to make the map feel infected. Zombies drift in, bunch up, push the base, claw out of the ground, spill out of graves, and sometimes move across the whole map in a herd.
 
-This version is tuned around a simple combat rule. Zombies are supposed to be easy to kill. They die like normal pawns, any head or face hit destroys the brain immediately, and any solid hit has a chance to destroy the brain outright. Guns are loud and draw attention. Melee is quieter and usually pulls less of the map.
+This version is tuned around a simple zombie rule set. All zombies belong to the zombie faction, have no ideoligion, count as cannibals, ignore pain, filth, and nudity, move very slowly unless they roll the rare runner strain, double their movement speed at night, and swarm loud gunfire much harder than quiet melee.
 
 ## What the mod is trying to do right now
 
 - Keep normal map pressure steady with trickles, huddles, base pushes, ground bursts, graves, moon attacks, and herds.
 - Make the undead feel dangerous because of numbers, angles, noise, and map pressure, not because each individual zombie is a bullet sponge.
 - Let outbreak intensity act like the main pressure dial. It now scales up to 12x and directly affects the soft cap the mod tries to maintain on the map.
-- Keep night scary. Zombies move 50% faster at night and the target population also rises by 50%.
+- Keep night scary. Zombies double their movement speed at night and the target population also rises by 50%.
 - Make drowned zombies feel different. They want to stay in water when they are not actively hunting, and they do better in water, rain, and wet conditions.
 - Let loud weapons wake up the area. Gunfire should attract more zombies than a pawn using quiet melee.
 - Keep infection on the colony side. Living pawns can still suffer zombie infection, use bile treatment, or be turned into a lurker through the bile surgery route.

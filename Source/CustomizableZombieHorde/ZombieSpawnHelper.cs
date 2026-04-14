@@ -881,26 +881,12 @@ namespace CustomizableZombieHorde
         {
             try
             {
-                if (pawn == null || !ZombieUtility.StabilizeFreshZombieForSpawn(pawn))
+                if (pawn == null)
                 {
                     return false;
                 }
 
                 GenSpawn.Spawn(pawn, spawnCell, map, WipeMode.Vanish);
-                ZombieUtility.StabilizeFreshZombieForSpawn(pawn);
-                if (pawn.Dead)
-                {
-                    try
-                    {
-                        pawn.Corpse?.Destroy(DestroyMode.Vanish);
-                    }
-                    catch
-                    {
-                    }
-
-                    return false;
-                }
-
                 ZombieGameComponent component = Current.Game?.GetComponent<ZombieGameComponent>();
                 component?.RegisterBehavior(pawn, behavior);
                 if (behavior == ZombieSpawnEventType.Herd && herdDirection.HasValue)
@@ -908,17 +894,8 @@ namespace CustomizableZombieHorde
                     component?.RegisterHerdDirection(pawn, herdDirection.Value);
                 }
                 ZombieUtility.PrepareSpawnedZombie(pawn);
-                ZombieUtility.StabilizeFreshZombieForSpawn(pawn);
-                if (pawn.Dead || pawn.Downed)
+                if (pawn.Downed)
                 {
-                    try
-                    {
-                        pawn.Corpse?.Destroy(DestroyMode.Vanish);
-                    }
-                    catch
-                    {
-                    }
-
                     return false;
                 }
 

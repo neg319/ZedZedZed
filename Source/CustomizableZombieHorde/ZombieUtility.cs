@@ -52,11 +52,10 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            // Zombies should not carry the live infection hediff used for turning living pawns.
-            // That old state can force heavy capacity penalties and has no place on active zombie pawns.
-            ZombieInfectionUtility.RemoveZombieInfection(pawn);
             ZombieInfectionUtility.ApplyReanimatedState(pawn);
+            RemoveZombieInfectionHediff(pawn);
             ClearLegacyZombieFeignDeath(pawn);
+            NormalizeCoreZombieState(pawn);
         }
 
         public static void ClearLegacyZombieFeignDeath(Pawn pawn)
@@ -90,6 +89,156 @@ namespace CustomizableZombieHorde
             }
         }
 
+
+
+        private static void RemoveZombieInfectionHediff(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet == null || ZombieDefOf.CZH_ZombieSickness == null)
+            {
+                return;
+            }
+
+            Hediff infection = pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieSickness);
+            if (infection == null)
+            {
+                return;
+            }
+
+            try
+            {
+                pawn.health.RemoveHediff(infection);
+            }
+            catch
+            {
+            }
+        }
+
+        public static void NormalizeCoreZombieState(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn == null)
+            {
+                return;
+            }
+
+            ForceZombieFaction(pawn);
+            ClearZombieIdeoligion(pawn);
+            EnsureZombieCannibalTrait(pawn);
+        }
+
+        private static void ForceZombieFaction(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            Faction zombieFaction = ZombieFactionUtility.GetOrCreateZombieFaction();
+            if (zombieFaction == null)
+            {
+                return;
+            }
+
+            if (pawn.Faction != zombieFaction)
+            {
+                try
+                {
+                    pawn.SetFaction(zombieFaction);
+                }
+                catch
+                {
+                    try
+                    {
+                        AccessTools.Method(typeof(Pawn), "SetFaction", new[] { typeof(Faction), typeof(Pawn) })?.Invoke(pawn, new object[] { zombieFaction, null });
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            pawn.SetFactionDirect(zombieFaction);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+
+            try
+            {
+                object guest = pawn.guest;
+                if (guest != null)
+                {
+                    AccessTools.Field(guest.GetType(), "hostFactionInt")?.SetValue(guest, null);
+                    AccessTools.Field(guest.GetType(), "hostFaction")?.SetValue(guest, null);
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private static void EnsureZombieCannibalTrait(Pawn pawn)
+        {
+            TraitDef cannibal = DefDatabase<TraitDef>.GetNamedSilentFail("Cannibal");
+            if (cannibal == null)
+            {
+                return;
+            }
+
+            ZombieTraitUtility.EnsureTrait(pawn, cannibal);
+        }
+
+        private static void ClearZombieIdeoligion(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return;
+            }
+
+            try
+            {
+                object tracker = Traverse.Create(pawn).Field("ideo").GetValue();
+                if (tracker == null)
+                {
+                    tracker = Traverse.Create(pawn).Field("ideoTracker").GetValue();
+                }
+                if (tracker == null)
+                {
+                    tracker = Traverse.Create(pawn).Property("ideo").GetValue();
+                }
+                if (tracker == null)
+                {
+                    tracker = Traverse.Create(pawn).Property("IdeoTracker").GetValue();
+                }
+
+                if (tracker == null)
+                {
+                    return;
+                }
+
+                MethodInfo setIdeoOneArg = AccessTools.Method(tracker.GetType(), "SetIdeo", new[] { typeof(Ideo) });
+                if (setIdeoOneArg != null)
+                {
+                    setIdeoOneArg.Invoke(tracker, new object[] { null });
+                }
+                else
+                {
+                    MethodInfo setIdeoTwoArgs = AccessTools.Method(tracker.GetType(), "SetIdeo", new[] { typeof(Ideo), typeof(bool) });
+                    if (setIdeoTwoArgs != null)
+                    {
+                        setIdeoTwoArgs.Invoke(tracker, new object[] { null, false });
+                    }
+                }
+
+                AccessTools.Field(tracker.GetType(), "ideo")?.SetValue(tracker, null);
+                AccessTools.Field(tracker.GetType(), "ideoInt")?.SetValue(tracker, null);
+                AccessTools.Field(tracker.GetType(), "certainty")?.SetValue(tracker, 0f);
+                AccessTools.Field(tracker.GetType(), "certaintyInt")?.SetValue(tracker, 0f);
+            }
+            catch
+            {
+            }
+        }
         public static bool StabilizeFreshZombieForSpawn(Pawn pawn)
         {
             if (pawn == null)
@@ -99,23 +248,6 @@ namespace CustomizableZombieHorde
 
             EnsureZombieInfectionState(pawn);
             RemoveSpawnCriticalHeadDamage(pawn);
-
-            if (pawn.Dead)
-            {
-                try
-                {
-                    TryResurrectZombie(pawn);
-                }
-                catch
-                {
-                }
-            }
-
-            if (pawn.Dead)
-            {
-                return false;
-            }
-
             TryRecoverFromSpawnIncap(pawn);
             return !pawn.Dead;
         }
@@ -160,49 +292,47 @@ namespace CustomizableZombieHorde
                 return 1f;
             }
 
-            // Zombies should be very easy to put down.
-            // Brutes are still the toughest, but even they should not soak endless gunfire.
-            if (IsVariant(pawn, ZombieVariant.Brute))
-            {
-                return 1.75f;
-            }
-
-            if (IsVariant(pawn, ZombieVariant.Grabber))
-            {
-                return 2.00f;
-            }
-
-            if (IsVariant(pawn, ZombieVariant.Drowned))
-            {
-                return 2.10f;
-            }
-
-            if (IsVariant(pawn, ZombieVariant.Sick))
-            {
-                return 2.20f;
-            }
-
-            if (IsVariant(pawn, ZombieVariant.Runt))
-            {
-                return 2.40f;
-            }
-
             if (IsSkeletonBiter(pawn))
             {
-                return 2.35f;
+                return 5.5f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Biter))
             {
-                return 2.30f;
+                return 14f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Runt))
+            {
+                return 6f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Boomer))
             {
-                return 2.35f;
+                return 10f;
             }
 
-            return 2.10f;
+            if (IsVariant(pawn, ZombieVariant.Sick))
+            {
+                return 3f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Drowned))
+            {
+                return 5.5f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Brute))
+            {
+                return 1.5f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Grabber))
+            {
+                return 4f;
+            }
+
+            return 2.2f;
         }
 
         public static float GetZombieOutgoingDamageMultiplier(Pawn attacker, Pawn victim)
@@ -214,45 +344,45 @@ namespace CustomizableZombieHorde
 
             if (IsVariant(attacker, ZombieVariant.Runt))
             {
-                return 0.18f;
+                return 0.12f;
             }
 
             if (IsSkeletonBiter(attacker))
             {
-                return 0.32f;
+                return 0.20f;
             }
 
             if (IsVariant(attacker, ZombieVariant.Biter))
             {
-                return 0.25f;
+                return 0.16f;
             }
 
             if (IsVariant(attacker, ZombieVariant.Boomer))
             {
-                return 0.22f;
+                return 0.12f;
             }
 
             if (IsVariant(attacker, ZombieVariant.Sick))
             {
-                return 0.25f;
+                return 0.16f;
             }
 
             if (IsVariant(attacker, ZombieVariant.Drowned))
             {
-                return 0.30f;
+                return 0.18f;
             }
 
             if (IsVariant(attacker, ZombieVariant.Grabber))
             {
-                return 0.20f;
+                return 0.14f;
             }
 
             if (IsVariant(attacker, ZombieVariant.Brute))
             {
-                return 0.42f;
+                return 0.28f;
             }
 
-            return 0.35f;
+            return 0.20f;
         }
 
         public static float GetZombieMeleeMissChance(Pawn attacker, Pawn victim)
@@ -533,6 +663,28 @@ namespace CustomizableZombieHorde
             }
 
             return ShouldZombiesIgnore(target);
+        }
+
+
+        public static bool ShouldSuppressZombieThought(ThoughtDef thoughtDef)
+        {
+            if (thoughtDef == null)
+            {
+                return false;
+            }
+
+            string text = ((thoughtDef.defName ?? string.Empty) + " " + (thoughtDef.label ?? string.Empty) + " " + (thoughtDef.workerClass?.Name ?? string.Empty)).ToLowerInvariant();
+            if (string.IsNullOrEmpty(text))
+            {
+                return false;
+            }
+
+            return text.Contains("pain")
+                || text.Contains("naked")
+                || text.Contains("nudity")
+                || text.Contains("nude")
+                || text.Contains("filth")
+                || text.Contains("dirty");
         }
 
         public static bool IsUnderColonyRestraint(Pawn pawn)
@@ -1385,7 +1537,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            float chance = CustomizableZombieHordeMod.Settings?.fastZombieChance ?? 0.04f;
+            float chance = CustomizableZombieHordeMod.Settings?.fastZombieChance ?? 0.02f;
             if (chance > 0f && Rand.Chance(chance) && !pawn.health.hediffSet.HasHediff(ZombieDefOf.CZH_ZombieRunner))
             {
                 pawn.health.AddHediff(ZombieDefOf.CZH_ZombieRunner);
@@ -1611,6 +1763,8 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            NormalizeCoreZombieState(pawn);
+
             if (ZombieFeignDeathUtility.IsFeigningDeath(pawn))
             {
                 ZombieFeignDeathUtility.ForceZombieIntoDownedState(pawn);
@@ -1835,6 +1989,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            NormalizeCoreZombieState(pawn);
             TryEndZombieMentalState(pawn);
             StripAllUsableItems(pawn);
             TrimZombieApparel(pawn);

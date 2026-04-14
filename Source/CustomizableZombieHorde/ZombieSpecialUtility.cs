@@ -231,10 +231,6 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                if (ZombieUtility.IsPlayerAlignedZombie(zombie) || ZombieLurkerUtility.IsColonyLurker(zombie) || ZombieLurkerUtility.IsPassiveLurker(zombie))
-                {
-                    continue;
-                }
 
                 if (!loud && zombie != damagedZombie)
                 {
