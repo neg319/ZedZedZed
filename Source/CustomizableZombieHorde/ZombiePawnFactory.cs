@@ -13,6 +13,9 @@ namespace CustomizableZombieHorde
         [ThreadStatic]
         public static bool SuppressZombieRelationGeneration;
 
+        [ThreadStatic]
+        public static bool SuppressAutoFinalizePatch;
+
         public static Pawn GenerateZombie(PawnKindDef kind, Faction faction)
         {
             return GenerateZombie(kind, faction, initialSpawn: true);
@@ -21,7 +24,10 @@ namespace CustomizableZombieHorde
         private static Pawn GenerateZombie(PawnKindDef kind, Faction faction, bool initialSpawn)
         {
             Pawn pawn = null;
+            bool previousSuppressRelations = SuppressZombieRelationGeneration;
+            bool previousSuppressAutoFinalize = SuppressAutoFinalizePatch;
             SuppressZombieRelationGeneration = true;
+            SuppressAutoFinalizePatch = true;
             try
             {
                 try
@@ -42,7 +48,8 @@ namespace CustomizableZombieHorde
             }
             finally
             {
-                SuppressZombieRelationGeneration = false;
+                SuppressZombieRelationGeneration = previousSuppressRelations;
+                SuppressAutoFinalizePatch = previousSuppressAutoFinalize;
             }
 
             FinalizeZombie(pawn, initialSpawn: initialSpawn, desiredFaction: faction);

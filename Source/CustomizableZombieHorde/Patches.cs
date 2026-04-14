@@ -285,10 +285,17 @@ namespace CustomizableZombieHorde
     {
         public static void Postfix(PawnGenerationRequest request, Pawn __result)
         {
-            if (__result?.kindDef?.defName != null && __result.kindDef.defName.StartsWith("CZH_Zombie_"))
+            if (__result?.kindDef?.defName == null || !__result.kindDef.defName.StartsWith("CZH_Zombie_"))
             {
-                ZombiePawnFactory.FinalizeZombie(__result, initialSpawn: true);
+                return;
             }
+
+            if (ZombiePawnFactory.SuppressAutoFinalizePatch)
+            {
+                return;
+            }
+
+            ZombiePawnFactory.FinalizeZombie(__result, initialSpawn: true);
         }
     }
 
