@@ -53,7 +53,70 @@ namespace CustomizableZombieHorde
             }
 
             FinalizeZombie(pawn, initialSpawn: initialSpawn, desiredFaction: faction);
-            return pawn;
+            if (ZombieUtility.StabilizeFreshZombieForSpawn(pawn))
+            {
+                return pawn;
+            }
+
+            try
+            {
+                pawn?.Destroy(DestroyMode.Vanish);
+            }
+            catch
+            {
+            }
+
+            // Fresh zombies should never be handed back already dead.
+            // Retry generation a few times before giving up.
+            for (int retry = 0; retry < 3; retry++)
+            {
+                Pawn retryPawn = null;
+                bool retrySuppressRelations = SuppressZombieRelationGeneration;
+                bool retrySuppressAutoFinalize = SuppressAutoFinalizePatch;
+                SuppressZombieRelationGeneration = true;
+                SuppressAutoFinalizePatch = true;
+                try
+                {
+                    retryPawn = GeneratePawnWithBestAvailableOverload(kind, faction);
+                }
+                catch
+                {
+                    try
+                    {
+                        retryPawn = PawnGenerator.GeneratePawn(kind);
+                    }
+                    catch
+                    {
+                        retryPawn = null;
+                    }
+                }
+                finally
+                {
+                    SuppressZombieRelationGeneration = retrySuppressRelations;
+                    SuppressAutoFinalizePatch = retrySuppressAutoFinalize;
+                }
+
+                if (retryPawn == null)
+                {
+                    continue;
+                }
+
+                FinalizeZombie(retryPawn, initialSpawn: initialSpawn, desiredFaction: faction);
+                if (ZombieUtility.StabilizeFreshZombieForSpawn(retryPawn))
+                {
+                    return retryPawn;
+                }
+
+                try
+                {
+                    retryPawn.Destroy(DestroyMode.Vanish);
+                }
+                catch
+                {
+                }
+            }
+
+            return null;
         }
 
         public static void FinalizeZombie(Pawn pawn, bool initialSpawn, Faction desiredFaction = null)

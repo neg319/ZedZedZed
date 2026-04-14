@@ -822,7 +822,7 @@ namespace CustomizableZombieHorde
 
             bool attackerIsZombie = ZombieUtility.IsZombie(attacker);
             bool victimIsZombie = ZombieUtility.IsZombie(victim);
-            bool isLiveCombatContext = victim.Spawned || attacker != null || dinfo.Instigator != null;
+            bool isLiveCombatContext = attacker != null || dinfo.Instigator != null;
 
             if (victimIsZombie && !attackerIsZombie && isLiveCombatContext)
             {
@@ -880,7 +880,7 @@ namespace CustomizableZombieHorde
             Pawn attacker = ZombieTraitUtility.ResolveDamageInstigatorPawn(dinfo.Instigator);
             ZombieSpecialUtility.NotifyBoneBiterDisturbed(victim);
 
-            bool isLiveCombatContext = victim.Spawned || attacker != null || dinfo.Instigator != null;
+            bool isLiveCombatContext = attacker != null || dinfo.Instigator != null;
             if (ZombieUtility.IsZombie(victim) && (attacker == null || !ZombieUtility.IsZombie(attacker)) && isLiveCombatContext)
             {
                 bool headHit = ZombieInfectionUtility.IsHeadOrChildPart(dinfo.HitPart, victim);

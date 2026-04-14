@@ -52,8 +52,105 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            // Zombies should not carry the live infection hediff used for turning living pawns.
+            // That old state can force heavy capacity penalties and has no place on active zombie pawns.
+            ZombieInfectionUtility.RemoveZombieInfection(pawn);
             ZombieInfectionUtility.ApplyReanimatedState(pawn);
-            ZombieInfectionUtility.EnsureZombieInfection(pawn, 1f);
+            ClearLegacyZombieFeignDeath(pawn);
+        }
+
+        public static void ClearLegacyZombieFeignDeath(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet == null)
+            {
+                return;
+            }
+
+            Hediff staleFeignDeath = pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieFeignDeath);
+            if (staleFeignDeath == null)
+            {
+                return;
+            }
+
+            try
+            {
+                pawn.health.RemoveHediff(staleFeignDeath);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                Traverse.Create(pawn.health).Field("forceIncap").SetValue(false);
+                Traverse.Create(pawn.health).Field("forceDowned").SetValue(false);
+            }
+            catch
+            {
+            }
+        }
+
+        public static bool StabilizeFreshZombieForSpawn(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return false;
+            }
+
+            EnsureZombieInfectionState(pawn);
+            RemoveSpawnCriticalHeadDamage(pawn);
+
+            if (pawn.Dead)
+            {
+                try
+                {
+                    TryResurrectZombie(pawn);
+                }
+                catch
+                {
+                }
+            }
+
+            if (pawn.Dead)
+            {
+                return false;
+            }
+
+            TryRecoverFromSpawnIncap(pawn);
+            return !pawn.Dead;
+        }
+
+        private static void RemoveSpawnCriticalHeadDamage(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet == null)
+            {
+                return;
+            }
+
+            foreach (Hediff hediff in pawn.health.hediffSet.hediffs.ToList())
+            {
+                if (hediff == null)
+                {
+                    continue;
+                }
+
+                BodyPartRecord part = hediff.Part;
+                if (!ZombieInfectionUtility.IsHeadOrChildPart(part, pawn))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    if (hediff is Hediff_MissingPart || hediff is Hediff_Injury)
+                    {
+                        pawn.health.RemoveHediff(hediff);
+                    }
+                }
+                catch
+                {
+                }
+            }
         }
 
         public static float GetZombieIncomingDamageMultiplier(Pawn pawn)
