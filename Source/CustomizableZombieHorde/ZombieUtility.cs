@@ -281,9 +281,9 @@ namespace CustomizableZombieHorde
             return Mathf.Clamp(chance, 0f, 0.45f);
         }
 
-        public static void DestroyZombieBrain(Pawn victim, Pawn attacker, DamageInfo sourceDamage = default(DamageInfo))
+        public static void DestroyZombieBrain(Pawn victim, Pawn attacker, DamageInfo sourceDamage = default(DamageInfo), bool forceEvenIfAlreadyDead = false)
         {
-            if (!IsZombie(victim) || victim.Dead)
+            if (!IsZombie(victim))
             {
                 return;
             }
@@ -291,6 +291,16 @@ namespace CustomizableZombieHorde
             BodyPartRecord fatalPart = GetBrainPart(victim) ?? GetHeadPart(victim) ?? sourceDamage.HitPart;
 
             Current.Game?.GetComponent<ZombieGameComponent>()?.MarkInfectionHeadFatal(victim);
+
+            if (victim.Dead)
+            {
+                if (forceEvenIfAlreadyDead)
+                {
+                    TryAddBrainTrauma(victim, attacker, fatalPart, sourceDamage);
+                }
+
+                return;
+            }
 
             try
             {
@@ -304,6 +314,25 @@ namespace CustomizableZombieHorde
             try
             {
                 victim.Kill(new DamageInfo(DamageDefOf.Cut, 999f, 999f, -1f, attacker, fatalPart));
+            }
+            catch
+            {
+            }
+        }
+
+        private static void TryAddBrainTrauma(Pawn victim, Pawn attacker, BodyPartRecord fatalPart, DamageInfo sourceDamage)
+        {
+            if (victim?.health == null || fatalPart == null)
+            {
+                return;
+            }
+
+            try
+            {
+                if (!victim.health.hediffSet.PartIsMissing(fatalPart))
+                {
+                    victim.health.AddHediff(HediffMaker.MakeHediff(HediffDefOf.MissingBodyPart, victim, fatalPart));
+                }
             }
             catch
             {

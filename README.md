@@ -13,7 +13,7 @@
 
 Zed Zed Zed is a RimWorld zombie mod built around steady pressure, ugly cleanup, and nights that can get out of hand fast. The goal is not to spam one kind of raid over and over. The goal is to make the map feel infected. Zombies drift in, bunch up, push the base, claw out of the ground, spill out of graves, and sometimes move across the whole map in a herd.
 
-This version is tuned around a simple combat rule. Zombies are supposed to be easy to kill. They die like normal pawns, head and face hits are meant to be instantly decisive, and any solid hit has a chance to destroy the brain outright. Guns are loud and draw attention. Melee is quieter and usually pulls less of the map.
+This version is tuned around a simple combat rule. Zombies are supposed to be easy to kill. They die like normal pawns, any head or face hit destroys the brain immediately, and any solid hit has a chance to destroy the brain outright. Guns are loud and draw attention. Melee is quieter and usually pulls less of the map.
 
 ## What the mod is trying to do right now
 
@@ -90,7 +90,7 @@ This repository is the full source package for the mod. It includes the GitHub A
 - Cleaned up player facing descriptions so the mod reads more like the game it currently is.
 
 ### Iteration 138
-- Any successful damaging hit can now have a chance to destroy a zombie's brain.
+- Any successful damaging body hit can now have a chance to destroy a zombie's brain. Head and face hits destroy the brain immediately.
 - Head and face hits still stay immediately lethal.
 
 ### Iteration 137

@@ -815,8 +815,9 @@ namespace CustomizableZombieHorde
 
             bool attackerIsZombie = ZombieUtility.IsZombie(attacker);
             bool victimIsZombie = ZombieUtility.IsZombie(victim);
+            bool isLiveCombatContext = victim.Spawned || attacker != null || dinfo.Instigator != null;
 
-            if (victimIsZombie && !attackerIsZombie)
+            if (victimIsZombie && !attackerIsZombie && isLiveCombatContext)
             {
                 float zombieDamageMultiplier = ZombieUtility.GetZombieIncomingDamageMultiplier(victim);
                 float amount = dinfo.Amount * zombieDamageMultiplier;
@@ -872,14 +873,15 @@ namespace CustomizableZombieHorde
             Pawn attacker = ZombieTraitUtility.ResolveDamageInstigatorPawn(dinfo.Instigator);
             ZombieSpecialUtility.NotifyBoneBiterDisturbed(victim);
 
-            if (ZombieUtility.IsZombie(victim) && (attacker == null || !ZombieUtility.IsZombie(attacker)))
+            bool isLiveCombatContext = victim.Spawned || attacker != null || dinfo.Instigator != null;
+            if (ZombieUtility.IsZombie(victim) && (attacker == null || !ZombieUtility.IsZombie(attacker)) && isLiveCombatContext)
             {
                 bool headHit = ZombieInfectionUtility.IsHeadOrChildPart(dinfo.HitPart, victim);
                 bool loudAttack = attacker != null && ZombieTraitUtility.IsRangedAttack(attacker, dinfo);
 
-                if (headHit && !victim.Dead)
+                if (headHit)
                 {
-                    ZombieUtility.DestroyZombieBrain(victim, attacker, dinfo);
+                    ZombieUtility.DestroyZombieBrain(victim, attacker, dinfo, forceEvenIfAlreadyDead: true);
                 }
                 else if (!victim.Dead)
                 {

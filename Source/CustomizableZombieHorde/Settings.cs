@@ -631,7 +631,7 @@ namespace CustomizableZombieHorde
             DrawInfoCard(listing, "How Danger is calculated", "Danger compares active zombies to your current target population. Daytime target = colonists × outbreak intensity. Night target = daytime target × 1.5. Example: 4 colonists at 2.0 intensity gives a daytime target of 8 zombies. If 6 are active, Danger is 75 percent.");
 
             DrawSectionLabel(listing, "Core outbreak feel", "These are the big knobs for how hard the undead lean on the colony from day to night.");
-            DrawInfoCard(listing, "Zombie combat rules", "Zombies now die like normal pawns. They are meant to be easy to kill, head and face hits are supposed to be instantly decisive, and any solid hit can also have a chance to destroy the brain outright. Loud guns pull more attention than quiet melee.");
+            DrawInfoCard(listing, "Zombie combat rules", "Zombies now die like normal pawns. They are meant to be easy to kill, any head or face hit destroys the brain immediately, and any other solid hit can still have a chance to destroy the brain outright. Loud guns pull more attention than quiet melee.");
             DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a fresh spawn to roll the faster runner strain.", ref fastZombieChance, 0f, 0.20f, 0.01f);
 
             listing.End();
