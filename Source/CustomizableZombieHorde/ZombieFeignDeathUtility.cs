@@ -41,12 +41,7 @@ namespace CustomizableZombieHorde
 
         public static bool ShouldPreventZombieDeath(Pawn pawn)
         {
-            if (!ZombieUtility.IsZombie(pawn) || pawn == null || pawn.Destroyed || pawn.Dead || pawn.health?.hediffSet == null)
-            {
-                return false;
-            }
-
-            return HasIntactHeadForFakeDeath(pawn);
+            return false;
         }
 
         public static bool HasIntactHeadForFakeDeath(Pawn pawn)
@@ -78,33 +73,7 @@ namespace CustomizableZombieHorde
 
         public static bool EnterFeignDeath(Pawn pawn)
         {
-            if (!ShouldPreventZombieDeath(pawn))
-            {
-                return false;
-            }
-
-            StabilizeZombieForReanimationComa(pawn);
-
-            Hediff existing = pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieFeignDeath);
-            if (existing == null)
-            {
-                try
-                {
-                    existing = HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieFeignDeath, pawn);
-                    pawn.health.AddHediff(existing);
-                }
-                catch
-                {
-                }
-            }
-
-            if (existing is HediffWithComps withComps)
-            {
-                withComps.TryGetComp<HediffComp_ZombieFeignDeath>()?.RefreshWakeDelay();
-            }
-            ForceZombieIntoDownedState(pawn);
-            ZombieUtility.MarkPawnGraphicsDirty(pawn);
-            return true;
+            return false;
         }
 
         public static void RegenerateDuringFeignDeath(Pawn pawn, float healAmount)
@@ -228,44 +197,40 @@ namespace CustomizableZombieHorde
 
         public static void ProcessFeignDeathState(Pawn pawn, int currentTick)
         {
-            if (!IsFeigningDeath(pawn) || pawn == null || pawn.Dead || pawn.Destroyed || pawn.health?.hediffSet == null)
+            if (pawn?.health?.hediffSet == null || pawn.Dead || pawn.Destroyed)
             {
                 return;
             }
 
-            HediffWithComps hediff = pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieFeignDeath) as HediffWithComps;
-            HediffComp_ZombieFeignDeath comp = hediff?.TryGetComp<HediffComp_ZombieFeignDeath>();
-            if (hediff == null || comp == null)
+            Hediff hediff = pawn.health.hediffSet.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieFeignDeath);
+            if (hediff == null)
             {
                 return;
             }
 
-            ForceZombieIntoDownedState(pawn);
-            if (comp.ShouldHealNow(currentTick))
+            try
             {
-                RegenerateDuringFeignDeath(pawn, Math.Max(0.25f, comp.Props?.healAmount ?? 1.35f));
+                pawn.health.RemoveHediff(hediff);
+            }
+            catch
+            {
             }
 
-            if (currentTick < comp.WakeTick)
+            try
             {
-                return;
+                Traverse.Create(pawn.health).Field("forceIncap").SetValue(false);
+                Traverse.Create(pawn.health).Field("forceDowned").SetValue(false);
+            }
+            catch
+            {
             }
 
-            if (!TryRiseFromFeignDeath(pawn, hediff))
-            {
-                ForceZombieIntoDownedState(pawn);
-                comp.DelayWake(600);
-            }
+            ZombieUtility.MarkPawnGraphicsDirty(pawn);
         }
 
         public static string GetFeignDeathInspectString(Pawn pawn)
         {
-            if (!IsFeigningDeath(pawn))
-            {
-                return null;
-            }
-
-            return "Dead state: this zombie is still alive, comatose, and reanimating. Progress: " + GetReanimationProgress(pawn).ToStringPercent() + ". It will fully heal and stand back up at 100% unless someone Double Taps it or ruins the head.";
+            return null;
         }
 
         public static void ForceZombieIntoDownedState(Pawn pawn)
@@ -313,64 +278,12 @@ namespace CustomizableZombieHorde
 
         public static bool CanAutoDoubleTapPawn(Pawn pawn)
         {
-            return ZombieUtility.IsZombie(pawn) && IsFeigningDeath(pawn) && ZombieDoubleTapUtility.CanDoubleTapPawn(pawn);
+            return false;
         }
 
         public static bool ShouldCollapseIntoReanimationComa(Pawn pawn, DamageInfo dinfo, float totalDamageDealt)
         {
-            if (!ShouldPreventZombieDeath(pawn) || IsFeigningDeath(pawn) || totalDamageDealt <= 0.01f)
-            {
-                return false;
-            }
-
-            if (ZombieInfectionUtility.IsHeadOrChildPart(dinfo.HitPart, pawn))
-            {
-                return false;
-            }
-
-            if (pawn.Downed)
-            {
-                return true;
-            }
-
-            float torsoTrauma = 0f;
-            float bodyTrauma = 0f;
-            BodyPartRecord torso = pawn.RaceProps?.body?.corePart;
-            foreach (Hediff_Injury injury in pawn.health.hediffSet.hediffs.OfType<Hediff_Injury>())
-            {
-                if (injury?.Part == null || injury.IsPermanent())
-                {
-                    continue;
-                }
-
-                if (ZombieInfectionUtility.IsHeadOrChildPart(injury.Part, pawn))
-                {
-                    continue;
-                }
-
-                bodyTrauma += injury.Severity;
-                if (injury.Part == torso)
-                {
-                    torsoTrauma += injury.Severity;
-                }
-            }
-
-            bool brute = ZombieUtility.IsVariant(pawn, ZombieVariant.Brute);
-            float hitThreshold = brute ? 9f : 4f;
-            float torsoThreshold = brute ? 9f : 4.5f;
-            float bodyThreshold = brute ? 16f : 7f;
-
-            if (torsoTrauma >= torsoThreshold)
-            {
-                return true;
-            }
-
-            if (bodyTrauma >= bodyThreshold)
-            {
-                return true;
-            }
-
-            return totalDamageDealt >= hitThreshold;
+            return false;
         }
 
         private static void StabilizeZombieForReanimationComa(Pawn pawn)

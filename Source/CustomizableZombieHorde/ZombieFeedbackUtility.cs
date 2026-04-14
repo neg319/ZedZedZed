@@ -207,7 +207,7 @@ namespace CustomizableZombieHorde
 
             if (ZombieRulesUtility.IsZombie(innerPawn))
             {
-                lines.Add("This zombie is dead for real. Its head was ruined badly enough to stop the fake death regeneration state.");
+                lines.Add("This zombie is dead. Zombies now die like other pawns, but head shots are especially effective against them.");
             }
 
             if (ZombieRulesUtility.IsZombie(innerPawn))

@@ -573,11 +573,6 @@ namespace CustomizableZombieHorde
     {
         public static bool Prefix(Pawn __instance)
         {
-            if (ZombieFeignDeathUtility.ShouldPreventZombieDeath(__instance) && ZombieFeignDeathUtility.EnterFeignDeath(__instance))
-            {
-                return false;
-            }
-
             if (ZombieUtility.IsVariant(__instance, ZombieVariant.Boomer))
             {
                 ZombieSpecialUtility.TriggerBoomerBurstOnly(__instance);
@@ -824,11 +819,18 @@ namespace CustomizableZombieHorde
             if (victimIsZombie && !attackerIsZombie)
             {
                 float zombieDamageMultiplier = ZombieUtility.GetZombieIncomingDamageMultiplier(victim);
-
                 float amount = dinfo.Amount * zombieDamageMultiplier;
+
+                bool headHit = ZombieInfectionUtility.IsHeadOrChildPart(dinfo.HitPart, victim);
+                if (headHit)
+                {
+                    // Any real head or face hit should be immediately decisive.
+                    amount = Mathf.Max(amount * 8.0f, 999f);
+                }
+
                 if (ZombieTraitUtility.HasSteadyHands(attacker) && ZombieTraitUtility.IsRangedAttack(attacker, dinfo))
                 {
-                    amount *= 1.30f;
+                    amount *= headHit ? 1.25f : 1.10f;
                 }
 
                 dinfo.SetAmount(amount);
@@ -870,23 +872,33 @@ namespace CustomizableZombieHorde
             Pawn attacker = ZombieTraitUtility.ResolveDamageInstigatorPawn(dinfo.Instigator);
             ZombieSpecialUtility.NotifyBoneBiterDisturbed(victim);
 
-            if (ZombieUtility.IsZombie(victim) && attacker != null && !ZombieUtility.IsZombie(attacker))
+            if (ZombieUtility.IsZombie(victim) && (attacker == null || !ZombieUtility.IsZombie(attacker)))
             {
-                bool loudAttack = ZombieTraitUtility.IsRangedAttack(attacker, dinfo);
-                ZombieSpecialUtility.NotifyCombatAttraction(attacker, victim, loudAttack);
+                bool headHit = ZombieInfectionUtility.IsHeadOrChildPart(dinfo.HitPart, victim);
+                bool loudAttack = attacker != null && ZombieTraitUtility.IsRangedAttack(attacker, dinfo);
+
+                if (headHit && !victim.Dead)
+                {
+                    ZombieUtility.DestroyZombieBrain(victim, attacker, dinfo);
+                }
+                else if (!victim.Dead)
+                {
+                    float brainDestroyChance = ZombieUtility.GetBrainDestroyChance(victim, attacker, dinfo, totalDamageDealt);
+                    if (brainDestroyChance > 0f && Rand.Chance(brainDestroyChance))
+                    {
+                        ZombieUtility.DestroyZombieBrain(victim, attacker, dinfo);
+                    }
+                }
+
+                if (attacker != null)
+                {
+                    ZombieSpecialUtility.NotifyCombatAttraction(attacker, victim, loudAttack);
+                }
             }
 
             if (victim.Dead && ZombieInfectionUtility.HasZombieInfection(victim) && ZombieInfectionUtility.IsHeadOrChildPart(dinfo.HitPart, victim))
             {
                 Current.Game?.GetComponent<ZombieGameComponent>()?.MarkInfectionHeadFatal(victim);
-            }
-
-            if (ZombieUtility.IsZombie(victim)
-                && !victim.Dead
-                && ZombieFeignDeathUtility.ShouldCollapseIntoReanimationComa(victim, dinfo, totalDamageDealt))
-            {
-                ZombieFeignDeathUtility.EnterFeignDeath(victim);
-                return;
             }
 
             if (ZombieUtility.IsVariant(attacker, ZombieVariant.Boomer) && victim.IsColonist && !victim.Dead)

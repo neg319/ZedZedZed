@@ -380,7 +380,7 @@ namespace CustomizableZombieHorde
             {
                 string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
                 string label = customLetterLabel ?? (prefix + " Herd");
-                string text = customLetterText ?? "A broad herd of " + prefix.ToLowerInvariant() + "s is crossing the map in a slow wall of bodies. It is more interested in crossing than charging your base, but anything too close may still be dragged into the flow.";
+                string text = customLetterText ?? "A broad herd of " + prefix.ToLowerInvariant() + "s is crossing the map in a rolling wall of bodies. They are trying to move through the area, not stage a clean raid, but anything too close can still get swallowed by the flow.";
                 Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.ThreatBig, new TargetInfo(firstCell.IsValid ? firstCell : map.Center, map));
             }
 
@@ -504,7 +504,7 @@ namespace CustomizableZombieHorde
                 string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
                 Find.LetterStack.ReceiveLetter(
                     prefix + " Ground Burst",
-                    "The soil splits open inside your base and a small pack of " + prefix.ToLowerInvariant() + "s claws its way to the surface. Rally nearby colonists before the breach spreads through your interior rooms.",
+                    "The soil splits open inside your base and a small pack of " + prefix.ToLowerInvariant() + "s claws its way up through the floor. This one starts inside your walls, so move fast and keep civilians clear.",
                     LetterDefOf.ThreatSmall,
                     new TargetInfo(firstCell.IsValid ? firstCell : map.Center, map));
             }
@@ -959,9 +959,9 @@ namespace CustomizableZombieHorde
                 case ZombieSpawnEventType.GroundBurst:
                     return "A pack of " + prefix.ToLowerInvariant() + "s has burst from the ground inside your colony. This breach began inside your defenses, so respond quickly.";
                 case ZombieSpawnEventType.Herd:
-                    return "A herd of " + prefix.ToLowerInvariant() + "s is crossing the map in a broad line. It may ignore distant targets, but anything close to the flow can still get swallowed up.";
+                    return "A herd of " + prefix.ToLowerInvariant() + "s is crossing the map in a broad moving lane. It may ignore distant targets, but anything close to the flow can still get swallowed up.";
                 default:
-                    return "A group of " + prefix.ToLowerInvariant() + "s has entered from the map edge and is drifting toward your colony. Pull back exposed workers and prepare a firing line.";
+                    return "A group of " + prefix.ToLowerInvariant() + "s has drifted in from off map and is leaning toward your colony. Pull back exposed workers and set a firing line before they get close.";
             }
         }
 

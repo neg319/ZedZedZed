@@ -63,47 +63,49 @@ namespace CustomizableZombieHorde
                 return 1f;
             }
 
-            if (IsSkeletonBiter(pawn))
-            {
-                return 9f;
-            }
-
-            if (IsVariant(pawn, ZombieVariant.Biter))
-            {
-                return 20f;
-            }
-
-            if (IsVariant(pawn, ZombieVariant.Runt))
-            {
-                return 11f;
-            }
-
-            if (IsVariant(pawn, ZombieVariant.Boomer))
-            {
-                return 15f;
-            }
-
-            if (IsVariant(pawn, ZombieVariant.Sick))
-            {
-                return 9f;
-            }
-
-            if (IsVariant(pawn, ZombieVariant.Drowned))
-            {
-                return 10f;
-            }
-
+            // Zombies should be very easy to put down.
+            // Brutes are still the toughest, but even they should not soak endless gunfire.
             if (IsVariant(pawn, ZombieVariant.Brute))
             {
-                return 3f;
+                return 1.75f;
             }
 
             if (IsVariant(pawn, ZombieVariant.Grabber))
             {
-                return 8f;
+                return 2.00f;
             }
 
-            return 6f;
+            if (IsVariant(pawn, ZombieVariant.Drowned))
+            {
+                return 2.10f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Sick))
+            {
+                return 2.20f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Runt))
+            {
+                return 2.40f;
+            }
+
+            if (IsSkeletonBiter(pawn))
+            {
+                return 2.35f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Biter))
+            {
+                return 2.30f;
+            }
+
+            if (IsVariant(pawn, ZombieVariant.Boomer))
+            {
+                return 2.35f;
+            }
+
+            return 2.10f;
         }
 
         public static float GetZombieOutgoingDamageMultiplier(Pawn attacker, Pawn victim)
@@ -221,6 +223,91 @@ namespace CustomizableZombieHorde
             }
 
             return null;
+        }
+
+        public static BodyPartRecord FindBodyPart(Pawn pawn, string defName)
+        {
+            if (pawn?.RaceProps?.body?.AllParts == null || string.IsNullOrWhiteSpace(defName))
+            {
+                return null;
+            }
+
+            return pawn.RaceProps.body.AllParts.FirstOrDefault(part => string.Equals(part?.def?.defName, defName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static BodyPartRecord GetBrainPart(Pawn pawn)
+        {
+            return FindBodyPart(pawn, "Brain");
+        }
+
+        public static float GetBrainDestroyChance(Pawn victim, Pawn attacker, DamageInfo dinfo, float totalDamageDealt)
+        {
+            if (!IsZombie(victim) || victim.Dead)
+            {
+                return 0f;
+            }
+
+            float chance = 0.14f;
+
+            if (attacker != null && ZombieTraitUtility.IsRangedAttack(attacker, dinfo))
+            {
+                chance += 0.08f;
+            }
+
+            if (dinfo.Weapon?.IsRangedWeapon == true)
+            {
+                chance += 0.03f;
+            }
+
+            chance += Mathf.Clamp(totalDamageDealt * 0.0125f, 0f, 0.15f);
+
+            if (IsVariant(victim, ZombieVariant.Brute))
+            {
+                chance *= 0.65f;
+            }
+            else if (IsVariant(victim, ZombieVariant.Grabber))
+            {
+                chance *= 0.90f;
+            }
+            else if (IsVariant(victim, ZombieVariant.Runt))
+            {
+                chance *= 1.10f;
+            }
+            else if (IsSkeletonBiter(victim))
+            {
+                chance *= 1.05f;
+            }
+
+            return Mathf.Clamp(chance, 0f, 0.45f);
+        }
+
+        public static void DestroyZombieBrain(Pawn victim, Pawn attacker, DamageInfo sourceDamage = default(DamageInfo))
+        {
+            if (!IsZombie(victim) || victim.Dead)
+            {
+                return;
+            }
+
+            BodyPartRecord fatalPart = GetBrainPart(victim) ?? GetHeadPart(victim) ?? sourceDamage.HitPart;
+
+            Current.Game?.GetComponent<ZombieGameComponent>()?.MarkInfectionHeadFatal(victim);
+
+            try
+            {
+                victim.Kill(new DamageInfo(sourceDamage.Def ?? DamageDefOf.Bullet, 999f, 999f, -1f, attacker, fatalPart));
+                return;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                victim.Kill(new DamageInfo(DamageDefOf.Cut, 999f, 999f, -1f, attacker, fatalPart));
+            }
+            catch
+            {
+            }
         }
 
         public static bool ShouldZombiesIgnore(Pawn pawn)

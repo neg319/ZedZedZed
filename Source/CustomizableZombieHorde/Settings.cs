@@ -580,8 +580,8 @@ namespace CustomizableZombieHorde
             Widgets.Label(titleRect, "Zed Zed Zed Settings");
             Text.Font = GameFont.Small;
             GUI.color = SettingsTheme.MutedInk;
-            Widgets.Label(subtitleRect, "Outbreak pacing, strain control, colony cleanup, and grim little debug tools.");
-            Widgets.Label(hintRect, "Built to stay stylish, readable, and quick to use mid save.");
+            Widgets.Label(subtitleRect, "Outbreak pacing, strain control, colony cleanup, and a few dangerous little test tools.");
+            Widgets.Label(hintRect, "Written to stay readable in the middle of a live save.");
             GUI.color = Color.white;
 
             SettingsTheme.DrawStatusPill(badgeRect, true);
@@ -623,16 +623,16 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref overviewScrollPosition, ref overviewViewHeight, out Listing_Standard listing, out Rect viewRect);
 
-            DrawInfoCard(listing, "About this tab", "Start here. This tab keeps the controls that most players will care about first, so the overall outbreak is easy to read at a glance.");
-            DrawSectionLabel(listing, "Quick setup", "These are the first controls most players will touch in a normal save.");
+            DrawInfoCard(listing, "About this tab", "Start here. This is the fast pass for shaping how the outbreak feels without digging through every last toggle.");
+            DrawSectionLabel(listing, "Quick setup", "If you only touch a handful of settings, these are the ones that matter most.");
             DrawPresetButtons(listing);
             DrawDifficultyCard(listing);
-            DrawToggleCard(listing, "Show zombie HUD", "Shows a compact readout for active zombies and current danger on your home map.", ref showZombieCounter);
-            DrawInfoCard(listing, "How Danger is calculated", "Danger compares active zombies to your current target population. Daytime target = colonists × outbreak intensity. Night target = daytime target × 1.5. Example: 4 colonists at 2.0 intensity gives a daytime target of 8 zombies. If 6 are active, Danger is 75%.");
+            DrawToggleCard(listing, "Show zombie HUD", "Shows the live zombie count and current Danger on your home map.", ref showZombieCounter);
+            DrawInfoCard(listing, "How Danger is calculated", "Danger compares active zombies to your current target population. Daytime target = colonists × outbreak intensity. Night target = daytime target × 1.5. Example: 4 colonists at 2.0 intensity gives a daytime target of 8 zombies. If 6 are active, Danger is 75 percent.");
 
-            DrawSectionLabel(listing, "Core outbreak feel", "These shape how quickly pressure builds and how fast fresh groups refill the map.");
-            DrawInfoCard(listing, "Zombie dead state", "Head intact zombies do not truly die. They stay alive in a dead state, collapse into a comatose reanimating cooldown, show visible reanimation progress, and fully heal before standing back up at 100% unless a colonist Double Taps them or ruins the head. Dead infected non zombies still stay dead.");
-            DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a fresh zombie to become a fast runner.", ref fastZombieChance, 0f, 0.20f, 0.01f);
+            DrawSectionLabel(listing, "Core outbreak feel", "These are the big knobs for how hard the undead lean on the colony from day to night.");
+            DrawInfoCard(listing, "Zombie combat rules", "Zombies now die like normal pawns. They are meant to be easy to kill, head and face hits are supposed to be instantly decisive, and any solid hit can also have a chance to destroy the brain outright. Loud guns pull more attention than quiet melee.");
+            DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a fresh spawn to roll the faster runner strain.", ref fastZombieChance, 0f, 0.20f, 0.01f);
 
             listing.End();
             overviewViewHeight = Mathf.Max(1200f, listing.CurHeight + 24f);
@@ -643,9 +643,9 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref eventsScrollPosition, ref eventsViewHeight, out Listing_Standard listing, out Rect viewRect);
 
-            DrawInfoCard(listing, "About this tab", "This tab controls when zombie pressure shows up and what form it takes, from steady trickles to moon hordes, broad herd crossings, ground bursts, and graves.");
-            DrawSectionLabel(listing, "Constant edge trickle", "Small groups drifting in from the map edge keep pressure on the colony between major events. Outbreak intensity automatically speeds this up when you raise it.");
-            DrawToggleCard(listing, "Enable edge trickle", "Lets small zombie groups keep wandering in from the map edge. Higher outbreak intensity shortens the gap between trickles and helps the map refill faster toward its target population.", ref enableEdgeTrickle);
+            DrawInfoCard(listing, "About this tab", "This is where the outbreak gets its rhythm, from background pressure all the way up to moon attacks and full herd crossings.");
+            DrawSectionLabel(listing, "Constant edge trickle", "Small off map groups keep the colony from ever feeling completely settled. Outbreak intensity speeds this up when you raise it.");
+            DrawToggleCard(listing, "Enable edge trickle", "Lets small zombie groups keep wandering in from off map. Higher outbreak intensity shortens the gap between trickles and helps refill the map faster toward its target population.", ref enableEdgeTrickle);
             if (enableEdgeTrickle)
             {
                 DrawFloatStepperCard(listing, "Time between trickles", "Lower values make edge groups show up more often.", ref trickleIntervalHours, 0.5f, 24f, 0.25f, "hours");
@@ -657,11 +657,11 @@ namespace CustomizableZombieHorde
                 DrawInfoCard(listing, "Edge trickle is off", "Only larger events and manual spawns will add new pressure from off map while this is disabled.");
             }
 
-            DrawSectionLabel(listing, "Colony scaled population", "This controls the normal number of zombies the mod tries to keep around your colony during ordinary day and night pressure.");
+            DrawSectionLabel(listing, "Colony scaled population", "This sets the soft target for how many zombies the mod tries to keep on your map during ordinary play.");
             DrawToggleCard(listing, "Scale zombie population to colonists", "Uses your free colonist count to set the normal day and night zombie target instead of leaning on older fixed scaling rules.", ref useColonistScaledPopulation);
             if (useColonistScaledPopulation)
             {
-                DrawInfoCard(listing, "How normal population works", $"Daytime target = colonists × outbreak intensity. Right now that means {DaytimeTargetMultiplier:0.0} zombies per colonist during the day. At night, that target rises by 50% to {NighttimeTargetMultiplier:0.0} zombies per colonist.");
+                DrawInfoCard(listing, "How normal population works", $"Daytime target = colonists × outbreak intensity. Right now that means {DaytimeTargetMultiplier:0.0} zombies per colonist during the day. At night, that target rises by 50 percent to {NighttimeTargetMultiplier:0.0} zombies per colonist, and zombies also get their night speed boost.");
                 DrawInfoCard(listing, "What still pushes past that", "Moon events, debug spawns, leftover bodies, and other special surges can still push the active count above the usual target. When that happens, Danger can go over 100%.");
             }
             else
@@ -669,8 +669,8 @@ namespace CustomizableZombieHorde
                 DrawInfoCard(listing, "Colonist scaling is off", "Normal population pressure falls back to the older fixed rules instead of using outbreak intensity against your colonist count.");
             }
 
-            DrawSectionLabel(listing, "Moon events", "Big attacks tied to the moon cycle. Blood moons are rarer and much nastier.");
-            DrawToggleCard(listing, "Enable moon events", "Roughly every 30 days, a larger horde can show up. Blood moons send an even bigger one.", ref enableMoonEvents);
+            DrawSectionLabel(listing, "Moon events", "Big night spikes tied to the moon cycle. Blood moons are rarer, nastier, and push the map harder.");
+            DrawToggleCard(listing, "Enable moon events", "Roughly every 30 days, a larger horde can show up. Blood moons send an even bigger one, and moon pressure can shove the whole map into a harder base push.", ref enableMoonEvents);
             if (enableMoonEvents)
             {
                 if (!useColonistScaledPopulation)
@@ -685,13 +685,13 @@ namespace CustomizableZombieHorde
                 DrawInfoCard(listing, "Moon events are off", "Full moon and blood moon attacks will stay out of the normal event rotation until you turn them back on.");
             }
 
-            DrawSectionLabel(listing, "Herd crossings", "These are the big wall like migrations that cross one whole side of the map to the other. They use 10 times your colonist count, never go below 50, and stop at 75.");
-            DrawToggleCard(listing, "Enable herd events", "Lets massive zombie herds cross the map in a broad line instead of trickling in as a normal wave.", ref enableHerdEvents);
+            DrawSectionLabel(listing, "Herd crossings", "These are the big migrating herds that enter from one side, cross the whole map, and leave on the far side. They are meant to feel like a moving wall, not a normal raid.");
+            DrawToggleCard(listing, "Enable herd events", "Lets massive zombie herds cross the map in a broad lane instead of showing up as a normal attack wave.", ref enableHerdEvents);
             if (enableHerdEvents)
             {
                 DrawFloatStepperCard(listing, "Minimum days between herds", "Shortest possible gap between herd events.", ref herdEventMinDays, 4f, 30f, 0.5f, "days");
                 DrawFloatStepperCard(listing, "Maximum days between herds", "Longest possible gap between herd events.", ref herdEventMaxDays, herdEventMinDays, 40f, 0.5f, "days");
-                DrawInfoCard(listing, "Herd size", "Herd size is automatic. The mod aims for 10 times your colonists, but never below 50 and never above 75.");
+                DrawInfoCard(listing, "Herd size", "Herd size is automatic. The mod aims for 10 times your colonists, clamps that to 50 to 75, and gives the herd a temporary speed push so it keeps moving.");
             }
             else
             {
@@ -733,13 +733,13 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref variantsScrollPosition, ref variantsViewHeight, out Listing_Standard listing, out Rect viewRect);
 
-            DrawInfoCard(listing, "About this tab", "Use this tab to decide which zombie strains are part of the normal outbreak. The most common and most noticeable strain controls are listed first.");
+            DrawInfoCard(listing, "About this tab", "Use this tab to decide which strains are part of the normal outbreak pool.");
             DrawSectionLabel(listing, "Main strain roster", "Turn each core strain on or off. Disabled strains stay out of ordinary waves, debug free play balance, and grave events that use the regular pool.");
             DrawVariantCard(listing, "Standard biters", "Your basic zombies. These make up most packs and hordes.", ref allowBiters);
             DrawVariantCard(listing, "Boomers", "Bloated zombies that burst with acid and punish tight groups.", ref allowBoomers);
-            DrawVariantCard(listing, "Sick", "Infected zombies that spread filth and can pass the sickness to colonists.", ref allowSick);
-            DrawVariantCard(listing, "Drowned", "Waterlogged zombies that are strongest near rivers, marshes, and shorelines.", ref allowDrowned);
-            DrawVariantCard(listing, "Brutes", "Big tough zombies that soak damage and hit harder in melee.", ref allowBrutes);
+            DrawVariantCard(listing, "Sick", "Disease spreading zombies that add filth, bile pressure, and infection problems.", ref allowSick);
+            DrawVariantCard(listing, "Drowned", "Water loving zombies that want to stay wet, return to water when idle, and do better in rain and standing water.", ref allowDrowned);
+            DrawVariantCard(listing, "Brutes", "Big hitters that swing harder than the rest, but are still meant to go down under focused fire.", ref allowBrutes);
             DrawVariantCard(listing, "Grabbers", "Zombies that hold colonists in place until they break free.", ref allowGrabbers);
             DrawVariantCard(listing, "Runts", "Small dragging zombies that clog choke points and feel creepy.", ref allowRunts);
 
@@ -797,21 +797,21 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref advancedScrollPosition, ref advancedViewHeight, out Listing_Standard listing, out Rect viewRect);
 
-            DrawInfoCard(listing, "About this tab", "Use this tab for colony side response, cleanup, and safety. The most important response options are at the top.");
+            DrawInfoCard(listing, "About this tab", "Use this tab for colony side cleanup, infection pacing, and the practical rules that shape how your pawns deal with the aftermath.");
 
-            DrawSectionLabel(listing, "Prioritized double tapping", "Choose whether your colony should actively keep fresh zombie corpses down, and pick which jobs are allowed to break away and handle it.");
-            DrawToggleCard(listing, "Enable prioritized double tapping", "When this is on, selected work types will break away and go finish dangerous fresh corpses automatically.", ref enablePrioritizedDoubleTap);
+            DrawSectionLabel(listing, "Prioritized double tapping", "Optional cleanup behavior for players who want pawns to go finish fresh zombie corpses automatically.");
+            DrawToggleCard(listing, "Enable prioritized double tapping", "When this is on, selected work types can break away and finish fresh zombie corpses as a cleanup task.", ref enablePrioritizedDoubleTap);
             DrawDoubleTapWorkTypeChecklist(listing);
             if (!enablePrioritizedDoubleTap)
             {
                 DrawInfoCard(listing, "Double tapping is off", "The checklist below is still saved, but pawns will ignore it until prioritized double tapping is turned on.");
             }
 
-            DrawSectionLabel(listing, "Corpse handling", "These options control how fresh zombie remains are treated once they hit the ground.");
+            DrawSectionLabel(listing, "Corpse handling", "Mostly simple quality of life rules for zombie remains once the fight is over.");
             DrawToggleCard(listing, "Allow zombie corpses by default", "Fresh zombie corpses start out allowed so colonists can haul, butcher, or double tap them without manual clicks.", ref autoAllowZombieCorpses);
 
-            DrawSectionLabel(listing, "Zombie infection", "Use this if you want the colony to have more or less time to treat infected pawns before they turn.");
-            DrawIntStepperCard(listing, "Days until infection reaches 99% transformation", "How many in game days it takes an untreated zombie infection to reach the final living transformation point. It gets worse in daily steps.", ref infectionDaysToTurn, 1, 30, 1);
+            DrawSectionLabel(listing, "Zombie infection", "This only affects living infection progression. Zombies themselves now die like normal pawns.");
+            DrawIntStepperCard(listing, "Days until infection reaches 99% transformation", "How many in game days it takes an untreated zombie infection to reach the final living transformation point and convert the victim into a lurker. It gets worse in daily steps.", ref infectionDaysToTurn, 1, 30, 1);
 
             DrawSectionLabel(listing, "Reset", "Use this if things get messy and you want to go back to a known good setup.");
             if (DrawActionCard(listing, "Reset settings to recommended defaults", "Puts every setting back to the recommended values."))
@@ -828,7 +828,7 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref debugScrollPosition, ref debugViewHeight, out Listing_Standard listing, out Rect viewRect);
 
-            DrawInfoCard(listing, "About this tab", "Use this tab to force events and test behavior in a live colony. It is meant for testing, not normal play.");
+            DrawInfoCard(listing, "About this tab", "Use this tab to force events and test behavior on a live colony map. Great for tuning, bad for a normal playthrough.");
             DrawSectionLabel(listing, "Debug mode", "Use this for testing and screenshots. It is best left off during normal play.");
             DrawToggleCard(listing, "Enable debug controls", "Shows manual buttons for forced waves, herd crossings, moon events, grave events, and test spawns while a colony is loaded.", ref enableDebugControls);
             DrawSectionLabel(listing, "Debug spawn sizing", "These sizes are only used by manual debug spawns and forced test events.");
@@ -1048,7 +1048,7 @@ namespace CustomizableZombieHorde
 
         private void DrawDifficultyCard(Listing_Standard listing)
         {
-            string description = "Sets the normal daytime target population. Daytime target = colonists × outbreak intensity. At night, the target rises by 50 percent. This setting also speeds up trickles, refill pressure, bursts, and grave timing so the rest of the outbreak keeps pace automatically. Default 4.0 means the mod tries to keep about four times your colonist count on the map during the day and about six times at night. You can now push this as high as 12.0 for very dense outbreaks.";
+            string description = "Sets the normal daytime target population. Daytime target = colonists × outbreak intensity. At night, that target rises by 50 percent, and zombies also get their night speed boost. This setting also speeds up trickles, refill pressure, bursts, and grave timing so the rest of the outbreak keeps pace automatically. Default 4.0 means the mod tries to keep about four times your colonist count on the map during the day and about six times at night. You can now push this as high as 12.0 for very dense outbreaks.";
             float cardHeight = CalculateStepperCardHeight(listing, description);
             Rect row = DrawCard(listing, cardHeight);
             DrawCardText(row, "Outbreak intensity", description, null, 236f);
