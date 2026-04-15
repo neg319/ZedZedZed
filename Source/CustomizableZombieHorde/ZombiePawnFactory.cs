@@ -995,7 +995,8 @@ namespace CustomizableZombieHorde
             try
             {
                 Color desiredSkinColor = ZombieVisualUtility.GetSkinColor(pawn, variant);
-                if (!ColorsNearlyEqual(pawn.story.skinColorOverride, desiredSkinColor))
+                Color? currentSkinOverride = pawn.story.skinColorOverride;
+                if (!currentSkinOverride.HasValue || !ColorsNearlyEqual(currentSkinOverride.Value, desiredSkinColor))
                 {
                     pawn.story.skinColorOverride = desiredSkinColor;
                     changed = true;
