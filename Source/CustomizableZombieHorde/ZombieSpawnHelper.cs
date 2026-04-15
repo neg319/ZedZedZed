@@ -1074,15 +1074,6 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            if (behavior != ZombieSpawnEventType.Herd)
-            {
-                IntVec3 interiorApproach = FindInteriorApproachSpawnCell(map, edgeCell, pawn, behavior);
-                if (interiorApproach.IsValid)
-                {
-                    return interiorApproach;
-                }
-            }
-
             if (behavior == ZombieSpawnEventType.HuddledPack)
             {
                 IntVec3 huddleCell = ZombieSpecialUtility.FindInteriorNearEdgeCell(map, edgeCell);

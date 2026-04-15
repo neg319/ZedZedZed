@@ -132,6 +132,11 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            if (ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
+            {
+                return;
+            }
+
             Faction zombieFaction = ZombieFactionUtility.GetOrCreateZombieFaction();
             if (zombieFaction == null)
             {
@@ -467,6 +472,77 @@ namespace CustomizableZombieHorde
             return FindBodyPart(pawn, "Brain");
         }
 
+
+        public static bool HasDestroyedBrain(Pawn pawn)
+        {
+            if (pawn?.health?.hediffSet == null)
+            {
+                return false;
+            }
+
+            BodyPartRecord brain = GetBrainPart(pawn);
+            BodyPartRecord markerPart = brain ?? GetHeadPart(pawn);
+
+            if (brain != null)
+            {
+                try
+                {
+                    if (pawn.health.hediffSet.PartIsMissing(brain))
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return pawn.health.hediffSet.hediffs.Any(hediff => hediff?.def == ZombieDefOf.CZH_ZombieBrainDestroyed && hediff.Part == markerPart);
+        }
+
+        public static void EnsureZombieBrainDestroyed(Pawn victim, Pawn attacker, DamageInfo sourceDamage = default(DamageInfo))
+        {
+            if (!IsZombie(victim) || victim?.health?.hediffSet == null)
+            {
+                return;
+            }
+
+            BodyPartRecord brain = GetBrainPart(victim);
+            BodyPartRecord markerPart = brain ?? GetHeadPart(victim) ?? sourceDamage.HitPart;
+            if (markerPart == null)
+            {
+                return;
+            }
+
+            Current.Game?.GetComponent<ZombieGameComponent>()?.MarkInfectionHeadFatal(victim);
+
+            try
+            {
+                bool hasMarker = victim.health.hediffSet.hediffs.Any(hediff => hediff?.def == ZombieDefOf.CZH_ZombieBrainDestroyed && hediff.Part == markerPart);
+                if (!hasMarker)
+                {
+                    victim.health.AddHediff(HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieBrainDestroyed, victim, markerPart));
+                }
+            }
+            catch
+            {
+            }
+
+            if (brain != null)
+            {
+                try
+                {
+                    if (!victim.health.hediffSet.PartIsMissing(brain))
+                    {
+                        victim.health.AddHediff(HediffMaker.MakeHediff(HediffDefOf.MissingBodyPart, victim, brain));
+                    }
+                }
+                catch
+                {
+                }
+            }
+        }
+
         public static float GetBrainDestroyChance(Pawn victim, Pawn attacker, DamageInfo dinfo, float totalDamageDealt)
         {
             if (!IsZombie(victim) || victim.Dead)
@@ -516,8 +592,7 @@ namespace CustomizableZombieHorde
             }
 
             BodyPartRecord fatalPart = GetBrainPart(victim) ?? GetHeadPart(victim) ?? sourceDamage.HitPart;
-
-            Current.Game?.GetComponent<ZombieGameComponent>()?.MarkInfectionHeadFatal(victim);
+            EnsureZombieBrainDestroyed(victim, attacker, sourceDamage);
 
             if (victim.Dead)
             {
@@ -553,6 +628,8 @@ namespace CustomizableZombieHorde
             {
                 return;
             }
+
+            EnsureZombieBrainDestroyed(victim, attacker, sourceDamage);
 
             try
             {

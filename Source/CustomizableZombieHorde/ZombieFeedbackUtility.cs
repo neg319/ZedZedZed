@@ -207,7 +207,7 @@ namespace CustomizableZombieHorde
 
             if (ZombieRulesUtility.IsZombie(innerPawn))
             {
-                lines.Add("This zombie is dead. Zombies now die like other pawns, but any head or face hit destroys the brain immediately.");
+                lines.Add("This zombie is dead. A zombie only stays dead once its brain is destroyed. Head and face hits destroy the brain immediately.");
             }
 
             if (ZombieRulesUtility.IsZombie(innerPawn))

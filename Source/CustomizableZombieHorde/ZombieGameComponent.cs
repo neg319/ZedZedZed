@@ -244,7 +244,7 @@ namespace CustomizableZombieHorde
             }
 
             int count = Mathf.Max(1, Rand.RangeInclusive(CustomizableZombieHordeMod.Settings.trickleMinGroupSize, CustomizableZombieHordeMod.Settings.trickleMaxGroupSize));
-            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Edge Wave", customLetterText: "A debug zombie wave has been forced from the map edge.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true);
+            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Edge Wave", customLetterText: "A debug zombie wave has been forced from the map edge.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true, behavior: ZombieSpawnEventType.EdgeWander);
             if (!result)
             {
                 result = ZombieSpawnHelper.SpawnEmergencyPack(map, count, sendLetter: true, customLetterLabel: "Debug Edge Wave", customLetterText: "A debug zombie wave has been forced near the map edge.", ignoreCap: true);
@@ -268,7 +268,7 @@ namespace CustomizableZombieHorde
             }
 
             int count = Mathf.Max(2, CustomizableZombieHordeMod.Settings.trickleMinGroupSize + 1);
-            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Night Wave", customLetterText: "A debug nightly zombie wave has been forced onto the map.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true);
+            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Night Wave", customLetterText: "A debug nightly zombie wave has been forced onto the map.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true, behavior: ZombieSpawnEventType.AssaultBase);
             if (!result)
             {
                 result = ZombieSpawnHelper.SpawnEmergencyPack(map, count, sendLetter: true, customLetterLabel: "Debug Night Wave", customLetterText: "A debug nightly zombie wave has been forced near the map edge.", ignoreCap: true);
@@ -877,9 +877,9 @@ namespace CustomizableZombieHorde
                 }
                 if (guaranteedCount > 0)
                 {
-                    if (!ZombieSpawnHelper.SpawnWave(map, forcedCount: guaranteedCount, sendLetter: false))
+                    if (!ZombieSpawnHelper.SpawnEdgeWanderers(map, forcedCount: guaranteedCount, sendLetter: false, ignoreCap: false, ignoreTimeOfDay: true, applyDifficulty: false))
                     {
-                        ZombieSpawnHelper.SpawnEmergencyPack(map, guaranteedCount, sendLetter: false);
+                        ZombieSpawnHelper.SpawnEmergencyPack(map, guaranteedCount, sendLetter: false, ignoreCap: false, behavior: ZombieSpawnEventType.EdgeWander);
                     }
 
                     nextTrickleTick = ticksGame + HoursToTicks(1.50f);
@@ -933,7 +933,7 @@ namespace CustomizableZombieHorde
                 }
 
                 ZombieSpawnEventType behavior = PickPressureBehavior(map, deficitFraction);
-                bool spawned = ZombieSpawnHelper.SpawnByBehavior(map, behavior, spawnCount, sendLetter: false, applyDifficulty: false, ignoreCap: false, ignoreTimeOfDay: false);
+                bool spawned = ZombieSpawnHelper.SpawnByBehavior(map, behavior, spawnCount, sendLetter: false, applyDifficulty: false, ignoreCap: false, ignoreTimeOfDay: true);
                 if (!spawned)
                 {
                     spawned = ZombieSpawnHelper.SpawnEmergencyPack(map, spawnCount, sendLetter: false, ignoreCap: false, behavior: behavior);
@@ -981,7 +981,7 @@ namespace CustomizableZombieHorde
 
                 int guaranteedCount = Mathf.Max(1, CustomizableZombieHordeMod.Settings?.GetEffectiveTrickleMinGroupSize() ?? 1);
                 ZombieSpawnEventType behavior = PickPressureBehavior(map, 0.20f);
-                bool spawned = ZombieSpawnHelper.SpawnByBehavior(map, behavior, guaranteedCount, sendLetter: false, applyDifficulty: true, ignoreCap: false, ignoreTimeOfDay: false);
+                bool spawned = ZombieSpawnHelper.SpawnByBehavior(map, behavior, guaranteedCount, sendLetter: false, applyDifficulty: false, ignoreCap: false, ignoreTimeOfDay: true);
                 if (!spawned)
                 {
                     spawned = ZombieSpawnHelper.SpawnEmergencyPack(map, guaranteedCount, sendLetter: false, behavior: behavior);
@@ -1041,10 +1041,10 @@ namespace CustomizableZombieHorde
                 int cap = ZombieSpawnHelper.GetDynamicZombieCap(map);
                 int current = ZombieSpawnHelper.GetCurrentZombieCount(map);
                 float deficitFraction = cap > 0 ? Mathf.Clamp01((cap - current) / (float)cap) : 0f;
-                ZombieSpawnEventType behavior = PickPressureBehavior(map, deficitFraction);
-                if (!ZombieSpawnHelper.SpawnByBehavior(map, behavior, count, sendLetter: false, applyDifficulty: true, ignoreCap: false, ignoreTimeOfDay: false))
+                ZombieSpawnEventType behavior = ZombieSpawnEventType.EdgeWander;
+                if (!ZombieSpawnHelper.SpawnEdgeWanderers(map, count, sendLetter: false, ignoreCap: false, ignoreTimeOfDay: true, applyDifficulty: false))
                 {
-                    ZombieSpawnHelper.SpawnEmergencyPack(map, count, sendLetter: false, behavior: behavior);
+                    ZombieSpawnHelper.SpawnEmergencyPack(map, count, sendLetter: false, ignoreCap: false, behavior: behavior);
                 }
             }
 
@@ -1100,12 +1100,17 @@ namespace CustomizableZombieHorde
             }
 
             float roll = Rand.Value;
+            if (deficitFraction < 0.15f)
+            {
+                return ZombieSpawnEventType.EdgeWander;
+            }
+
             if (roll < Mathf.Clamp01(assaultChance))
             {
                 return ZombieSpawnEventType.AssaultBase;
             }
 
-            return ZombieSpawnEventType.HuddledPack;
+            return deficitFraction >= 0.45f ? ZombieSpawnEventType.HuddledPack : ZombieSpawnEventType.EdgeWander;
         }
 
         private void ScheduleNextTrickle(int ticksGame)

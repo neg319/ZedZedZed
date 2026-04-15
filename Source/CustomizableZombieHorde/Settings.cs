@@ -269,8 +269,8 @@ namespace CustomizableZombieHorde
                 return 0;
             }
 
-            int scaled = Mathf.Max(1, Mathf.CeilToInt(deficit * 0.35f));
-            int maxChunk = Mathf.Max(2, ScaleSpawnCountByOutbreak(3, 2));
+            int scaled = Mathf.Max(1, Mathf.CeilToInt(deficit * 0.45f));
+            int maxChunk = Mathf.Max(3, ScaleSpawnCountByOutbreak(6, 3));
             return Mathf.Clamp(scaled, 1, Mathf.Max(1, maxChunk));
         }
 
@@ -631,7 +631,7 @@ namespace CustomizableZombieHorde
             DrawInfoCard(listing, "How Danger is calculated", "Danger compares active zombies to your current target population. Daytime target = colonists × outbreak intensity. Night target = daytime target × 1.5. Example: 4 colonists at 2.0 intensity gives a daytime target of 8 zombies. If 6 are active, Danger is 75 percent.");
 
             DrawSectionLabel(listing, "Core outbreak feel", "These are the big knobs for how hard the undead lean on the colony from day to night.");
-            DrawInfoCard(listing, "Zombie combat rules", "All zombies belong to the zombie faction, have no ideoligion, count as cannibals, ignore pain, filth, and nudity, move very slowly unless they roll the rare runner strain, double their movement speed at night, and swarm loud gunfire much harder than quiet melee.");
+            DrawInfoCard(listing, "Zombie combat rules", "Hostile zombies belong to the zombie faction. Zombies have no ideoligion, count as cannibals, ignore pain, filth, and nudity, move very slowly unless they roll the rare runner strain, double their movement speed at night, and swarm loud gunfire much harder than quiet melee. Lurkers stay as the friendly exception.");
             DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a fresh spawn to roll the faster runner strain.", ref fastZombieChance, 0f, 0.20f, 0.01f);
 
             listing.End();
@@ -644,8 +644,8 @@ namespace CustomizableZombieHorde
             BeginScrollableListing(rect, ref eventsScrollPosition, ref eventsViewHeight, out Listing_Standard listing, out Rect viewRect);
 
             DrawInfoCard(listing, "About this tab", "This is where the outbreak gets its rhythm, from background pressure all the way up to moon attacks and full herd crossings.");
-            DrawSectionLabel(listing, "Constant edge trickle", "Small off map groups keep the colony from ever feeling completely settled. Outbreak intensity speeds this up when you raise it.");
-            DrawToggleCard(listing, "Enable edge trickle", "Lets small zombie groups keep wandering in from off map. Higher outbreak intensity shortens the gap between trickles and helps refill the map faster toward its target population.", ref enableEdgeTrickle);
+            DrawSectionLabel(listing, "Constant edge trickle", "Small groups should keep shambling in from the map edges so the colony never feels fully safe. Higher outbreak intensity should refill the map faster and keep more pressure on it.");
+            DrawToggleCard(listing, "Enable edge trickle", "Lets small zombie groups keep coming in from the map edges. Higher outbreak intensity shortens the gap between trickles and helps the mod keep the map closer to its target zombie count.", ref enableEdgeTrickle);
             if (enableEdgeTrickle)
             {
                 DrawFloatStepperCard(listing, "Time between trickles", "Lower values make edge groups show up more often.", ref trickleIntervalHours, 0.5f, 24f, 0.25f, "hours");
@@ -735,18 +735,24 @@ namespace CustomizableZombieHorde
 
             DrawInfoCard(listing, "About this tab", "Use this tab to decide which strains are part of the normal outbreak pool.");
             DrawSectionLabel(listing, "Main strain roster", "Turn each core strain on or off. Disabled strains stay out of ordinary waves, debug free play balance, and grave events that use the regular pool.");
-            DrawVariantCard(listing, "Standard biters", "Your basic zombies. These make up most packs and hordes.", ref allowBiters);
-            DrawVariantCard(listing, "Boomers", "Bloated zombies that burst with acid and punish tight groups.", ref allowBoomers);
-            DrawVariantCard(listing, "Sick", "Disease spreading zombies that add filth, bile pressure, and infection problems.", ref allowSick);
-            DrawVariantCard(listing, "Drowned", "Water loving zombies that want to stay wet, return to water when idle, and do better in rain and standing water.", ref allowDrowned);
-            DrawVariantCard(listing, "Brutes", "Big hitters that swing harder than the rest, but are still meant to go down under focused fire.", ref allowBrutes);
-            DrawVariantCard(listing, "Grabbers", "Zombies that hold colonists in place until they break free.", ref allowGrabbers);
-            DrawVariantCard(listing, "Runts", "Small dragging zombies that clog choke points and feel creepy.", ref allowRunts);
+            DrawVariantCard(listing, "Standard biters", "Likes: Prey nearby, loud gunfire, moving toward the colony, fresh flesh. Dislikes: Empty ground, quiet areas, losing track of prey, being far from the fight.", ref allowBiters);
+            DrawVariantCard(listing, "Boomers", "Likes: Crowded prey, close range fights, tight formations, bursting in the middle of enemies. Dislikes: Dying alone, spread out targets, long range fights, empty approach lanes.", ref allowBoomers);
+            DrawVariantCard(listing, "Sick", "Likes: Infected prey, spreading filth, sick spew hitting targets, contaminated battlefields. Dislikes: Clean rooms, prey staying out of range, fire clearing filth, long stretches without spreading infection.", ref allowSick);
+            DrawVariantCard(listing, "Drowned", "Likes: Rain, water, wet ground, shoreline hunting, returning to water. Dislikes: Dry land, hot clear weather, being far from water, getting stranded inland.", ref allowDrowned);
+            DrawVariantCard(listing, "Brutes", "Likes: Close melee, breaking through defenses, smashing prey, dense fighting. Dislikes: Being kited, long range fire, prey escaping, getting stalled before reaching the target.", ref allowBrutes);
+            DrawVariantCard(listing, "Grabbers", "Likes: Prey in tongue range, holding a victim in place, panic at close range, packs closing in on trapped prey. Dislikes: Prey breaking free, broken line of sight, fast targets, fighting alone.", ref allowGrabbers);
+            DrawVariantCard(listing, "Runts", "Likes: Packs nearby, tight paths, crawling toward prey, downed victims. Dislikes: Open ground, being left behind, fast moving prey, empty quiet spaces.", ref allowRunts);
 
             if (!allowBiters && !allowRunts && !allowBoomers && !allowSick && !allowDrowned && !allowBrutes && !allowGrabbers)
             {
                 DrawWarningCard(listing, "No strains are enabled. Standard biters will be used as a safe fallback.");
             }
+
+            DrawSectionLabel(listing, "Special states and exceptions", "These are not part of the main hostile roster toggle list, but they still matter to how the undead feel in play.");
+            DrawInfoCard(listing, "Bone Biter", "Likes: Fresh corpses nearby, feeding on corpses, battlefields full of bodies, being left alone while feeding. Dislikes: Feeding interrupted, corpses taken away, clean empty ground, being pulled away from a body.");
+            DrawInfoCard(listing, "Lurker", "Likes: Wandering near the colony, familiar ground, being left alone, quiet base life. Dislikes: Forced aggression, being disturbed, being driven away, open hostility near its home area.");
+            DrawInfoCard(listing, "Runner strain", "Likes: Open lanes, fleeing prey, fast pursuit, sudden pressure. Dislikes: Tight stalls, being slowed, losing momentum, blocked paths.");
+            DrawInfoCard(listing, "Pregnant Boomer", "Likes: Crowded prey, close quarters, bursting near enemies, leaving something behind. Dislikes: Long range kills, empty lanes, isolated death, targets keeping their distance.");
 
             DrawSectionLabel(listing, "Recommended setup", "Most players will want every strain enabled. Turn one off only if you do not like what it adds.");
             if (DrawActionCard(listing, "Enable every strain", "Turns the full strain roster back on with one click."))

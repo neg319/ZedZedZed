@@ -793,6 +793,39 @@ namespace CustomizableZombieHorde
         }
     }
 
+    [HarmonyPatch(typeof(Pawn), nameof(Pawn.Kill))]
+    public static class Patch_Pawn_Kill_ZombieBrainRule
+    {
+        private static readonly HashSet<int> ActiveKills = new HashSet<int>();
+
+        public static void Prefix(Pawn __instance, DamageInfo? dinfo)
+        {
+            if (__instance == null || !ZombieUtility.IsZombie(__instance) || __instance.Destroyed)
+            {
+                return;
+            }
+
+            int id = __instance.thingIDNumber;
+            if (ActiveKills.Contains(id))
+            {
+                return;
+            }
+
+            ActiveKills.Add(id);
+            try
+            {
+                DamageInfo sourceDamage = dinfo ?? default(DamageInfo);
+                Pawn attacker = ZombieTraitUtility.ResolveDamageInstigatorPawn(sourceDamage.Instigator);
+                ZombieUtility.EnsureZombieBrainDestroyed(__instance, attacker, sourceDamage);
+            }
+            finally
+            {
+                ActiveKills.Remove(id);
+            }
+        }
+    }
+
+
     [HarmonyPatch(typeof(Pawn_HealthTracker), "PreApplyDamage")]
     public static class Patch_Pawn_HealthTracker_PreApplyDamage
     {
@@ -897,6 +930,11 @@ namespace CustomizableZombieHorde
                     {
                         ZombieUtility.DestroyZombieBrain(victim, attacker, dinfo);
                     }
+                }
+
+                if (victim.Dead)
+                {
+                    ZombieUtility.EnsureZombieBrainDestroyed(victim, attacker, dinfo);
                 }
 
                 if (attacker != null)

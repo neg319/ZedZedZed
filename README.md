@@ -13,7 +13,7 @@
 
 Zed Zed Zed is a RimWorld zombie mod built around steady pressure, ugly cleanup, and nights that can get out of hand fast. The goal is not to spam one kind of raid over and over. The goal is to make the map feel infected. Zombies drift in, bunch up, push the base, claw out of the ground, spill out of graves, and sometimes move across the whole map in a herd.
 
-This version is tuned around a simple zombie rule set. All zombies belong to the zombie faction, have no ideoligion, count as cannibals, ignore pain, filth, and nudity, move very slowly unless they roll the rare runner strain, double their movement speed at night, and swarm loud gunfire much harder than quiet melee.
+This version is tuned around a simple zombie rule set. Hostile zombies belong to the zombie faction. Zombies have no ideoligion, count as cannibals, ignore pain, filth, and nudity, move very slowly unless they roll the rare runner strain, double their movement speed at night, and swarm loud gunfire much harder than quiet melee. Lurkers stay as the friendly exception.
 
 ## What the mod is trying to do right now
 
@@ -27,32 +27,53 @@ This version is tuned around a simple zombie rule set. All zombies belong to the
 
 ## Strains at a glance
 
-**Biters**  
-The baseline zombie. Most of the horde is built out of these.
+### Main variants
 
-**Bone Biters**  
-Corpse eating skeletal biters that break off to feed when they find bodies.
+**Biter**  
+Likes: Prey nearby, loud gunfire, moving toward the colony, fresh flesh.  
+Dislikes: Empty ground, quiet areas, losing track of prey, being far from the fight.
 
-**Runts**  
-Small, nasty, clutter making zombies that are good at causing problems in tight spaces.
+**Bone Biter**  
+Likes: Fresh corpses nearby, feeding on corpses, battlefields full of bodies, being left alone while feeding.  
+Dislikes: Feeding interrupted, corpses taken away, clean empty ground, being pulled away from a body.
 
-**Boomers**  
-Bloated acid bombs. They punish bunching up and can leave a mess behind.
+**Runt**  
+Likes: Packs nearby, tight paths, crawling toward prey, downed victims.  
+Dislikes: Open ground, being left behind, fast moving prey, empty quiet spaces.
+
+**Boomer**  
+Likes: Crowded prey, close range fights, tight formations, bursting in the middle of enemies.  
+Dislikes: Dying alone, spread out targets, long range fights, empty approach lanes.
 
 **Sick**  
-Disease spreading zombies that add filth, bile pressure, and infection problems.
+Likes: Infected prey, spreading filth, sick spew hitting targets, contaminated battlefields.  
+Dislikes: Clean rooms, prey staying out of range, fire clearing filth, long stretches without spreading infection.
 
 **Drowned**  
-Water loving zombies that prefer to stay wet, move differently around water, and feel better in rain.
+Likes: Rain, water, wet ground, shoreline hunting, returning to water.  
+Dislikes: Dry land, hot clear weather, being far from water, getting stranded inland.
 
-**Brutes**  
-Big hitters. They are still meant to go down under focused fire, but they hit harder than the rest.
+**Brute**  
+Likes: Close melee, breaking through defenses, smashing prey, dense fighting.  
+Dislikes: Being kited, long range fire, prey escaping, getting stalled before reaching the target.
 
-**Grabbers**  
-Control focused zombies that pin pawns in place and force a break free moment.
+**Grabber**  
+Likes: Prey in tongue range, holding a victim in place, panic at close range, packs closing in on trapped prey.  
+Dislikes: Prey breaking free, broken line of sight, fast targets, fighting alone.
 
-**Lurkers**  
-A quieter colony side zombie. They can show up through special systems and can be captured, recruited, or enslaved.
+**Lurker**  
+Likes: Wandering near the colony, familiar ground, being left alone, quiet base life.  
+Dislikes: Forced aggression, being disturbed, being driven away, open hostility near its home area.
+
+### Special states
+
+**Runner strain**  
+Likes: Open lanes, fleeing prey, fast pursuit, sudden pressure.  
+Dislikes: Tight stalls, being slowed, losing momentum, blocked paths.
+
+**Pregnant Boomer**  
+Likes: Crowded prey, close quarters, bursting near enemies, leaving something behind.  
+Dislikes: Long range kills, empty lanes, isolated death, targets keeping their distance.
 
 ## Colony side features
 
@@ -84,13 +105,23 @@ This repository is the full source package for the mod. It includes the GitHub A
 
 ## Curated changelog
 
+### Iteration 151, April 14, 2026
+- Reworked the strain writeups in the README and player facing settings text to use the current RimWorld style likes and dislikes phrasing.
+- Added a clearer split between main variants and special states so Runner strain and Pregnant Boomer are described accurately.
+- Tightened the About text so the public facing description matches the current strain roles more cleanly.
+
+### Iteration 150, April 14, 2026
+- Audited the live variant rules against the current source.
+- Fixed a core contradiction where friendly lurkers could get forced back into the hostile zombie faction.
+- Updated player facing text so hostile zombies use the zombie faction, while lurkers stay the friendly exception.
+
 ### Iteration 139, April 13, 2026
 - Rewrote the README, About info, and settings copy to match the current design of the mod.
 - Trimmed old noise out of the changelog so the project notes are easier to read.
 - Cleaned up player facing descriptions so the mod reads more like the game it currently is.
 
 ### Iteration 138
-- Any successful damaging body hit can now have a chance to destroy a zombie's brain. Head and face hits destroy the brain immediately.
+- Any successful damaging body hit can now have a chance to destroy a zombie's brain. Head and face hits destroy the brain immediately. If a zombie dies, its brain is marked as destroyed.
 - Head and face hits still stay immediately lethal.
 
 ### Iteration 137

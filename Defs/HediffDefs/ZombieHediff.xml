@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
+
+  <HediffDef>
+    <defName>CZH_ZombieBrainDestroyed</defName>
+    <hediffClass>HediffWithComps</hediffClass>
+    <label>brain destroyed</label>
+    <description>This zombie is dead because its brain has been destroyed. Zombies are not supposed to stay dead unless the brain is gone.</description>
+    <isBad>true</isBad>
+    <scenarioCanAdd>false</scenarioCanAdd>
+    <tendable>false</tendable>
+    <makesAlert>false</makesAlert>
+    <stages>
+      <li>
+        <label>destroyed</label>
+        <painFactor>0.0</painFactor>
+      </li>
+    </stages>
+  </HediffDef>
+
   <HediffDef>
     <defName>CZH_ZombieRot</defName>
     <hediffClass>HediffWithComps</hediffClass>
@@ -152,7 +170,7 @@
     <defName>CZH_ZombieRunner</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>runner strain</label>
-    <description>This rare zombie strain still moves unnaturally quickly.</description>
+    <description>Likes: Open lanes, fleeing prey, fast pursuit, sudden pressure. Dislikes: Tight stalls, being slowed, losing momentum, blocked paths.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -177,7 +195,7 @@
     <defName>CZH_ZombieBiter</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>frail biter strain</label>
-    <description>This weak shambling strain tears poorly and falls apart under focused attacks.</description>
+    <description>Likes: Prey nearby, loud gunfire, moving toward the colony, fresh flesh. Dislikes: Empty ground, quiet areas, losing track of prey, being far from the fight.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -196,7 +214,7 @@
     <defName>CZH_ZombieSkeletonBiter</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>skeletal biter strain</label>
-    <description>This skeletal shambling strain is brittle, uncanny, and slower than a standard biter.</description>
+    <description>Likes: Fresh corpses nearby, feeding on corpses, battlefields full of bodies, being left alone while feeding. Dislikes: Feeding interrupted, corpses taken away, clean empty ground, being pulled away from a body.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -215,7 +233,7 @@
     <defName>CZH_ZombieRunt</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>runt body</label>
-    <description>This zombie drags itself forward on ruined limbs.</description>
+    <description>Likes: Packs nearby, tight paths, crawling toward prey, downed victims. Dislikes: Open ground, being left behind, fast moving prey, empty quiet spaces.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -294,7 +312,7 @@
     <defName>CZH_ZombieBrute</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>brute strain</label>
-    <description>This massive zombie strain is much stronger and larger than normal undead.</description>
+    <description>Likes: Close melee, breaking through defenses, smashing prey, dense fighting. Dislikes: Being kited, long range fire, prey escaping, getting stalled before reaching the target.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -316,7 +334,7 @@
     <defName>CZH_ZombieDrownedLand</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>drowned on land</label>
-    <description>Out of water, this drowned corpse becomes sluggish and weak.</description>
+    <description>Likes: Rain, water, wet ground, shoreline hunting, returning to water. Dislikes: Dry land, hot clear weather, being far from water, getting stranded inland.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -616,7 +634,7 @@
     <defName>CZH_PregnantBoomer</defName>
     <hediffClass>HediffWithComps</hediffClass>
     <label>pregnant boomer</label>
-    <description>This female boomer is swollen with a runt. When it bursts, it is guaranteed to leave one behind.</description>
+    <description>Likes: Crowded prey, close quarters, bursting near enemies, leaving something behind. Dislikes: Long range kills, empty lanes, isolated death, targets keeping their distance.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>

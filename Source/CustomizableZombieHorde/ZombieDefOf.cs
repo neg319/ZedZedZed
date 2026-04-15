@@ -7,6 +7,7 @@ namespace CustomizableZombieHorde
     public static class ZombieDefOf
     {
         public static HediffDef CZH_ZombieRot;
+        public static HediffDef CZH_ZombieBrainDestroyed;
         public static HediffDef CZH_ZombieLimbDecay;
         public static HediffDef CZH_ZombieOpenWound;
         public static HediffDef CZH_ZombieRunner;
