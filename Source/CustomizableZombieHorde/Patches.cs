@@ -1499,12 +1499,18 @@ namespace CustomizableZombieHorde
 
         public static void Postfix(Hediff __instance, ref bool __result)
         {
-            if (!__result || __instance?.def != ZombieDefOf.CZH_ZombieSickness)
+            if (__instance?.def != ZombieDefOf.CZH_ZombieSickness)
             {
                 return;
             }
 
             if (ZombieUtility.IsZombie(__instance.pawn))
+            {
+                __result = false;
+                return;
+            }
+
+            if (!ZombieInfectionUtility.CanCureZombieInfection(__instance.pawn))
             {
                 __result = false;
             }

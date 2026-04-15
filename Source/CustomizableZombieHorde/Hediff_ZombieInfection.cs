@@ -26,6 +26,13 @@ namespace CustomizableZombieHorde
                     stringBuilder.AppendLine();
                 }
 
+                string stageLabel = ZombieInfectionUtility.GetInfectionStageLabel(this);
+                if (!string.IsNullOrEmpty(stageLabel))
+                {
+                    stringBuilder.Append("Current stage: ");
+                    stringBuilder.AppendLine(stageLabel);
+                }
+
                 stringBuilder.Append("Turn progress: ");
                 stringBuilder.Append(ZombieInfectionUtility.GetInfectionCompletion(this).ToStringPercent());
                 return stringBuilder.ToString();

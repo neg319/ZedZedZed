@@ -638,7 +638,7 @@ namespace CustomizableZombieHorde
             DrawInfoCard(listing, "How Danger is calculated", "Danger compares active zombies to your current target population. Daytime target = colonists × outbreak intensity. Night target = daytime target × 1.5. Example: 4 colonists at 2.0 intensity gives a daytime target of 8 zombies. If 6 are active, Danger is 75 percent.");
 
             DrawSectionLabel(listing, "Core outbreak feel", "These are the big knobs for how hard the undead lean on the colony from day to night.");
-            DrawInfoCard(listing, "Zombie combat rules", "Hostile zombies belong to the zombie faction. Zombies have no ideoligion, count as cannibals, ignore pain, filth, and nudity, move very slowly unless they roll the rare runner strain, double their movement speed at night, and swarm loud gunfire much harder than quiet melee. Lurkers stay as the friendly exception.");
+            DrawInfoCard(listing, "Zombie combat rules", "Hostile zombies belong to the zombie faction. Zombies have no ideoligion, count as cannibals, ignore pain, filth, and nudity, move very slowly unless they roll the rare runner strain, gain about 50 percent more movement speed at night, and swarm loud gunfire much harder than quiet melee. Lurkers stay as the friendly exception.");
             DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a fresh spawn to roll the faster runner strain.", ref fastZombieChance, 0f, 0.20f, 0.01f);
 
             listing.End();
@@ -668,7 +668,7 @@ namespace CustomizableZombieHorde
             DrawToggleCard(listing, "Scale zombie population to colonists", "Uses your free colonist count to set the normal day and night zombie target instead of leaning on older fixed scaling rules.", ref useColonistScaledPopulation);
             if (useColonistScaledPopulation)
             {
-                DrawInfoCard(listing, "How normal population works", $"Daytime target = colonists × outbreak intensity. Right now that means {DaytimeTargetMultiplier:0.0} zombies per colonist during the day. At night, that target rises by 50 percent to {NighttimeTargetMultiplier:0.0} zombies per colonist, and zombies also double their movement speed at night.");
+                DrawInfoCard(listing, "How normal population works", $"Daytime target = colonists × outbreak intensity. Right now that means {DaytimeTargetMultiplier:0.0} zombies per colonist during the day. At night, that target rises by 50 percent to {NighttimeTargetMultiplier:0.0} zombies per colonist, and zombies also gain about 50 percent more movement speed at night.");
                 DrawInfoCard(listing, "What still pushes past that", "Moon events, debug spawns, leftover bodies, and other special surges can still push the active count above the usual target. When that happens, Danger can go over 100%.");
             }
             else
@@ -1061,7 +1061,7 @@ namespace CustomizableZombieHorde
 
         private void DrawDifficultyCard(Listing_Standard listing)
         {
-            string description = "Sets the normal daytime target population. Daytime target = colonists × outbreak intensity. At night, that target rises by 50 percent, and zombies also double their movement speed at night. This setting also speeds up trickles, refill pressure, bursts, and grave timing so the rest of the outbreak keeps pace automatically. Default 4.0 means the mod tries to keep about four times your colonist count on the map during the day and about six times at night. You can now push this as high as 12.0 for very dense outbreaks.";
+            string description = "Sets the normal daytime target population. Daytime target = colonists × outbreak intensity. At night, that target rises by 50 percent, and zombies also gain about 50 percent more movement speed at night. This setting also speeds up trickles, refill pressure, bursts, and grave timing so the rest of the outbreak keeps pace automatically. Default 4.0 means the mod tries to keep about four times your colonist count on the map during the day and about six times at night. You can now push this as high as 12.0 for very dense outbreaks.";
             float cardHeight = CalculateStepperCardHeight(listing, description);
             Rect row = DrawCard(listing, cardHeight);
             DrawCardText(row, "Outbreak intensity", description, null, 236f);

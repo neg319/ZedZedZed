@@ -13,14 +13,14 @@
 
 Zed Zed Zed is a RimWorld zombie mod built around steady pressure, ugly cleanup, and nights that can get out of hand fast. The goal is not to spam one kind of raid over and over. The goal is to make the map feel infected. Zombies drift in, bunch up, push the base, claw out of the ground, spill out of graves, and sometimes move across the whole map in a herd.
 
-This version is tuned around a simple zombie rule set. Hostile zombies belong to the zombie faction. Zombies have no ideoligion, count as cannibals, ignore pain, filth, and nudity, move very slowly unless they roll the rare runner strain, double their movement speed at night, and swarm loud gunfire much harder than quiet melee. Lurkers stay as the friendly exception.
+This version is tuned around a simple zombie rule set. Hostile zombies belong to the zombie faction. Zombies have no ideoligion, count as cannibals, ignore pain, filth, and nudity, move very slowly unless they roll the rare runner strain, gain about 50 percent more movement speed at night, and swarm loud gunfire much harder than quiet melee. Lurkers stay as the friendly exception.
 
 ## What the mod is trying to do right now
 
 - Keep normal map pressure steady with trickles, huddles, base pushes, ground bursts, graves, moon attacks, and herds.
 - Make the undead feel dangerous because of numbers, angles, noise, and map pressure, not because each individual zombie is a bullet sponge.
 - Let outbreak intensity act like the main pressure dial. It now scales up to 12x and directly affects the soft cap the mod tries to maintain on the map.
-- Keep night scary. Zombies double their movement speed at night and the target population also rises by 50%.
+- Keep night scary. Zombies gain about 50 percent more movement speed at night and the target population also rises by 50%.
 - Make drowned zombies feel different. They hold to the water when they are not actively hunting, prowl nearby prey, and slide back into the water after the chase.
 - Let loud weapons wake up the area. Gunfire should attract more zombies than a pawn using quiet melee.
 - Keep living pawn infection dangerous, but keep the infection on active zombies dormant and cosmetic so it does not drag them down or show up as a treatable medical problem.
@@ -165,6 +165,11 @@ This repository is the full source package for the mod. It includes the GitHub A
 The undead should feel oppressive because they are always around, always making noise, always turning one bad angle into three more problems. They should not feel like immortal tanks. If a colonist has a gun, good positioning, and a little room to breathe, that pawn should absolutely be able to drop a bunch of zombies before the line collapses.
 
 ## Changelog
+
+### Iteration 164, April 14, 2026
+- Tightened the colonist zombie infection flow so the stage names, thresholds, coma behavior, and 99 percent living transformation match the intended design exactly.
+- Locked the infection to its treatable window before 60 percent, so terminal stages no longer present as a curable medical state.
+- Cleaned up inspect and tooltip text so players can read the current infection stage at a glance.
 
 ### Iteration 159, April 14, 2026
 - Tightened drowned behavior so they hold to the water better, hunt nearby pawns or animals within a shorter leash, wander inside the water when idle, and return to the water after a chase.

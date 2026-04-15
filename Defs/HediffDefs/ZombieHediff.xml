@@ -58,7 +58,7 @@
             <range>1</range>
             <meleeDamageDef>Bite</meleeDamageDef>
             <meleeDamageBaseAmount>3</meleeDamageBaseAmount>
-            <defaultCooldownTime>8.84</defaultCooldownTime>
+            <defaultCooldownTime>11.75</defaultCooldownTime>
           </li>
           <li>
             <verbClass>CustomizableZombieHorde.ZombieVerb_MeleeAttack</verbClass>
@@ -66,7 +66,7 @@
             <range>1</range>
             <meleeDamageDef>Scratch</meleeDamageDef>
             <meleeDamageBaseAmount>1</meleeDamageBaseAmount>
-            <defaultCooldownTime>7.02</defaultCooldownTime>
+            <defaultCooldownTime>9.35</defaultCooldownTime>
           </li>
         </verbs>
       </li>
@@ -410,7 +410,7 @@
       <li>
         <label>surging in darkness</label>
         <statFactors>
-          <MoveSpeed>2.00</MoveSpeed>
+          <MoveSpeed>1.50</MoveSpeed>
         </statFactors>
       </li>
     </stages>
@@ -439,7 +439,7 @@
     <defName>CZH_ZombieSickness</defName>
     <hediffClass>CustomizableZombieHorde.Hediff_ZombieInfection</hediffClass>
     <label>zombie infection</label>
-    <description>Contact with sick zombie blood or a filthy zombie bite has left this pawn infected. Bite caused infections can begin in a specific limb and may be stopped if that limb is amputated before the infection turns terminal. The first four stages are treatable. Terminal stages begin at 60 percent. At 80 percent the victim falls into a living coma. If they survive to 99 percent, the infection completes the turn and converts the living pawn into a colony lurker through the same path used by zombie bile injection. If the pawn dies earlier from other injuries, the corpse stays dead.</description>
+    <description>Contact with sick zombie blood or a filthy zombie bite has left this pawn infected. Bite caused infections can begin in a specific limb and may be stopped if that limb is amputated before the infection turns terminal. The stages are Fresh Bite at 1 percent, Itchy Bite at 10 percent, Infected Bite at 30 percent, Strange Flu at 50 percent, Infected Bloodstream at 60 percent, Necrosis and Dementia at 70 percent, Coma at 80 percent, and Transformation at 90 percent. During the Coma stage the pawn is unconscious but still alive. If they survive to 99 percent, the infection completes the turn and converts the living pawn into a colony lurker through the same path used by zombie bile injection. If the pawn dies earlier from other injuries, the corpse stays dead.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>true</tendable>

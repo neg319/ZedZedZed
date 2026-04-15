@@ -12,6 +12,7 @@ namespace CustomizableZombieHorde
         public const float InitialInfectionSeverity = 0.01f;
         public const float TerminalSeverityThreshold = 0.60f;
         public const float ComaSeverityThreshold = 0.80f;
+        public const float TransformationStageSeverityThreshold = 0.90f;
         public const float TransformationSeverityThreshold = 0.99f;
         private const int InfectionTickInterval = 180;
 
@@ -101,7 +102,24 @@ namespace CustomizableZombieHorde
             }
 
             Hediff infection = GetZombieInfection(pawn);
-            return infection != null && !IsTerminal(infection) && !HasReanimatedState(pawn);
+            return IsTreatable(infection) && !HasReanimatedState(pawn);
+        }
+
+        public static bool IsTreatable(Pawn pawn)
+        {
+            if (pawn != null && ZombieUtility.IsZombie(pawn))
+            {
+                return false;
+            }
+
+            return IsTreatable(GetZombieInfection(pawn)) && !HasReanimatedState(pawn);
+        }
+
+        public static bool IsTreatable(Hediff infection)
+        {
+            return infection != null
+                && infection.def == ZombieDefOf.CZH_ZombieSickness
+                && infection.Severity < TerminalSeverityThreshold;
         }
 
         public static bool CanReanimateFromReanimatedState(Pawn pawn)
@@ -495,6 +513,75 @@ namespace CustomizableZombieHorde
         public static bool IsComatose(Pawn pawn)
         {
             return IsComatose(GetZombieInfection(pawn));
+        }
+
+        public static bool IsInTransformationStage(Hediff infection)
+        {
+            return infection != null
+                && infection.def == ZombieDefOf.CZH_ZombieSickness
+                && infection.Severity >= TransformationStageSeverityThreshold;
+        }
+
+        public static bool IsInTransformationStage(Pawn pawn)
+        {
+            return IsInTransformationStage(GetZombieInfection(pawn));
+        }
+
+        public static string GetInfectionStageLabel(Hediff infection)
+        {
+            if (infection == null)
+            {
+                return string.Empty;
+            }
+
+            HediffStage stage = infection.CurStage;
+            if (stage != null && !string.IsNullOrEmpty(stage.label))
+            {
+                return stage.label;
+            }
+
+            float severity = infection.Severity;
+            if (severity >= TransformationStageSeverityThreshold)
+            {
+                return "Transformation (Reanimated)";
+            }
+
+            if (severity >= ComaSeverityThreshold)
+            {
+                return "Coma (Terminal)";
+            }
+
+            if (severity >= 0.70f)
+            {
+                return "Necrosis and Dementia (Terminal)";
+            }
+
+            if (severity >= TerminalSeverityThreshold)
+            {
+                return "Infected Bloodstream (Terminal)";
+            }
+
+            if (severity >= 0.50f)
+            {
+                return "Strange Flu (Treatable)";
+            }
+
+            if (severity >= 0.30f)
+            {
+                return "Infected Bite (Treatable)";
+            }
+
+            if (severity >= 0.10f)
+            {
+                return "Itchy Bite (Treatable)";
+            }
+
+            return "Fresh Bite (Treatable)";
+        }
+
+        public static string GetInfectionStageLabel(Pawn pawn)
+        {
+            return GetInfectionStageLabel(GetZombieInfection(pawn));
         }
 
         private static void TransformLivingPawnFromInfection(Pawn pawn, ZombieGameComponent component)

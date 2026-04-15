@@ -60,7 +60,7 @@ namespace CustomizableZombieHorde
                 ? " If that limb is amputated before the infection turns terminal, the infection can be removed with it."
                 : string.Empty;
 
-            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness" + locationText + ". It worsens over time, stays treatable until 60%, becomes terminal after that, falls into a living coma at 80%, and if left untreated transforms into a colony lurker at 99%." + cureText, pawn, MessageTypeDefOf.NegativeHealthEvent);
+            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness" + locationText + ". It progresses through Fresh Bite at 1%, Itchy Bite at 10%, Infected Bite at 30%, Strange Flu at 50%, Infected Bloodstream at 60%, Necrosis and Dementia at 70%, Coma at 80%, and Transformation at 90%. If it reaches 99%, the pawn becomes a colony lurker." + cureText, pawn, MessageTypeDefOf.NegativeHealthEvent);
         }
 
 
@@ -167,19 +167,30 @@ namespace CustomizableZombieHorde
             {
                 if (ZombieInfectionUtility.HasZombieInfection(pawn))
                 {
+                    Hediff infection = ZombieInfectionUtility.GetZombieInfection(pawn);
+                    string completionLabel = ZombieInfectionUtility.GetInfectionCompletionLabel(pawn);
+                    string stageLabel = ZombieInfectionUtility.GetInfectionStageLabel(infection);
+
                     if (ZombieBileUtility.NeedsBileTreatment(pawn))
                     {
-                        Hediff localizedInfection = ZombieInfectionUtility.GetZombieInfection(pawn);
-                        string localizedPartText = localizedInfection?.Part != null ? " If the infected limb is removed before terminal, that also cures it." : string.Empty;
-                        lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It can be cured with a bile med kit before it reaches the terminal bloodstream stage at 60%." + localizedPartText);
+                        string localizedPartText = infection?.Part != null ? " If the infected limb is removed before terminal, that also cures it." : string.Empty;
+                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. A bile med kit can cure it before it reaches Infected Bloodstream at 60%." + localizedPartText);
+                    }
+                    else if (ZombieInfectionUtility.IsComatose(pawn))
+                    {
+                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. The pawn is unconscious but still alive. At 99% they become a colony lurker.");
+                    }
+                    else if (ZombieInfectionUtility.IsInTransformationStage(pawn))
+                    {
+                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. This is the final living stage. At 99% they become a colony lurker through the same change used by bile injection.");
                     }
                     else if (ZombieInfectionUtility.IsTerminal(pawn))
                     {
-                        lines.Add("Zombie sickness: terminal, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. Terminal begins at 60%, coma begins at 80%, and if the pawn survives to 99% they transform into a colony lurker.");
+                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. Terminal begins at 60%, coma begins at 80%, and transformation begins at 90%.");
                     }
                     else if (ZombieInfectionUtility.HasReanimatedState(pawn))
                     {
-                        lines.Add("Zombie sickness: fully turned, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn can no longer be cured.");
+                        lines.Add("Zombie sickness: fully turned, " + completionLabel + " complete. This pawn can no longer be cured.");
                     }
                 }
                 else if (ZombieInfectionUtility.HasReanimatedState(pawn))
