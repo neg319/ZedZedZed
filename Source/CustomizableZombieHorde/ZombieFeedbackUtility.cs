@@ -163,26 +163,29 @@ namespace CustomizableZombieHorde
             }
 
 
-            if (ZombieInfectionUtility.HasZombieInfection(pawn))
+            if (!ZombieUtility.IsZombie(pawn))
             {
-                if (ZombieBileUtility.NeedsBileTreatment(pawn))
+                if (ZombieInfectionUtility.HasZombieInfection(pawn))
                 {
-                    Hediff localizedInfection = ZombieInfectionUtility.GetZombieInfection(pawn);
-                    string localizedPartText = localizedInfection?.Part != null ? " If the infected limb is removed before terminal, that also cures it." : string.Empty;
-                    lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It can be cured with a bile med kit before it reaches the terminal bloodstream stage at 60%." + localizedPartText);
-                }
-                else if (ZombieInfectionUtility.IsTerminal(pawn))
-                {
-                    lines.Add("Zombie sickness: terminal, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. Terminal begins at 60%, coma begins at 80%, and if the pawn survives to 99% they transform into a colony lurker.");
+                    if (ZombieBileUtility.NeedsBileTreatment(pawn))
+                    {
+                        Hediff localizedInfection = ZombieInfectionUtility.GetZombieInfection(pawn);
+                        string localizedPartText = localizedInfection?.Part != null ? " If the infected limb is removed before terminal, that also cures it." : string.Empty;
+                        lines.Add("Zombie sickness: " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. It can be cured with a bile med kit before it reaches the terminal bloodstream stage at 60%." + localizedPartText);
+                    }
+                    else if (ZombieInfectionUtility.IsTerminal(pawn))
+                    {
+                        lines.Add("Zombie sickness: terminal, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. Terminal begins at 60%, coma begins at 80%, and if the pawn survives to 99% they transform into a colony lurker.");
+                    }
+                    else if (ZombieInfectionUtility.HasReanimatedState(pawn))
+                    {
+                        lines.Add("Zombie sickness: fully turned, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn can no longer be cured.");
+                    }
                 }
                 else if (ZombieInfectionUtility.HasReanimatedState(pawn))
                 {
-                    lines.Add("Zombie sickness: fully turned, " + ZombieInfectionUtility.GetInfectionCompletionLabel(pawn) + " complete. This pawn can no longer be cured.");
+                    lines.Add("Fully turned. This pawn can no longer be cured.");
                 }
-            }
-            else if (ZombieInfectionUtility.HasReanimatedState(pawn))
-            {
-                lines.Add("Fully turned. This pawn can no longer be cured.");
             }
 
             return lines.Count == 0 ? null : string.Join("\n", lines);
@@ -197,21 +200,11 @@ namespace CustomizableZombieHorde
             }
 
             List<string> lines = new List<string>();
-            if (ZombieInfectionUtility.HasZombieInfection(innerPawn) || ZombieInfectionUtility.HasReanimatedState(innerPawn))
-            {
-                string infectionLine = ZombieInfectionUtility.HasZombieInfection(innerPawn)
-                    ? "Zombie infection was present at death, but dead infected pawns stay dead in the current build."
-                    : "Transformation completed before death, but dead infected pawns stay dead in the current build.";
-                lines.Add(infectionLine);
-            }
 
             if (ZombieRulesUtility.IsZombie(innerPawn))
             {
-                lines.Add("This zombie is dead. A zombie only stays dead once its brain is destroyed. Head and face hits destroy the brain immediately.");
-            }
+                lines.Add("Brain destroyed. This zombie stays dead.");
 
-            if (ZombieRulesUtility.IsZombie(innerPawn))
-            {
                 ZombieButcherProfile profile = ZombieVariantUtility.GetButcherProfile(ZombieVariantUtility.GetVariant(innerPawn));
                 if (profile != null && profile.CanDropBile)
                 {

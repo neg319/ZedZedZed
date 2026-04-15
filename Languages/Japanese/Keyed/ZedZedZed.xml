@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <ZZZ.SettingsTitle>Zed Zed Zed 設定</ZZZ.SettingsTitle>
+  <ZZZ.SettingsSubtitle>発生ペース、変種の制御、コロニーの後始末、それから少し危険なテスト用ツール。</ZZZ.SettingsSubtitle>
+  <ZZZ.SettingsHint>進行中のセーブでも読みやすいように調整しています。</ZZZ.SettingsHint>
+  <ZZZ.BadgeActive>稼働中</ZZZ.BadgeActive>
+  <ZZZ.TabOverview>概要</ZZZ.TabOverview>
+  <ZZZ.TabEvents>イベント</ZZZ.TabEvents>
+  <ZZZ.TabVariants>変種</ZZZ.TabVariants>
+  <ZZZ.TabNames>名前</ZZZ.TabNames>
+  <ZZZ.TabColony>コロニー</ZZZ.TabColony>
+  <ZZZ.TabDebug>デバッグ</ZZZ.TabDebug>
+  <ZZZ.StateEnabled>有効</ZZZ.StateEnabled>
+  <ZZZ.StateDisabled>無効</ZZZ.StateDisabled>
+  <ZZZ.StateChecked>選択済み</ZZZ.StateChecked>
+  <ZZZ.StateUnchecked>未選択</ZZZ.StateUnchecked>
+  <ZZZ.PresetCasual>カジュアル</ZZZ.PresetCasual>
+  <ZZZ.PresetRecommended>推奨</ZZZ.PresetRecommended>
+  <ZZZ.PresetApocalypse>アポカリプス</ZZZ.PresetApocalypse>
+  <ZZZ.ButtonApply>適用</ZZZ.ButtonApply>
+  <ZZZ.ButtonRunNow>今すぐ実行</ZZZ.ButtonRunNow>
+  <ZZZ.HUDDanger>危険度: {0}%</ZZZ.HUDDanger>
+  <ZZZ.HUDDangerOff>危険度: オフ</ZZZ.HUDDangerOff>
+  <ZZZ.CorpseNoSpoil>このゾンビの死体は腐敗しません。</ZZZ.CorpseNoSpoil>
+  <ZZZ.LurkerRecruitFail>勧誘に失敗しました。捕縛しなくても、看守はこのルーカーに再挑戦できます。</ZZZ.LurkerRecruitFail>
+</LanguageData>

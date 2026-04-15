@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <ZZZ.SettingsTitle>Configuración de Zed Zed Zed</ZZZ.SettingsTitle>
+  <ZZZ.SettingsSubtitle>Ritmo del brote, control de variantes, limpieza de la colonia y unas cuantas herramientas de prueba peligrosas.</ZZZ.SettingsSubtitle>
+  <ZZZ.SettingsHint>Escrito para seguir siendo legible en medio de una partida activa.</ZZZ.SettingsHint>
+  <ZZZ.BadgeActive>ACTIVO</ZZZ.BadgeActive>
+  <ZZZ.TabOverview>Resumen</ZZZ.TabOverview>
+  <ZZZ.TabEvents>Eventos</ZZZ.TabEvents>
+  <ZZZ.TabVariants>Variantes</ZZZ.TabVariants>
+  <ZZZ.TabNames>Nombres</ZZZ.TabNames>
+  <ZZZ.TabColony>Colonia</ZZZ.TabColony>
+  <ZZZ.TabDebug>Depuración</ZZZ.TabDebug>
+  <ZZZ.StateEnabled>Activado</ZZZ.StateEnabled>
+  <ZZZ.StateDisabled>Desactivado</ZZZ.StateDisabled>
+  <ZZZ.StateChecked>Marcado</ZZZ.StateChecked>
+  <ZZZ.StateUnchecked>Sin marcar</ZZZ.StateUnchecked>
+  <ZZZ.PresetCasual>Suave</ZZZ.PresetCasual>
+  <ZZZ.PresetRecommended>Recomendado</ZZZ.PresetRecommended>
+  <ZZZ.PresetApocalypse>Apocalipsis</ZZZ.PresetApocalypse>
+  <ZZZ.ButtonApply>Aplicar</ZZZ.ButtonApply>
+  <ZZZ.ButtonRunNow>Ejecutar ahora</ZZZ.ButtonRunNow>
+  <ZZZ.HUDDanger>Peligro: {0}%</ZZZ.HUDDanger>
+  <ZZZ.HUDDangerOff>Peligro: desactivado</ZZZ.HUDDangerOff>
+  <ZZZ.CorpseNoSpoil>Este cadáver zombi no se pudre.</ZZZ.CorpseNoSpoil>
+  <ZZZ.LurkerRecruitFail>El intento de reclutamiento falló. Un encargado puede seguir intentándolo sin capturar al lurker.</ZZZ.LurkerRecruitFail>
+</LanguageData>

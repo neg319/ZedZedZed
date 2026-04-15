@@ -103,6 +103,12 @@ namespace CustomizableZombieHorde
         public string boneBiterName = "Bone Biter";
         public string pregnantBoomerName = "Pregnant Boomer";
 
+        private static string T(string key)
+        {
+            return ("ZZZ." + key).Translate().ToString();
+        }
+
+
         public override void ExposeData()
         {
             Scribe_Values.Look(ref zombiePrefix, "zombiePrefix", "Zombie");
@@ -578,24 +584,24 @@ namespace CustomizableZombieHorde
 
             Text.Font = GameFont.Medium;
             GUI.color = SettingsTheme.Ink;
-            Widgets.Label(titleRect, "Zed Zed Zed Settings");
+            Widgets.Label(titleRect, T("SettingsTitle"));
             Text.Font = GameFont.Small;
             GUI.color = SettingsTheme.MutedInk;
-            Widgets.Label(subtitleRect, "Outbreak pacing, strain control, colony cleanup, and a few dangerous little test tools.");
-            Widgets.Label(hintRect, "Written to stay readable in the middle of a live save.");
+            Widgets.Label(subtitleRect, T("SettingsSubtitle"));
+            Widgets.Label(hintRect, T("SettingsHint"));
             GUI.color = Color.white;
 
             SettingsTheme.DrawStatusPill(badgeRect, true);
             Text.Anchor = TextAnchor.MiddleCenter;
             GUI.color = SettingsTheme.Ink;
-            Widgets.Label(badgeRect, "ACTIVE");
+            Widgets.Label(badgeRect, T("BadgeActive"));
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
         private void DrawTabButtons(Rect rect)
         {
-            string[] labels = { "Overview", "Events", "Variants", "Names", "Colony", "Debug" };
+            string[] labels = { T("TabOverview"), T("TabEvents"), T("TabVariants"), T("TabNames"), T("TabColony"), T("TabDebug") };
             SettingsTab[] tabs =
             {
                 SettingsTab.Overview,
@@ -944,7 +950,7 @@ namespace CustomizableZombieHorde
                 Widgets.Label(new Rect(itemRect.x + 30f, itemRect.y + 2f, itemRect.width - 120f, 22f), ZombieDoubleTapUtility.GetWorkTypeDisplayLabel(workType));
                 GUI.color = SettingsTheme.MutedInk;
                 Text.Anchor = TextAnchor.MiddleRight;
-                Widgets.Label(new Rect(itemRect.x, itemRect.y + 1f, itemRect.width - 4f, 22f), selected ? "Checked" : "Unchecked");
+                Widgets.Label(new Rect(itemRect.x, itemRect.y + 1f, itemRect.width - 4f, 22f), selected ? T("StateChecked") : T("StateUnchecked"));
                 Text.Anchor = TextAnchor.UpperLeft;
                 GUI.color = Color.white;
             }
@@ -986,17 +992,17 @@ namespace CustomizableZombieHorde
             float gap = 8f;
             float width = (row.width - (gap * 2f)) / 3f;
 
-            if (SettingsTheme.DrawButton(new Rect(row.x, row.y, width, 34f), "Casual"))
+            if (SettingsTheme.DrawButton(new Rect(row.x, row.y, width, 34f), T("PresetCasual")))
             {
                 ApplyCasualPreset();
             }
 
-            if (SettingsTheme.DrawButton(new Rect(row.x + width + gap, row.y, width, 34f), "Recommended", true))
+            if (SettingsTheme.DrawButton(new Rect(row.x + width + gap, row.y, width, 34f), T("PresetRecommended"), true))
             {
                 ResetToRecommendedDefaults();
             }
 
-            if (SettingsTheme.DrawButton(new Rect(row.x + ((width + gap) * 2f), row.y, width, 34f), "Apocalypse"))
+            if (SettingsTheme.DrawButton(new Rect(row.x + ((width + gap) * 2f), row.y, width, 34f), T("PresetApocalypse")))
             {
                 ApplyApocalypsePreset();
             }
@@ -1047,7 +1053,7 @@ namespace CustomizableZombieHorde
             SettingsTheme.DrawStatusPill(pillRect, value);
             Text.Anchor = TextAnchor.MiddleCenter;
             GUI.color = SettingsTheme.Ink;
-            Widgets.Label(pillRect, value ? "Enabled" : "Disabled");
+            Widgets.Label(pillRect, value ? T("StateEnabled") : T("StateDisabled"));
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
             TooltipHandler.TipRegion(row, description);
@@ -1098,7 +1104,7 @@ namespace CustomizableZombieHorde
             SettingsTheme.DrawStatusPill(pillRect, value);
             Text.Anchor = TextAnchor.MiddleCenter;
             GUI.color = SettingsTheme.Ink;
-            Widgets.Label(pillRect, value ? "Enabled" : "Blocked");
+            Widgets.Label(pillRect, value ? T("StateEnabled") : T("StateDisabled"));
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
             TooltipHandler.TipRegion(row, description);
@@ -1110,7 +1116,7 @@ namespace CustomizableZombieHorde
             Rect row = DrawCard(listing, cardHeight);
             DrawCardText(new Rect(row.x, row.y, row.width - 176f, row.height), label, description, null, 0f);
             Rect buttonRect = new Rect(row.x + row.width - 164f, row.y + ((row.height - 34f) / 2f), 152f, 34f);
-            return SettingsTheme.DrawButton(buttonRect, "Apply");
+            return SettingsTheme.DrawButton(buttonRect, T("ButtonApply"));
         }
 
         private void DrawInfoCard(Listing_Standard listing, string label, string description)
@@ -1140,7 +1146,7 @@ namespace CustomizableZombieHorde
             Widgets.Label(new Rect(row.x + 12f, row.y + 12f, row.width - 184f, row.height - 24f), label);
             GUI.color = Color.white;
             Rect buttonRect = new Rect(row.x + row.width - 160f, row.y + ((row.height - 34f) / 2f), 148f, 34f);
-            if (SettingsTheme.DrawButton(buttonRect, "Run now"))
+            if (SettingsTheme.DrawButton(buttonRect, T("ButtonRunNow")))
             {
                 bool success = ResolveDebugAction(component, label);
                 ShowDebugResult(success, successText, failText);

@@ -1558,15 +1558,15 @@ namespace CustomizableZombieHorde
                 int colonists = Mathf.Max(1, map.mapPawns?.FreeColonistsSpawnedCount ?? 0);
                 int existingDrowned = map.mapPawns?.AllPawnsSpawned?.Count(pawn => ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned)) ?? 0;
                 int desiredDrowned = ZombieSpecialUtility.MapHasWater(map)
-                    ? Mathf.Clamp(4 + colonists, 6, 14)
-                    : Mathf.Clamp(2 + colonists / 2, 4, 10);
+                    ? Mathf.Clamp(8 + (colonists * 2), 12, 28)
+                    : Mathf.Clamp(4 + colonists, 8, 20);
                 if (existingDrowned >= desiredDrowned)
                 {
                     continue;
                 }
 
                 int missingDrowned = desiredDrowned - existingDrowned;
-                int spawnCount = Mathf.Min(remainingCapacity, Mathf.Clamp(missingDrowned, 1, 4));
+                int spawnCount = Mathf.Min(remainingCapacity, Mathf.Clamp(missingDrowned, 1, 8));
                 if (spawnCount <= 0)
                 {
                     continue;

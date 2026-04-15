@@ -54,6 +54,7 @@ namespace CustomizableZombieHorde
 
             ZombieInfectionUtility.ApplyReanimatedState(pawn);
             ZombieInfectionUtility.EnsureZombieInfection(pawn, ZombieInfectionUtility.InitialInfectionSeverity);
+            ZombieInfectionUtility.StabilizeZombieInfection(pawn);
             ClearLegacyZombieFeignDeath(pawn);
             NormalizeCoreZombieState(pawn);
         }
@@ -614,21 +615,16 @@ namespace CustomizableZombieHorde
 
         public static void DestroyZombieBrain(Pawn victim, Pawn attacker, DamageInfo sourceDamage = default(DamageInfo), bool forceEvenIfAlreadyDead = false)
         {
-            if (!IsZombie(victim))
+            if (!IsZombie(victim) || victim == null || victim.Destroyed)
             {
                 return;
             }
 
-            BodyPartRecord fatalPart = ResolveBrainMarkerPart(victim, sourceDamage) ?? sourceDamage.HitPart;
-            EnsureZombieBrainDestroyed(victim, attacker, sourceDamage);
+            BodyPartRecord fatalPart = ResolveBrainMarkerPart(victim, sourceDamage) ?? GetHeadPart(victim) ?? sourceDamage.HitPart;
 
             if (victim.Dead)
             {
-                if (forceEvenIfAlreadyDead)
-                {
-                    TryAddBrainTrauma(victim, attacker, fatalPart, sourceDamage);
-                }
-
+                EnsureZombieBrainDestroyed(victim, attacker, sourceDamage);
                 return;
             }
 
@@ -652,7 +648,7 @@ namespace CustomizableZombieHorde
 
         private static void TryAddBrainTrauma(Pawn victim, Pawn attacker, BodyPartRecord fatalPart, DamageInfo sourceDamage)
         {
-            if (victim?.health == null)
+            if (victim?.health == null || victim.Destroyed)
             {
                 return;
             }
@@ -1824,7 +1820,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            float minimumMood = inWater ? 0.78f : 0.64f;
+            float minimumMood = inWater ? 0.90f : 0.72f;
             if (mood.CurLevel < minimumMood)
             {
                 mood.CurLevel = minimumMood;

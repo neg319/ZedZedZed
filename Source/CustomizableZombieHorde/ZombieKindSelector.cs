@@ -85,10 +85,10 @@ namespace CustomizableZombieHorde
         {
             if (map != null && ZombieSpecialUtility.IsRainActive(map))
             {
-                return ZombieSpecialUtility.MapHasWater(map) ? 28f : 22f;
+                return ZombieSpecialUtility.MapHasWater(map) ? 56f : 44f;
             }
 
-            return 4f;
+            return 8f;
         }
 
         private static PawnKindDef GetNamedIfAllowed(string defName, bool enabled)

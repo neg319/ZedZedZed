@@ -21,9 +21,9 @@ This version is tuned around a simple zombie rule set. Hostile zombies belong to
 - Make the undead feel dangerous because of numbers, angles, noise, and map pressure, not because each individual zombie is a bullet sponge.
 - Let outbreak intensity act like the main pressure dial. It now scales up to 12x and directly affects the soft cap the mod tries to maintain on the map.
 - Keep night scary. Zombies double their movement speed at night and the target population also rises by 50%.
-- Make drowned zombies feel different. They want to stay in water when they are not actively hunting, and they do better in water, rain, and wet conditions.
+- Make drowned zombies feel different. They hold to the water when they are not actively hunting, prowl nearby prey, and slide back into the water after the chase.
 - Let loud weapons wake up the area. Gunfire should attract more zombies than a pawn using quiet melee.
-- Keep infection on the colony side. Living pawns can still suffer zombie infection, use bile treatment, or be turned into a lurker through the bile surgery route.
+- Keep living pawn infection dangerous, but keep the infection on active zombies dormant and cosmetic so it does not drag them down or show up as a treatable medical problem.
 
 ## Strains at a glance
 
@@ -163,3 +163,17 @@ This repository is the full source package for the mod. It includes the GitHub A
 ## Current design summary
 
 The undead should feel oppressive because they are always around, always making noise, always turning one bad angle into three more problems. They should not feel like immortal tanks. If a colonist has a gun, good positioning, and a little room to breathe, that pawn should absolutely be able to drop a bunch of zombies before the line collapses.
+
+## Changelog
+
+### Iteration 159, April 14, 2026
+- Tightened drowned behavior so they hold to the water better, hunt nearby pawns or animals within a shorter leash, wander inside the water when idle, and return to the water after a chase.
+- Doubled drowned spawn weighting and strengthened rain based drowned top ups so they show up much more often.
+- Kept zombie infection on active zombies as a dormant cosmetic state, hid the treatable presentation on zombies, and trimmed the selected corpse text down to the relevant lines only.
+- Fixed the README header so the ZED ZED ZED ASCII art is restored exactly as intended.
+
+### Iteration 158, April 14, 2026
+- Added language support for the most common RimWorld player languages used by large mods and official releases: English, Simplified Chinese, Traditional Chinese, Russian, German, French, Spanish, Japanese, Korean, Brazilian Portuguese, and Polish.
+- Localized the most visible UI pieces first: the settings header, tabs, status pills, main buttons, HUD danger text, corpse no-spoil text, and the lurker recruitment failure message.
+- Fixed the zombie brain-destruction death path so it no longer tries to mark the brain before the kill finishes, which was causing recursive death handling and bugged corpse spawns.
+

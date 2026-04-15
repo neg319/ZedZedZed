@@ -95,6 +95,11 @@ namespace CustomizableZombieHorde
 
         public static bool CanCureZombieInfection(Pawn pawn)
         {
+            if (pawn != null && ZombieUtility.IsZombie(pawn))
+            {
+                return false;
+            }
+
             Hediff infection = GetZombieInfection(pawn);
             return infection != null && !IsTerminal(infection) && !HasReanimatedState(pawn);
         }
@@ -304,6 +309,22 @@ namespace CustomizableZombieHorde
             return EnsureZombieInfection(pawn, severity, null);
         }
 
+        public static void StabilizeZombieInfection(Pawn pawn)
+        {
+            if (pawn == null || !ZombieUtility.IsZombie(pawn))
+            {
+                return;
+            }
+
+            Hediff infection = GetZombieInfection(pawn);
+            if (infection == null)
+            {
+                return;
+            }
+
+            infection.Severity = InitialInfectionSeverity;
+        }
+
         public static Hediff EnsureZombieInfection(Pawn pawn, float severity, BodyPartRecord part)
         {
             if (pawn?.health == null)
@@ -328,6 +349,12 @@ namespace CustomizableZombieHorde
             }
 
             infection.Severity = Mathf.Clamp(severity, InitialInfectionSeverity, 1f);
+            if (ZombieUtility.IsZombie(pawn))
+            {
+                StabilizeZombieInfection(pawn);
+                infection = GetZombieInfection(pawn) ?? infection;
+            }
+
             return infection;
         }
 

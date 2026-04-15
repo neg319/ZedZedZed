@@ -82,7 +82,7 @@ namespace CustomizableZombieHorde
                 }
                 else
                 {
-                    Messages.Message("Recruitment attempt failed. A warden can keep trying without capturing the lurker.", lurker, MessageTypeDefOf.RejectInput, false);
+                    Messages.Message("ZZZ.LurkerRecruitFail".Translate(), lurker, MessageTypeDefOf.RejectInput, false);
                     ZombieLurkerUtility.EnsurePassiveLurkerBehavior(lurker);
                 }
             });

@@ -10,6 +10,14 @@ using Verse.AI;
 
 namespace CustomizableZombieHorde
 {
+    internal static class ZZZLocalize
+    {
+        public static string T(string key)
+        {
+            return key.Translate().ToString();
+        }
+    }
+
 
     [HarmonyPatch(typeof(Pawn_JobTracker), "StartJob")]
     public static class Patch_Pawn_JobTracker_StartJob_BlockZombieMapExit
@@ -751,7 +759,7 @@ namespace CustomizableZombieHorde
             float capPercent = cap > 0 ? (currentCount / (float)cap) * 100f : 0f;
             string familyLabel = GetCounterDisplayLabel();
             string countText = familyLabel + ": " + currentCount;
-            string dangerText = cap > 0 ? $"Danger: {capPercent:0}%" : "Danger: off";
+            string dangerText = cap > 0 ? string.Format("ZZZ.HUDDanger".Translate().ToString(), capPercent.ToString("0")) : ZZZLocalize.T("ZZZ.HUDDangerOff");
 
             Rect rect = new Rect(UI.screenWidth - 362f, 6f, 168f, 62f);
             Rect countRect = new Rect(rect.x + 8f, rect.y + 5f, rect.width - 16f, 24f);
@@ -798,20 +806,19 @@ namespace CustomizableZombieHorde
     {
         private static readonly HashSet<int> ActiveKills = new HashSet<int>();
 
-        public static void Prefix(Pawn __instance, DamageInfo? dinfo)
+        public static void Postfix(Pawn __instance, DamageInfo? dinfo)
         {
-            if (__instance == null || !ZombieUtility.IsZombie(__instance) || __instance.Destroyed || __instance.Dead)
+            if (__instance == null || !ZombieUtility.IsZombie(__instance) || __instance.Destroyed)
             {
                 return;
             }
 
             int id = __instance.thingIDNumber;
-            if (ActiveKills.Contains(id))
+            if (!ActiveKills.Add(id))
             {
                 return;
             }
 
-            ActiveKills.Add(id);
             try
             {
                 DamageInfo sourceDamage = dinfo ?? default(DamageInfo);
@@ -921,7 +928,7 @@ namespace CustomizableZombieHorde
 
                 if (headHit)
                 {
-                    ZombieUtility.DestroyZombieBrain(victim, attacker, dinfo, forceEvenIfAlreadyDead: true);
+                    ZombieUtility.DestroyZombieBrain(victim, attacker, dinfo);
                 }
                 else if (!victim.Dead)
                 {
@@ -930,11 +937,6 @@ namespace CustomizableZombieHorde
                     {
                         ZombieUtility.DestroyZombieBrain(victim, attacker, dinfo);
                     }
-                }
-
-                if (victim.Dead)
-                {
-                    ZombieUtility.EnsureZombieBrainDestroyed(victim, attacker, dinfo);
                 }
 
                 if (attacker != null)
@@ -1485,6 +1487,48 @@ namespace CustomizableZombieHorde
         }
     }
 
+
+    [HarmonyPatch(typeof(Hediff), "TendableNow", MethodType.Getter)]
+    public static class Patch_Hediff_TendableNow_ZombieInfection
+    {
+        public static void Postfix(Hediff __instance, ref bool __result)
+        {
+            if (!__result || __instance?.def != ZombieDefOf.CZH_ZombieSickness)
+            {
+                return;
+            }
+
+            if (ZombieUtility.IsZombie(__instance.pawn))
+            {
+                __result = false;
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(Hediff), "LabelBase", MethodType.Getter)]
+    public static class Patch_Hediff_LabelBase_ZombieInfection
+    {
+        public static void Postfix(Hediff __instance, ref string __result)
+        {
+            if (__instance?.def == ZombieDefOf.CZH_ZombieSickness && ZombieUtility.IsZombie(__instance.pawn))
+            {
+                __result = "Zombie infection";
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(Hediff), "Label", MethodType.Getter)]
+    public static class Patch_Hediff_Label_ZombieInfection
+    {
+        public static void Postfix(Hediff __instance, ref string __result)
+        {
+            if (__instance?.def == ZombieDefOf.CZH_ZombieSickness && ZombieUtility.IsZombie(__instance.pawn))
+            {
+                __result = "Zombie infection";
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.GetInspectString))]
     public static class Patch_Pawn_GetInspectString
     {
@@ -1542,7 +1586,7 @@ namespace CustomizableZombieHorde
                 return true;
             }
 
-            __result = "This zombie corpse does not spoil.";
+            __result = ZZZLocalize.T("ZZZ.CorpseNoSpoil");
             return false;
         }
     }

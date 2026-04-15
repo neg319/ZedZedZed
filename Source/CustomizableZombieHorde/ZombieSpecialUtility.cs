@@ -2404,7 +2404,7 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            Pawn prey = FindClosestLivingPrey(pawn, 18f);
+            Pawn prey = FindClosestLivingPrey(pawn, 10f);
             return prey == null;
         }
 
@@ -2456,6 +2456,46 @@ namespace CustomizableZombieHorde
             return true;
         }
 
+        public static bool TryStartDrownedWaterWander(Pawn pawn, float radius = 8f)
+        {
+            if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || pawn.jobs == null)
+            {
+                return false;
+            }
+
+            if (HasValidDrownedWaterReturnJob(pawn))
+            {
+                return true;
+            }
+
+            List<IntVec3> cells = GenRadial.RadialCellsAround(pawn.PositionHeld, radius, true)
+                .Where(cell => cell.IsValid
+                    && cell.InBounds(pawn.MapHeld)
+                    && cell != pawn.PositionHeld
+                    && ZombieUtility.IsWaterCell(cell, pawn.MapHeld)
+                    && cell.Walkable(pawn.MapHeld)
+                    && pawn.CanReach(cell, PathEndMode.OnCell, Danger.Deadly))
+                .ToList();
+
+            if (cells.Count == 0)
+            {
+                return false;
+            }
+
+            IntVec3 wanderCell = cells.RandomElementByWeight(cell =>
+            {
+                float distance = Mathf.Sqrt(pawn.PositionHeld.DistanceToSquared(cell));
+                return 1f / Mathf.Max(1f, distance);
+            });
+
+            Job waterWander = JobMaker.MakeJob(JobDefOf.Goto, wanderCell);
+            waterWander.expiryInterval = 900;
+            waterWander.checkOverrideOnExpire = true;
+            waterWander.locomotionUrgency = ZombieUtility.GetZombieUrgency(pawn);
+            pawn.jobs.TryTakeOrderedJob(waterWander, JobTag.Misc);
+            return true;
+        }
+
         public static void HandleDrownedBehavior(Pawn pawn)
         {
             if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || pawn.jobs == null || ZombieUtility.IsUnderColonyRestraint(pawn))
@@ -2474,13 +2514,13 @@ namespace CustomizableZombieHorde
             }
 
             bool inWater = ZombieUtility.IsWaterCell(pawn.PositionHeld, pawn.MapHeld);
-            Pawn prey = FindClosestLivingPrey(pawn, 18f);
+            Pawn prey = FindClosestLivingPrey(pawn, 10f);
             Pawn currentTarget = pawn.CurJob?.targetA.Thing as Pawn;
 
             if (currentTarget != null)
             {
                 bool validTarget = !currentTarget.Dead && !currentTarget.Destroyed && !ZombieUtility.ShouldZombieIgnoreTarget(pawn, currentTarget);
-                if (!validTarget || pawn.PositionHeld.DistanceToSquared(currentTarget.PositionHeld) > 24f * 24f)
+                if (!validTarget || pawn.PositionHeld.DistanceToSquared(currentTarget.PositionHeld) > 12f * 12f)
                 {
                     currentTarget = null;
                 }
@@ -2495,22 +2535,29 @@ namespace CustomizableZombieHorde
                         pawn.jobs.StopAll();
                     }
 
+                    TryStartDrownedWaterWander(pawn);
                     return;
                 }
 
-                TryStartDrownedReturnToWater(pawn);
+                TryStartDrownedReturnToWater(pawn, 60f);
                 return;
             }
 
-            if (!inWater && prey != null && pawn.PositionHeld.DistanceToSquared(prey.PositionHeld) > 24f * 24f)
+            if (!inWater && prey != null && pawn.PositionHeld.DistanceToSquared(prey.PositionHeld) > 12f * 12f)
             {
-                TryStartDrownedReturnToWater(pawn);
+                TryStartDrownedReturnToWater(pawn, 60f);
+                return;
+            }
+
+            if (!inWater && currentTarget != null && pawn.PositionHeld.DistanceToSquared(currentTarget.PositionHeld) > 12f * 12f)
+            {
+                TryStartDrownedReturnToWater(pawn, 60f);
                 return;
             }
 
             if (!inWater && prey == null && currentTarget == null)
             {
-                TryStartDrownedReturnToWater(pawn);
+                TryStartDrownedReturnToWater(pawn, 60f);
             }
         }
 
