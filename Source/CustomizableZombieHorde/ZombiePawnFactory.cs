@@ -980,9 +980,24 @@ namespace CustomizableZombieHorde
 
             try
             {
-                if (pawn.story.bodyType == null)
+                BodyTypeDef fallbackBodyType = pawn.gender == Gender.Female ? BodyTypeDefOf.Female : BodyTypeDefOf.Male;
+                BodyTypeDef desiredBodyType = ZombieVisualUtility.GetBodyType(variant, pawn, pawn.story.bodyType ?? fallbackBodyType);
+                if (desiredBodyType != null && pawn.story.bodyType != desiredBodyType)
                 {
-                    pawn.story.bodyType = ZombieVisualUtility.GetBodyType(variant, pawn, pawn.gender == Gender.Female ? BodyTypeDefOf.Female : BodyTypeDefOf.Male);
+                    pawn.story.bodyType = desiredBodyType;
+                    changed = true;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                Color desiredSkinColor = ZombieVisualUtility.GetSkinColor(pawn, variant);
+                if (!ColorsNearlyEqual(pawn.story.skinColorOverride, desiredSkinColor))
+                {
+                    pawn.story.skinColorOverride = desiredSkinColor;
                     changed = true;
                 }
             }
@@ -1044,6 +1059,15 @@ namespace CustomizableZombieHorde
             }
 
             return changed;
+        }
+
+
+        private static bool ColorsNearlyEqual(Color a, Color b)
+        {
+            return Mathf.Abs(a.r - b.r) < 0.001f
+                && Mathf.Abs(a.g - b.g) < 0.001f
+                && Mathf.Abs(a.b - b.b) < 0.001f
+                && Mathf.Abs(a.a - b.a) < 0.001f;
         }
 
         private static HeadTypeDef GetFallbackHeadType(Pawn pawn)

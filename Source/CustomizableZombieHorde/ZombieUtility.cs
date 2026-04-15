@@ -628,6 +628,8 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            EnsureZombieBrainDestroyed(victim, attacker, sourceDamage);
+
             try
             {
                 victim.Kill(new DamageInfo(sourceDamage.Def ?? DamageDefOf.Bullet, 999f, 999f, -1f, attacker, fatalPart));
@@ -1411,7 +1413,7 @@ namespace CustomizableZombieHorde
                 }
             }
 
-            if (!Rand.Chance(0.05f))
+            if (!Rand.Chance(0.03f))
             {
                 return;
             }
@@ -1529,7 +1531,18 @@ namespace CustomizableZombieHorde
 
         private static bool CanZombieWearApparel(Pawn pawn, ThingDef def)
         {
-            return pawn != null && def != null;
+            if (pawn == null || def?.apparel == null)
+            {
+                return false;
+            }
+
+            string text = ((def.defName ?? string.Empty) + " " + (def.label ?? string.Empty)).ToLowerInvariant();
+            if (text.Contains("baby") || text.Contains("child") || text.Contains("kid") || text.Contains("romper") || text.Contains("onesie"))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private static void SetRandomBiterQuality(Apparel apparel)

@@ -24,34 +24,38 @@ namespace CustomizableZombieHorde
 
         private static readonly Color[] BoomerSkinPalette =
         {
-            new Color(0.67f, 0.73f, 0.50f),
-            new Color(0.62f, 0.69f, 0.46f),
-            new Color(0.58f, 0.63f, 0.41f),
-            new Color(0.52f, 0.56f, 0.39f)
+            new Color(0.66f, 0.69f, 0.44f),
+            new Color(0.61f, 0.64f, 0.39f),
+            new Color(0.56f, 0.60f, 0.32f),
+            new Color(0.62f, 0.58f, 0.34f),
+            new Color(0.57f, 0.54f, 0.29f)
         };
 
         private static readonly Color[] SickSkinPalette =
         {
-            new Color(0.54f, 0.52f, 0.51f),
-            new Color(0.49f, 0.47f, 0.48f),
-            new Color(0.45f, 0.42f, 0.44f),
-            new Color(0.40f, 0.37f, 0.39f)
+            new Color(0.34f, 0.31f, 0.29f),
+            new Color(0.30f, 0.27f, 0.25f),
+            new Color(0.27f, 0.24f, 0.21f),
+            new Color(0.23f, 0.20f, 0.18f),
+            new Color(0.20f, 0.18f, 0.16f)
         };
 
         private static readonly Color[] DrownedSkinPalette =
         {
-            new Color(0.53f, 0.62f, 0.64f),
-            new Color(0.47f, 0.57f, 0.60f),
-            new Color(0.42f, 0.50f, 0.56f),
-            new Color(0.40f, 0.46f, 0.49f)
+            new Color(0.47f, 0.58f, 0.62f),
+            new Color(0.41f, 0.53f, 0.58f),
+            new Color(0.37f, 0.48f, 0.53f),
+            new Color(0.33f, 0.44f, 0.49f),
+            new Color(0.30f, 0.41f, 0.45f)
         };
 
         private static readonly Color[] BruteSkinPalette =
         {
-            new Color(0.51f, 0.47f, 0.44f),
-            new Color(0.47f, 0.43f, 0.40f),
-            new Color(0.43f, 0.40f, 0.37f),
-            new Color(0.38f, 0.36f, 0.34f)
+            new Color(0.78f, 0.68f, 0.66f),
+            new Color(0.73f, 0.64f, 0.62f),
+            new Color(0.69f, 0.61f, 0.59f),
+            new Color(0.65f, 0.58f, 0.56f),
+            new Color(0.61f, 0.55f, 0.53f)
         };
 
         private static readonly Color[] GrabberSkinPalette =
@@ -72,11 +76,11 @@ namespace CustomizableZombieHorde
 
         private static readonly Color[] SkeletalBiterSkinPalette =
         {
-            new Color(0.93f, 0.93f, 0.91f),
-            new Color(0.88f, 0.89f, 0.87f),
-            new Color(0.84f, 0.86f, 0.83f),
-            new Color(0.84f, 0.88f, 0.81f),
-            new Color(0.80f, 0.85f, 0.79f)
+            new Color(0.95f, 0.94f, 0.91f),
+            new Color(0.90f, 0.89f, 0.86f),
+            new Color(0.86f, 0.85f, 0.82f),
+            new Color(0.82f, 0.81f, 0.77f),
+            new Color(0.78f, 0.76f, 0.71f)
         };
 
         public static bool ShouldLookSkeletal(Pawn pawn)
@@ -102,32 +106,44 @@ namespace CustomizableZombieHorde
             {
                 if (ShouldLookSkeletal(pawn))
                 {
-                    return SkeletalBiterSkinPalette.RandomElement();
+                    return GetStablePaletteColor(pawn, SkeletalBiterSkinPalette, 31);
                 }
 
                 if (ShouldLookDesiccated(pawn))
                 {
-                    return DesiccatedBiterSkinPalette.RandomElement();
+                    return GetStablePaletteColor(pawn, DesiccatedBiterSkinPalette, 37);
                 }
             }
 
             switch (variant)
             {
                 case ZombieVariant.Runt:
-                    return RuntSkinPalette.RandomElement();
+                    return GetStablePaletteColor(pawn, RuntSkinPalette, 5);
                 case ZombieVariant.Boomer:
-                    return BoomerSkinPalette.RandomElement();
+                    return GetStablePaletteColor(pawn, BoomerSkinPalette, 11);
                 case ZombieVariant.Sick:
-                    return SickSkinPalette.RandomElement();
+                    return GetStablePaletteColor(pawn, SickSkinPalette, 13);
                 case ZombieVariant.Drowned:
-                    return DrownedSkinPalette.RandomElement();
+                    return GetStablePaletteColor(pawn, DrownedSkinPalette, 17);
                 case ZombieVariant.Brute:
-                    return BruteSkinPalette.RandomElement();
+                    return GetStablePaletteColor(pawn, BruteSkinPalette, 19);
                 case ZombieVariant.Grabber:
-                    return GrabberSkinPalette.RandomElement();
+                    return GetStablePaletteColor(pawn, GrabberSkinPalette, 23);
                 default:
-                    return BiterSkinPalette.RandomElement();
+                    return GetStablePaletteColor(pawn, BiterSkinPalette, 29);
             }
+        }
+
+        private static Color GetStablePaletteColor(Pawn pawn, Color[] palette, int salt)
+        {
+            if (palette == null || palette.Length == 0)
+            {
+                return Color.white;
+            }
+
+            int seed = pawn != null ? pawn.thingIDNumber : 0;
+            int index = Mathf.Abs(seed + salt) % palette.Length;
+            return palette[index];
         }
 
         public static Color GetHairColor(Color existingColor, ZombieVariant variant)

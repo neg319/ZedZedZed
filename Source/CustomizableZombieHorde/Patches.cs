@@ -1488,9 +1488,15 @@ namespace CustomizableZombieHorde
     }
 
 
-    [HarmonyPatch(typeof(Hediff), "TendableNow", MethodType.Getter)]
+    [HarmonyPatch]
     public static class Patch_Hediff_TendableNow_ZombieInfection
     {
+        public static MethodBase TargetMethod()
+        {
+            return AccessTools.PropertyGetter(typeof(Hediff), "TendableNow")
+                ?? AccessTools.Method(typeof(Hediff), "TendableNow");
+        }
+
         public static void Postfix(Hediff __instance, ref bool __result)
         {
             if (!__result || __instance?.def != ZombieDefOf.CZH_ZombieSickness)
