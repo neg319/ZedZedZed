@@ -358,25 +358,30 @@ namespace CustomizableZombieHorde
 
             if (ZombieUtility.IsVariant(attacker, ZombieVariant.Sick))
             {
-                return 0.05f;
+                return 0.10f;
+            }
+
+            if (ZombieUtility.IsVariant(attacker, ZombieVariant.Boomer))
+            {
+                return 0.07f;
             }
 
             if (ZombieUtility.IsVariant(attacker, ZombieVariant.Brute) || ZombieUtility.IsVariant(attacker, ZombieVariant.Drowned))
             {
-                return 0.035f;
+                return 0.04f;
             }
 
-            if (ZombieUtility.IsVariant(attacker, ZombieVariant.Biter) || ZombieUtility.IsVariant(attacker, ZombieVariant.Boomer))
+            if (ZombieUtility.IsVariant(attacker, ZombieVariant.Biter))
             {
-                return 0.02f;
+                return 0.03f;
             }
 
             if (ZombieUtility.IsVariant(attacker, ZombieVariant.Runt) || ZombieUtility.IsVariant(attacker, ZombieVariant.Grabber))
             {
-                return 0.015f;
+                return 0.025f;
             }
 
-            return 0.02f;
+            return 0.03f;
         }
 
         public static BodyPartRecord ResolveAmputationFriendlyInfectionPart(Pawn pawn, BodyPartRecord hitPart)

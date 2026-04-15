@@ -386,7 +386,8 @@ namespace CustomizableZombieHorde
 
             float radiusSquared = radius * radius;
             Pawn best = null;
-            float bestDistance = float.MaxValue;
+            float bestScore = float.MaxValue;
+            bool preferAnimals = ShouldPreferAnimalPrey(pawn);
             foreach (Pawn other in pawn.MapHeld.mapPawns.AllPawnsSpawned)
             {
                 if (other == pawn || other.Dead || other.Destroyed || other.RaceProps?.IsFlesh != true)
@@ -413,7 +414,7 @@ namespace CustomizableZombieHorde
                 }
 
                 float distance = pawn.PositionHeld.DistanceToSquared(other.PositionHeld);
-                if (distance > radiusSquared || distance >= bestDistance)
+                if (distance > radiusSquared)
                 {
                     continue;
                 }
@@ -423,11 +424,99 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
+                float score = ScorePreyTarget(pawn, other, distance, preferAnimals, requirePukedOn);
+                if (score >= bestScore)
+                {
+                    continue;
+                }
+
                 best = other;
-                bestDistance = distance;
+                bestScore = score;
             }
 
             return best;
+        }
+
+        private static bool ShouldPreferAnimalPrey(Pawn pawn)
+        {
+            if (pawn == null || ZombieLurkerUtility.IsLurker(pawn))
+            {
+                return false;
+            }
+
+            if (ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned))
+            {
+                return true;
+            }
+
+            if (ZombieUtility.IsVariant(pawn, ZombieVariant.Biter) || ZombieUtility.IsVariant(pawn, ZombieVariant.Runt))
+            {
+                return pawn.thingIDNumber % 3 == 0;
+            }
+
+            return pawn.thingIDNumber % 5 == 0;
+        }
+
+        private static float ScorePreyTarget(Pawn hunter, Pawn prey, float distanceSquared, bool preferAnimals, bool requirePukedOn)
+        {
+            float distance = Mathf.Sqrt(distanceSquared);
+            float score = distance;
+            bool preyAnimal = prey?.RaceProps?.Animal == true;
+            bool preyHumanlike = prey?.RaceProps?.Humanlike == true;
+
+            if (preyAnimal)
+            {
+                score += preferAnimals ? -4.0f : 2.5f;
+
+                if (prey.Downed)
+                {
+                    score -= 2.0f;
+                }
+
+                if (hunter != null && ZombieUtility.IsVariant(hunter, ZombieVariant.Drowned) && IsNearWater(prey.PositionHeld, prey.MapHeld, 4))
+                {
+                    score -= 2.5f;
+                }
+            }
+            else if (preyHumanlike)
+            {
+                score -= 0.5f;
+            }
+
+            if (requirePukedOn && HasPukedOn(prey))
+            {
+                score -= 3.0f;
+            }
+
+            if (prey.Downed)
+            {
+                score -= preyAnimal ? 0.5f : 1.0f;
+            }
+
+            return score;
+        }
+
+        private static bool IsNearWater(IntVec3 center, Map map, int radius)
+        {
+            if (map == null || !center.IsValid)
+            {
+                return false;
+            }
+
+            foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, radius, true))
+            {
+                if (!cell.InBounds(map))
+                {
+                    continue;
+                }
+
+                if (ZombieUtility.IsWaterCell(cell, map))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static bool HasPukedOn(Pawn pawn)
@@ -2336,7 +2425,7 @@ namespace CustomizableZombieHorde
             return targetCell.IsValid && targetCell.InBounds(pawn.MapHeld) && ZombieUtility.IsWaterCell(targetCell, pawn.MapHeld);
         }
 
-        public static bool TryStartDrownedReturnToWater(Pawn pawn, float radius = 35f)
+        public static bool TryStartDrownedReturnToWater(Pawn pawn, float radius = 45f)
         {
             if (!ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned) || pawn?.MapHeld == null || pawn.jobs == null)
             {
@@ -2349,13 +2438,18 @@ namespace CustomizableZombieHorde
             }
 
             IntVec3 waterCell = FindNearestWaterCell(pawn.PositionHeld, pawn.MapHeld, radius);
+            if (!waterCell.IsValid)
+            {
+                waterCell = FindNearestWaterCell(pawn.PositionHeld, pawn.MapHeld, Mathf.Max(pawn.MapHeld.Size.x, pawn.MapHeld.Size.z));
+            }
+
             if (!waterCell.IsValid || !waterCell.InBounds(pawn.MapHeld) || waterCell == pawn.PositionHeld)
             {
                 return false;
             }
 
             Job returnToWater = JobMaker.MakeJob(JobDefOf.Goto, waterCell);
-            returnToWater.expiryInterval = 1500;
+            returnToWater.expiryInterval = 1800;
             returnToWater.checkOverrideOnExpire = true;
             returnToWater.locomotionUrgency = ZombieUtility.GetZombieUrgency(pawn);
             pawn.jobs.TryTakeOrderedJob(returnToWater, JobTag.Misc);
@@ -2409,6 +2503,12 @@ namespace CustomizableZombieHorde
             }
 
             if (!inWater && prey != null && pawn.PositionHeld.DistanceToSquared(prey.PositionHeld) > 24f * 24f)
+            {
+                TryStartDrownedReturnToWater(pawn);
+                return;
+            }
+
+            if (!inWater && prey == null && currentTarget == null)
             {
                 TryStartDrownedReturnToWater(pawn);
             }

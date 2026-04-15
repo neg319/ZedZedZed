@@ -800,7 +800,7 @@ namespace CustomizableZombieHorde
 
         public static void Prefix(Pawn __instance, DamageInfo? dinfo)
         {
-            if (__instance == null || !ZombieUtility.IsZombie(__instance) || __instance.Destroyed)
+            if (__instance == null || !ZombieUtility.IsZombie(__instance) || __instance.Destroyed || __instance.Dead)
             {
                 return;
             }
@@ -966,11 +966,30 @@ namespace CustomizableZombieHorde
 
             if (!ZombieUtility.IsZombie(victim)
                 && ZombieUtility.IsZombie(attacker)
-                && !victim.Dead
-                && DidZombieOpenBleedingWound(victim, dinfo, __state))
+                && !victim.Dead)
             {
+                bool openedWound = DidZombieOpenBleedingWound(victim, dinfo, __state);
+                float infectionChance = ZombieInfectionUtility.GetZombieBiteInfectionChance(attacker);
+
+                if (ZombieInfectionUtility.IsZombieBiteDamage(dinfo))
+                {
+                    infectionChance += 0.02f;
+                }
+
+                if (openedWound)
+                {
+                    infectionChance += 0.02f;
+                }
+
+                if (totalDamageDealt >= 6f)
+                {
+                    infectionChance += 0.01f;
+                }
+
+                infectionChance = Mathf.Clamp(infectionChance, 0f, ZombieUtility.IsVariant(attacker, ZombieVariant.Sick) ? 0.18f : 0.14f);
+
                 BodyPartRecord infectionPart = ZombieInfectionUtility.ResolveAmputationFriendlyInfectionPart(victim, dinfo.HitPart);
-                ZombieTraitUtility.TryApplyZombieSickness(victim, ZombieInfectionUtility.GetZombieBiteInfectionChance(attacker), infectionPart);
+                ZombieTraitUtility.TryApplyZombieSickness(victim, infectionChance, infectionPart);
             }
 
             if (!ZombieUtility.IsZombie(victim)
@@ -1492,6 +1511,39 @@ namespace CustomizableZombieHorde
             }
 
             ZombieCorpseUtility.ApplyDefaultAllowState(__instance);
+        }
+    }
+
+
+    [HarmonyPatch(typeof(CompRottable), nameof(CompRottable.Active), MethodType.Getter)]
+    public static class Patch_CompRottable_Active_PreventZombieCorpseRot
+    {
+        public static void Postfix(CompRottable __instance, ref bool __result)
+        {
+            if (!__result)
+            {
+                return;
+            }
+
+            if (ZombieCorpseUtility.ShouldPreventRot(__instance?.parent))
+            {
+                __result = false;
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(CompRottable), nameof(CompRottable.CompInspectStringExtra))]
+    public static class Patch_CompRottable_Inspect_PreventZombieCorpseRot
+    {
+        public static bool Prefix(CompRottable __instance, ref string __result)
+        {
+            if (!ZombieCorpseUtility.ShouldPreventRot(__instance?.parent))
+            {
+                return true;
+            }
+
+            __result = "This zombie corpse does not spoil.";
+            return false;
         }
     }
 

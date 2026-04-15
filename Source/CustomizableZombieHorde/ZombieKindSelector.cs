@@ -85,7 +85,7 @@ namespace CustomizableZombieHorde
         {
             if (map != null && ZombieSpecialUtility.IsRainActive(map))
             {
-                return ZombieSpecialUtility.MapHasWater(map) ? 20f : 16f;
+                return ZombieSpecialUtility.MapHasWater(map) ? 28f : 22f;
             }
 
             return 4f;

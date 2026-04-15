@@ -243,7 +243,8 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            int count = Mathf.Max(1, Rand.RangeInclusive(CustomizableZombieHordeMod.Settings.trickleMinGroupSize, CustomizableZombieHordeMod.Settings.trickleMaxGroupSize));
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            int count = Mathf.Max(1, Rand.RangeInclusive(settings.GetEffectiveTrickleMinGroupSize(), settings.GetEffectiveTrickleMaxGroupSize()));
             bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Edge Wave", customLetterText: "A debug zombie wave has been forced from the map edge.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true, behavior: ZombieSpawnEventType.EdgeWander);
             if (!result)
             {
@@ -267,7 +268,8 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            int count = Mathf.Max(2, CustomizableZombieHordeMod.Settings.trickleMinGroupSize + 1);
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            int count = Mathf.Max(2, settings.GetEffectiveTrickleMinGroupSize() + 1);
             bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Night Wave", customLetterText: "A debug nightly zombie wave has been forced onto the map.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true, behavior: ZombieSpawnEventType.AssaultBase);
             if (!result)
             {
@@ -293,7 +295,8 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            int count = Mathf.Max(2, CustomizableZombieHordeMod.Settings.trickleMinGroupSize + 1);
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            int count = Mathf.Max(2, settings.GetEffectiveTrickleMinGroupSize() + 1);
             bool result = ZombieSpawnHelper.SpawnHuddledPack(map, forcedCount: count, sendLetter: true, ignoreCap: true, ignoreTimeOfDay: true);
             if (result)
             {
@@ -311,7 +314,8 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            int count = Mathf.Max(2, CustomizableZombieHordeMod.Settings.trickleMinGroupSize + 1);
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            int count = Mathf.Max(2, settings.GetEffectiveTrickleMinGroupSize() + 1);
             bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Base Push", customLetterText: "A debug zombie group has been forced toward your colony.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true, behavior: ZombieSpawnEventType.AssaultBase);
             if (result)
             {
@@ -329,7 +333,8 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            int count = Mathf.Max(2, CustomizableZombieHordeMod.Settings.trickleMinGroupSize + 1);
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            int count = Mathf.Max(2, settings.GetEffectiveTrickleMinGroupSize() + 1);
             bool result = ZombieSpawnHelper.SpawnEdgeWanderers(map, forcedCount: count, sendLetter: true, ignoreCap: true, ignoreTimeOfDay: true);
             if (result)
             {
@@ -372,7 +377,8 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            bool result = ZombieSpawnHelper.SpawnGroundBurst(map, forcedCount: Mathf.Max(2, CustomizableZombieHordeMod.Settings.groundBurstMinGroupSize), sendLetter: true, ignoreCap: true, ignoreTimeOfDay: true, allowCenterFallback: true);
+            CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
+            bool result = ZombieSpawnHelper.SpawnGroundBurst(map, forcedCount: Mathf.Max(2, settings.GetEffectiveGroundBurstMinGroupSize()), sendLetter: true, ignoreCap: true, ignoreTimeOfDay: true, allowCenterFallback: true);
             if (result)
             {
                 RefreshCurrentMapCount();
@@ -890,7 +896,7 @@ namespace CustomizableZombieHorde
         private void HandlePopulationTopUps(int ticksGame)
         {
             CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
-            if (settings == null || Find.Maps == null || !settings.enableEdgeTrickle)
+            if (settings == null || Find.Maps == null)
             {
                 return;
             }
@@ -1552,21 +1558,29 @@ namespace CustomizableZombieHorde
                 int colonists = Mathf.Max(1, map.mapPawns?.FreeColonistsSpawnedCount ?? 0);
                 int existingDrowned = map.mapPawns?.AllPawnsSpawned?.Count(pawn => ZombieUtility.IsVariant(pawn, ZombieVariant.Drowned)) ?? 0;
                 int desiredDrowned = ZombieSpecialUtility.MapHasWater(map)
-                    ? Mathf.Clamp(2 + colonists / 2, 4, 8)
-                    : Mathf.Clamp(1 + colonists / 3, 3, 6);
+                    ? Mathf.Clamp(4 + colonists, 6, 14)
+                    : Mathf.Clamp(2 + colonists / 2, 4, 10);
                 if (existingDrowned >= desiredDrowned)
                 {
                     continue;
                 }
 
                 int missingDrowned = desiredDrowned - existingDrowned;
-                int spawnCount = Mathf.Min(remainingCapacity, Mathf.Clamp(missingDrowned, 1, 3));
+                int spawnCount = Mathf.Min(remainingCapacity, Mathf.Clamp(missingDrowned, 1, 4));
                 if (spawnCount <= 0)
                 {
                     continue;
                 }
 
-                IntVec3 anchor = ZombieSpecialUtility.FindInteriorNearEdgeCell(map, map.Center);
+                IntVec3 anchor = map.AllCells
+                    .Where(cell => ZombieUtility.IsWaterCell(cell, map) && cell.Walkable(map))
+                    .OrderBy(cell => cell.DistanceToSquared(map.Center))
+                    .FirstOrDefault();
+                if (!anchor.IsValid)
+                {
+                    anchor = ZombieSpecialUtility.FindInteriorNearEdgeCell(map, map.Center);
+                }
+
                 if (!anchor.IsValid)
                 {
                     anchor = map.Center;

@@ -241,7 +241,12 @@ namespace CustomizableZombieHorde
             IntVec3 edgeCell;
             if (!TryFindZombieEntryCell(map, out edgeCell))
             {
-                edgeCell = FindAnyStandableCell(map);
+                edgeCell = FindAnyStandableCellNearEdge(map, insideOnly: true);
+                if (!edgeCell.IsValid)
+                {
+                    edgeCell = FindAnyStandableCellNearEdge(map, insideOnly: false);
+                }
+
                 if (!edgeCell.IsValid)
                 {
                     return false;
@@ -798,11 +803,6 @@ namespace CustomizableZombieHorde
 
             if (!anchor.IsValid)
             {
-                anchor = FindAnyStandableCell(map);
-            }
-
-            if (!anchor.IsValid)
-            {
                 return false;
             }
 
@@ -1101,7 +1101,12 @@ namespace CustomizableZombieHorde
                 return fallbackEdge;
             }
 
-            return FindAnyStandableCell(map);
+            if (edgeCell.IsValid && edgeCell.InBounds(map) && edgeCell.Standable(map) && (IsInsideNearEdgeCell(edgeCell, map) || IsEdgeCell(edgeCell, map)))
+            {
+                return edgeCell;
+            }
+
+            return IntVec3.Invalid;
         }
 
         private static IntVec3 FindInteriorApproachSpawnCell(Map map, IntVec3 preferredAnchor, Pawn pawn, ZombieSpawnEventType behavior)

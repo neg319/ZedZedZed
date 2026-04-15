@@ -269,8 +269,9 @@ namespace CustomizableZombieHorde
                 return 0;
             }
 
-            int scaled = Mathf.Max(1, Mathf.CeilToInt(deficit * 0.45f));
-            int maxChunk = Mathf.Max(3, ScaleSpawnCountByOutbreak(6, 3));
+            float fillFraction = Mathf.Lerp(0.45f, 0.70f, Mathf.Clamp01((outbreakIntensity - 0.5f) / 11.5f));
+            int scaled = Mathf.Max(1, Mathf.CeilToInt(deficit * fillFraction));
+            int maxChunk = Mathf.Max(4, ScaleSpawnCountByOutbreak(10, 4));
             return Mathf.Clamp(scaled, 1, Mathf.Max(1, maxChunk));
         }
 
