@@ -105,7 +105,7 @@ namespace CustomizableZombieHorde
 
         private static string T(string key)
         {
-            return ("ZZZ." + key).Translate().ToString();
+            return ZZZLocalize.TShort(key);
         }
 
 

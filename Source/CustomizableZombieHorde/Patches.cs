@@ -1,7 +1,9 @@
 using System.Reflection;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -12,9 +14,97 @@ namespace CustomizableZombieHorde
 {
     internal static class ZZZLocalize
     {
+        private static readonly Dictionary<string, string> EnglishFallbacks = new Dictionary<string, string>
+        {
+            ["ZZZ.SettingsTitle"] = "Zed Zed Zed Settings",
+            ["ZZZ.SettingsSubtitle"] = "Outbreak pacing, strain control, colony cleanup, and a few dangerous little test tools.",
+            ["ZZZ.SettingsHint"] = "Written to stay readable in the middle of a live save.",
+            ["ZZZ.BadgeActive"] = "ACTIVE",
+            ["ZZZ.TabOverview"] = "Overview",
+            ["ZZZ.TabEvents"] = "Events",
+            ["ZZZ.TabVariants"] = "Variants",
+            ["ZZZ.TabNames"] = "Names",
+            ["ZZZ.TabColony"] = "Colony",
+            ["ZZZ.TabDebug"] = "Debug",
+            ["ZZZ.StateEnabled"] = "Enabled",
+            ["ZZZ.StateDisabled"] = "Disabled",
+            ["ZZZ.StateChecked"] = "Checked",
+            ["ZZZ.StateUnchecked"] = "Unchecked",
+            ["ZZZ.PresetCasual"] = "Casual",
+            ["ZZZ.PresetRecommended"] = "Recommended",
+            ["ZZZ.PresetApocalypse"] = "Apocalypse",
+            ["ZZZ.ButtonApply"] = "Apply",
+            ["ZZZ.ButtonRunNow"] = "Run now",
+            ["ZZZ.HUDDanger"] = "Danger: {0}%",
+            ["ZZZ.HUDDangerOff"] = "Danger: off",
+            ["ZZZ.LurkerRecruitFail"] = "Recruitment attempt failed. A warden can keep trying without capturing the lurker."
+        };
+
         public static string T(string key)
         {
-            return key.Translate().ToString();
+            string translated = key.Translate().ToString();
+            if (LooksUnresolved(key, translated) && EnglishFallbacks.TryGetValue(key, out string fallback))
+            {
+                return fallback;
+            }
+
+            return translated;
+        }
+
+        public static string TShort(string key)
+        {
+            return T("ZZZ." + key);
+        }
+
+        public static string Format(string key, params object[] args)
+        {
+            string template = T(key);
+            try
+            {
+                return string.Format(CultureInfo.InvariantCulture, template, args);
+            }
+            catch (FormatException)
+            {
+                return template;
+            }
+        }
+
+        private static bool LooksUnresolved(string key, string translated)
+        {
+            if (string.IsNullOrEmpty(translated))
+            {
+                return true;
+            }
+
+            if (string.Equals(translated, key, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            string sanitizedTranslated = StripCombiningMarks(translated);
+            string sanitizedKey = StripCombiningMarks(key);
+            return string.Equals(sanitizedTranslated, sanitizedKey, StringComparison.Ordinal);
+        }
+
+        private static string StripCombiningMarks(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return value ?? string.Empty;
+            }
+
+            string normalized = value.Normalize(NormalizationForm.FormD);
+            StringBuilder builder = new StringBuilder(normalized.Length);
+            foreach (char c in normalized)
+            {
+                UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (category != UnicodeCategory.NonSpacingMark && category != UnicodeCategory.SpacingCombiningMark && category != UnicodeCategory.EnclosingMark)
+                {
+                    builder.Append(c);
+                }
+            }
+
+            return builder.ToString().Normalize(NormalizationForm.FormC);
         }
     }
 
@@ -759,7 +849,7 @@ namespace CustomizableZombieHorde
             float capPercent = cap > 0 ? (currentCount / (float)cap) * 100f : 0f;
             string familyLabel = GetCounterDisplayLabel();
             string countText = familyLabel + ": " + currentCount;
-            string dangerText = cap > 0 ? string.Format("ZZZ.HUDDanger".Translate().ToString(), capPercent.ToString("0")) : ZZZLocalize.T("ZZZ.HUDDangerOff");
+            string dangerText = cap > 0 ? ZZZLocalize.Format("ZZZ.HUDDanger", capPercent.ToString("0")) : ZZZLocalize.T("ZZZ.HUDDangerOff");
 
             Rect rect = new Rect(UI.screenWidth - 362f, 6f, 168f, 62f);
             Rect countRect = new Rect(rect.x + 8f, rect.y + 5f, rect.width - 16f, 24f);
