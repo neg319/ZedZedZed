@@ -112,7 +112,7 @@ namespace CustomizableZombieHorde
             DrawButtonBackdrop(quitToMenuRect);
             DrawButtonBackdrop(quitToOsRect);
 
-            if (Widgets.ButtonText(settingsRect, "Zed Zed Zed settings"))
+            if (Widgets.ButtonText(settingsRect, "Zed Zed Zed Settings"))
             {
                 OpenSettingsWindow();
             }

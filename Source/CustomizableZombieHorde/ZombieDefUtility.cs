@@ -151,7 +151,7 @@ namespace CustomizableZombieHorde
         public static string GetGraveLetterText(ZombieVariant variant)
         {
             string type = GetVariantLabel(variant).ToLowerInvariant();
-            return "The ground has split open and a " + type + " grave has burst up like an infestation. Destroy the grave quickly or more " + type + " corpses will keep clawing their way out.";
+            return "The ground has split open and a " + type + " grave has burst open. Destroy it or more " + type + " corpses will keep climbing out.";
         }
 
         public static string ExampleNames(string prefix)
@@ -202,11 +202,11 @@ namespace CustomizableZombieHorde
             string variantLabel = GetVariantLabel(variant);
             string lower = variantLabel.ToLowerInvariant();
             grave.label = lower + " grave";
-            grave.description = "A collapsed grave that spits " + lower + "s out through the dirt.";
+            grave.description = "A grave that keeps spawning " + lower + ".";
 
             if (variant == ZombieVariant.Brute)
             {
-                grave.description = "A heaving grave that keeps forcing " + lower + " zombies up from the dirt.";
+                grave.description = "A grave that keeps spawning " + lower + ".";
             }
         }
 

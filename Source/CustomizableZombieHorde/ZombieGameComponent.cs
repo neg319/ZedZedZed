@@ -245,10 +245,10 @@ namespace CustomizableZombieHorde
 
             CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
             int count = Mathf.Max(1, Rand.RangeInclusive(settings.GetEffectiveTrickleMinGroupSize(), settings.GetEffectiveTrickleMaxGroupSize()));
-            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Edge Wave", customLetterText: "A debug zombie wave has been forced from the map edge.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true, behavior: ZombieSpawnEventType.EdgeWander);
+            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Edge Wave", customLetterText: "A debug edge wave has been forced.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true, behavior: ZombieSpawnEventType.EdgeWander);
             if (!result)
             {
-                result = ZombieSpawnHelper.SpawnEmergencyPack(map, count, sendLetter: true, customLetterLabel: "Debug Edge Wave", customLetterText: "A debug zombie wave has been forced near the map edge.", ignoreCap: true);
+                result = ZombieSpawnHelper.SpawnEmergencyPack(map, count, sendLetter: true, customLetterLabel: "Debug Edge Wave", customLetterText: "A debug edge wave has been forced.", ignoreCap: true);
             }
 
             if (result && Find.TickManager != null)
@@ -270,10 +270,10 @@ namespace CustomizableZombieHorde
 
             CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
             int count = Mathf.Max(2, settings.GetEffectiveTrickleMinGroupSize() + 1);
-            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Night Wave", customLetterText: "A debug nightly zombie wave has been forced onto the map.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true, behavior: ZombieSpawnEventType.AssaultBase);
+            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Night Wave", customLetterText: "A debug night wave has been forced.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true, behavior: ZombieSpawnEventType.AssaultBase);
             if (!result)
             {
-                result = ZombieSpawnHelper.SpawnEmergencyPack(map, count, sendLetter: true, customLetterLabel: "Debug Night Wave", customLetterText: "A debug nightly zombie wave has been forced near the map edge.", ignoreCap: true);
+                result = ZombieSpawnHelper.SpawnEmergencyPack(map, count, sendLetter: true, customLetterLabel: "Debug Night Wave", customLetterText: "A debug night wave has been forced.", ignoreCap: true);
             }
 
             if (result)
@@ -316,7 +316,7 @@ namespace CustomizableZombieHorde
 
             CustomizableZombieHordeSettings settings = CustomizableZombieHordeMod.Settings;
             int count = Mathf.Max(2, settings.GetEffectiveTrickleMinGroupSize() + 1);
-            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Base Push", customLetterText: "A debug zombie group has been forced toward your colony.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true, behavior: ZombieSpawnEventType.AssaultBase);
+            bool result = ZombieSpawnHelper.SpawnWave(map, forcedCount: count, sendLetter: true, customLetterLabel: "Debug Base Push", customLetterText: "A debug base push has been forced.", applyDifficulty: false, ignoreCap: true, ignoreTimeOfDay: true, behavior: ZombieSpawnEventType.AssaultBase);
             if (result)
             {
                 RefreshCurrentMapCount();
@@ -357,7 +357,7 @@ namespace CustomizableZombieHorde
                 forcedCount: ZombieSpawnHelper.GetRecommendedHerdCount(map),
                 sendLetter: true,
                 customLetterLabel: "Debug Herd",
-                customLetterText: "A debug herd is crossing the map in a broad wall of bodies.",
+                customLetterText: "A debug herd is crossing the map.",
                 ignoreCap: true,
                 applyDifficulty: false,
                 ignoreTimeOfDay: true);
@@ -443,7 +443,7 @@ namespace CustomizableZombieHorde
                     targetCount,
                     groups: 3,
                     letterLabel: "Debug Blood Moon",
-                    letterText: "A debug blood moon has been forced. A massive wave of " + prefix.ToLowerInvariant() + "s is descending on your colony.",
+                    letterText: "A debug blood moon has been forced. A massive wave of " + prefix.ToLowerInvariant() + "s is closing in on your colony.",
                     ignoreCap: false,
                     ignoreTimeOfDay: true,
                     populationState: ZombiePopulationState.BloodMoon)
@@ -452,7 +452,7 @@ namespace CustomizableZombieHorde
                     targetCount,
                     groups: 2,
                     letterLabel: "Debug Full Moon",
-                    letterText: "A debug full moon horde has been forced. The dead are closing in on your colony.",
+                    letterText: "A debug full moon horde has been forced.",
                     ignoreCap: false,
                     ignoreTimeOfDay: true,
                     populationState: ZombiePopulationState.FullMoon);
@@ -548,7 +548,7 @@ namespace CustomizableZombieHorde
             ZombieLurkerUtility.InitializeLurker(lurker);
             GenSpawn.Spawn(lurker, spawnCell, map);
             ZombieLurkerUtility.EnsurePassiveLurkerBehavior(lurker);
-            Messages.Message("A debug lurker has been spawned.", lurker, MessageTypeDefOf.NeutralEvent);
+            Messages.Message("A debug lurker has spawned.", lurker, MessageTypeDefOf.NeutralEvent);
             RefreshCurrentMapCount();
             return true;
         }
@@ -632,7 +632,7 @@ namespace CustomizableZombieHorde
 
             GenSpawn.Spawn(runt, spawnCell, map);
             FinalizeDebugSpawnedHostileZombie(runt);
-            Messages.Message("A debug runt has been spawned.", runt, MessageTypeDefOf.NeutralEvent);
+            Messages.Message("A debug runt has spawned.", runt, MessageTypeDefOf.NeutralEvent);
             RefreshCurrentMapCount();
             return true;
         }
@@ -1285,7 +1285,7 @@ namespace CustomizableZombieHorde
                         targetCount,
                         groups: 3,
                         letterLabel: "Blood Moon Rising",
-                        letterText: "A blood moon hangs over the colony. A massive wave of " + prefix.ToLowerInvariant() + "s surges toward your base from every direction. Keep everyone inside your defenses and expect a sustained assault.",
+                        letterText: "A blood moon rises. A massive wave of " + prefix.ToLowerInvariant() + "s is closing in from every direction.",
                         ignoreTimeOfDay: true,
                         populationState: ZombiePopulationState.BloodMoon))
                     {
@@ -1305,7 +1305,7 @@ namespace CustomizableZombieHorde
                         targetCount,
                         groups: 2,
                         letterLabel: "Full Moon Rising",
-                        letterText: "The full moon draws the dead from the dark. A larger horde of " + prefix.ToLowerInvariant() + "s is converging on your colony. Bring wandering workers home and prepare your perimeter.",
+                        letterText: "The full moon draws the dead in. A larger horde of " + prefix.ToLowerInvariant() + "s is converging on your colony.",
                         ignoreTimeOfDay: true,
                         populationState: ZombiePopulationState.FullMoon))
                     {
@@ -1512,11 +1512,11 @@ namespace CustomizableZombieHorde
             string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
             string text = isBloodMoon
                 ? (daysRemaining == 1
-                    ? "Tomorrow night, a blood moon will rise. Expect a massive surge of " + prefix.ToLowerInvariant() + "s and keep everyone close to your defenses."
-                    : "In about a week, a blood moon will rise. The dead will gather in far greater numbers than usual, so use the time to stock medicine and shore up defenses.")
+                    ? "Tomorrow night, a blood moon will rise. Expect a massive surge of " + prefix.ToLowerInvariant() + "s. Keep everyone close to your defenses."
+                    : "In about a week, a blood moon will rise. Prepare your defenses.")
                 : (daysRemaining == 1
-                    ? "Tomorrow night, the full moon will rise. A larger wave of " + prefix.ToLowerInvariant() + "s is coming, so call workers back behind the perimeter before nightfall."
-                    : "In about a week, the next full moon will rise. The dead are beginning to stir, so use the warning to prepare traps, medicine, and fallback positions.");
+                    ? "Tomorrow night, the full moon will rise. A larger wave of " + prefix.ToLowerInvariant() + "s is coming. Pull workers back before nightfall."
+                    : "In about a week, the next full moon will rise. Use the warning to prepare.");
 
             Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.ThreatBig, new TargetInfo(map.Center, map));
         }
@@ -1572,18 +1572,10 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                IntVec3 anchor = map.AllCells
-                    .Where(cell => ZombieUtility.IsWaterCell(cell, map) && cell.Walkable(map))
-                    .OrderBy(cell => cell.DistanceToSquared(map.Center))
-                    .FirstOrDefault();
+                IntVec3 anchor = FindRainDrownedSpawnAnchor(map);
                 if (!anchor.IsValid)
                 {
-                    anchor = ZombieSpecialUtility.FindInteriorNearEdgeCell(map, map.Center);
-                }
-
-                if (!anchor.IsValid)
-                {
-                    anchor = map.Center;
+                    continue;
                 }
 
                 if (ZombieSpawnHelper.SpawnVariantPackAround(map, anchor, ZombieVariant.Drowned, spawnCount, ZombieSpawnEventType.AssaultBase, ignoreCap: false))
@@ -1598,6 +1590,45 @@ namespace CustomizableZombieHorde
             {
                 lastRainDrownedSpawnTickByMap.Remove(staleMapId);
             }
+        }
+
+        private static IntVec3 FindRainDrownedSpawnAnchor(Map map)
+        {
+            if (map == null)
+            {
+                return IntVec3.Invalid;
+            }
+
+            const int preferredEdgeBand = 14;
+            List<IntVec3> edgeWaterCells = map.AllCells
+                .Where(cell => ZombieUtility.IsWaterCell(cell, map)
+                    && cell.Walkable(map)
+                    && !cell.Fogged(map)
+                    && ZombieSpecialUtility.DistanceToNearestEdge(cell, map) <= preferredEdgeBand)
+                .ToList();
+            if (edgeWaterCells.Count > 0)
+            {
+                return edgeWaterCells
+                    .OrderBy(cell => ZombieSpecialUtility.DistanceToNearestEdge(cell, map))
+                    .ThenBy(cell => cell.DistanceToSquared(map.Center))
+                    .First();
+            }
+
+            if (ZombieSpawnHelper.TryFindEntryCell(map, out IntVec3 edgeCell))
+            {
+                if (edgeCell.IsValid)
+                {
+                    return edgeCell;
+                }
+            }
+
+            IntVec3 nearEdge = ZombieSpecialUtility.FindInteriorNearEdgeCell(map, map.Center);
+            if (nearEdge.IsValid)
+            {
+                return nearEdge;
+            }
+
+            return IntVec3.Invalid;
         }
 
         private void SanitizeLivingZombies()

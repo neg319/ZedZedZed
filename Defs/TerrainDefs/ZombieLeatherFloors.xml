@@ -4,7 +4,7 @@
   <TerrainDef>
     <defName>CZH_RottenLeatherFloor</defName>
     <label>rotten leather floor</label>
-    <description>A seamless floor of rendered hide cut from the shambling dead. It is unsettling underfoot, but sturdy enough for rough colony use.</description>
+    <description>A leather floor made from zombie hide.</description>
     <texturePath>Terrain/RottenLeatherFloor</texturePath>
     <renderPrecedence>212</renderPrecedence>
     <constructEffect>ConstructDirt</constructEffect>
@@ -31,7 +31,7 @@
   <TerrainDef>
     <defName>CZH_StitchedRottenLeatherFloor</defName>
     <label>stitched rotten leather floor</label>
-    <description>Large hide panels sewn together into a grim floor covering. The broad patches echo the same bruised tones seen on the wandering dead.</description>
+    <description>Large stitched panels of zombie hide.</description>
     <texturePath>Terrain/StitchedRottenLeatherFloor</texturePath>
     <renderPrecedence>213</renderPrecedence>
     <constructEffect>ConstructDirt</constructEffect>
@@ -58,7 +58,7 @@
   <TerrainDef>
     <defName>CZH_PatchworkRottenLeatherFloor</defName>
     <label>patchwork rotten leather floor</label>
-    <description>A carefully stitched spread of mismatched hide squares. Its mottled tones resemble the many faded shades seen across the horde.</description>
+    <description>A patchwork floor of stitched zombie hide.</description>
     <texturePath>Terrain/PatchworkLeatherFloor</texturePath>
     <renderPrecedence>214</renderPrecedence>
     <constructEffect>ConstructDirt</constructEffect>
@@ -85,7 +85,7 @@
   <TerrainDef>
     <defName>CZH_MottledHideFloor</defName>
     <label>mottled hide floor</label>
-    <description>A grim leather floor with muted green gray staining and dark skin like blotches. It blends the palette of several strains into one seamless surface.</description>
+    <description>A stained leather floor made from mixed zombie hide.</description>
     <texturePath>Terrain/MottledHideFloor</texturePath>
     <renderPrecedence>211</renderPrecedence>
     <constructEffect>ConstructDirt</constructEffect>

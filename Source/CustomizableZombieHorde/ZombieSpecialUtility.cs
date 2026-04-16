@@ -1861,12 +1861,33 @@ namespace CustomizableZombieHorde
 
         public static void ApplyZombieBloodExposure(Pawn pawn, float severityGain)
         {
-            if (pawn == null || pawn.Dead || pawn.health == null || severityGain <= 0f)
+            if (pawn == null || pawn.Dead || pawn.health == null || severityGain <= 0f || ZombieDefOf.CZH_ZombieBloodSepsis == null)
             {
                 return;
             }
 
-            AddOrRefreshDamageOverTimeHediff(pawn, ZombieDefOf.CZH_ZombieBloodSepsis, severityGain, 0.35f);
+            if (!ZombieTraitUtility.CanCatchZombieSickness(pawn))
+            {
+                return;
+            }
+
+            Hediff existing = pawn.health.hediffSet?.GetFirstHediffOfDef(ZombieDefOf.CZH_ZombieBloodSepsis);
+            if (existing == null)
+            {
+                existing = HediffMaker.MakeHediff(ZombieDefOf.CZH_ZombieBloodSepsis, pawn);
+                existing.Severity = 1f;
+                pawn.health.AddHediff(existing);
+            }
+            else
+            {
+                existing.Severity = 1f;
+            }
+
+            if (existing is HediffWithComps withComps)
+            {
+                HediffComp_InfectedBloodExposure exposureComp = withComps.TryGetComp<HediffComp_InfectedBloodExposure>();
+                exposureComp?.RefreshDuration(GenDate.TicksPerDay);
+            }
         }
 
         public static void ApplyPukedOn(Pawn pawn, int durationTicks = 1200)
@@ -2356,7 +2377,6 @@ namespace CustomizableZombieHorde
                 {
                     if (things[j] is Pawn pawn && !pawn.Dead && !ZombieUtility.ShouldZombiesIgnore(pawn))
                     {
-                        ZombieTraitUtility.TryApplyZombieSickness(pawn, 0.035f);
                         ApplyZombieBloodExposure(pawn, 0.05f);
                     }
                 }

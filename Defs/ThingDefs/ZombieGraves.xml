@@ -28,7 +28,7 @@
   <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Biter</defName>
     <label>biter grave</label>
-    <description>A ruptured grave that keeps coughing up biters until it is smashed apart.</description>
+    <description>A grave that keeps spawning biters until destroyed.</description>
     <comps>
       <li Class="CustomizableZombieHorde.CompProperties_ZombieGraveSpawner">
         <compClass>CustomizableZombieHorde.CompZombieGraveSpawner</compClass>
@@ -45,7 +45,7 @@
   <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Runt</defName>
     <label>runt grave</label>
-    <description>A collapsed grave that spits runts out through the dirt.</description>
+    <description>A grave that keeps spawning runts.</description>
     <comps>
       <li Class="CustomizableZombieHorde.CompProperties_ZombieGraveSpawner">
         <compClass>CustomizableZombieHorde.CompZombieGraveSpawner</compClass>
@@ -62,7 +62,7 @@
   <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Boomer</defName>
     <label>boomer grave</label>
-    <description>A swollen grave mound that belches out unstable boomers.</description>
+    <description>A grave that keeps spawning boomers.</description>
     <comps>
       <li Class="CustomizableZombieHorde.CompProperties_ZombieGraveSpawner">
         <compClass>CustomizableZombieHorde.CompZombieGraveSpawner</compClass>
@@ -79,7 +79,7 @@
   <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Sick</defName>
     <label>sick grave</label>
-    <description>A diseased grave that leaks dark sludge while more sick zombies claw free.</description>
+    <description>A grave that keeps spawning sick zombies.</description>
     <comps>
       <li Class="CustomizableZombieHorde.CompProperties_ZombieGraveSpawner">
         <compClass>CustomizableZombieHorde.CompZombieGraveSpawner</compClass>
@@ -96,7 +96,7 @@
   <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Drowned</defName>
     <label>drowned grave</label>
-    <description>A soaked grave that keeps dragging drowned corpses up from below.</description>
+    <description>A grave that keeps spawning drowned zombies.</description>
     <comps>
       <li Class="CustomizableZombieHorde.CompProperties_ZombieGraveSpawner">
         <compClass>CustomizableZombieHorde.CompZombieGraveSpawner</compClass>
@@ -113,7 +113,7 @@
   <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Brute</defName>
     <label>brute grave</label>
-    <description>A heaving grave that keeps forcing brute zombies up from the dirt.</description>
+    <description>A grave that keeps spawning brutes.</description>
     <statBases>
       <MaxHitPoints>210</MaxHitPoints>
       <Flammability>0.10</Flammability>
@@ -136,7 +136,7 @@
   <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Grabber</defName>
     <label>grabber grave</label>
-    <description>A stretched, split grave whose corpses seize prey and pin them down while they struggle to break free.</description>
+    <description>A grave that keeps spawning grabbers.</description>
     <comps>
       <li Class="CustomizableZombieHorde.CompProperties_ZombieGraveSpawner">
         <compClass>CustomizableZombieHorde.CompZombieGraveSpawner</compClass>
@@ -153,7 +153,7 @@
 <ThingDef ParentName="CZH_ZombieGraveBase">
     <defName>CZH_Grave_Tank</defName>
     <label>brute grave</label>
-    <description>A heaving grave that keeps forcing brute zombies up from the dirt.</description>
+    <description>A grave that keeps spawning brutes.</description>
     <statBases Inherit="False">
       <MaxHitPoints>210</MaxHitPoints>
       <Flammability>0.10</Flammability>

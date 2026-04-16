@@ -3,7 +3,7 @@
   <ThingDef ParentName="CZH_ResourceBase">
     <defName>CZH_ZombieBile</defName>
     <label>zombie bile</label>
-    <description>A clear test tube filled with thick, blackish blood distilled from unusual undead remains. It is unstable on its own, but useful in certain anti infection treatments.</description>
+    <description>Stabilized zombie bile used in treatment and surgery.</description>
     <graphicData>
       <texPath>Things/Item/Resource/ZombieBile</texPath>
       <graphicClass>Graphic_Single</graphicClass>
@@ -23,7 +23,7 @@
   <ThingDef ParentName="CZH_ResourceBase">
     <defName>CZH_BileTreatmentKit</defName>
     <label>bile med kit</label>
-    <description>A field treatment kit built around stabilized bile extract. Right click an infected pawn with a colonist carrying one to administer it and cure zombie sickness before it reaches terminal.</description>
+    <description>A kit that can cure zombie sickness before it turns terminal.</description>
     <graphicData>
       <texPath>Things/Item/Resource/BileTreatmentKit</texPath>
       <graphicClass>Graphic_Single</graphicClass>

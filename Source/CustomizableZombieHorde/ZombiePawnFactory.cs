@@ -299,21 +299,6 @@ namespace CustomizableZombieHorde
                 return null;
             }
 
-            if (faction != null)
-            {
-                try
-                {
-                    MethodInfo generatePawnWithFaction = AccessTools.Method(typeof(PawnGenerator), "GeneratePawn", new[] { typeof(PawnKindDef), typeof(Faction) });
-                    if (generatePawnWithFaction != null)
-                    {
-                        return generatePawnWithFaction.Invoke(null, new object[] { kind, faction }) as Pawn;
-                    }
-                }
-                catch
-                {
-                }
-            }
-
             return PawnGenerator.GeneratePawn(kind);
         }
 
@@ -431,6 +416,7 @@ namespace CustomizableZombieHorde
                 pawn.needs.mood.CurLevel = 0.05f;
             }
 
+            ZombieUtility.EnsureEmotionlessZombie(pawn);
             ZombieLurkerUtility.EnsureEmotionlessLurker(pawn);
             EnsureZombieVisualIntegrity(pawn);
         }

@@ -3,7 +3,7 @@
   <FactionDef>
     <defName>CZH_ZombieHorde</defName>
     <label>zombie horde</label>
-    <description>Shambling undead that converge on living settlements.</description>
+    <description>Shambling undead drawn to the living.</description>
     <isPlayer>false</isPlayer>
     <humanlikeFaction>false</humanlikeFaction>
     <hidden>false</hidden>

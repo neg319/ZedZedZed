@@ -4,7 +4,7 @@
     <defName>CZH_BackstoryChild_Biter</defName>
     <title>Biter</title>
     <titleShort>Biter</titleShort>
-    <baseDesc>A mindless, ravenous shell driven by hunger and violent instinct alone.</baseDesc>
+    <baseDesc>A mindless corpse driven by hunger.</baseDesc>
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -28,7 +28,7 @@
     <defName>CZH_BackstoryAdult_Biter</defName>
     <title>Biter</title>
     <titleShort>Biter</titleShort>
-    <baseDesc>This shambling corpse exists only to close distance and tear flesh with brute force.</baseDesc>
+    <baseDesc>A shambling corpse that closes in and tears flesh.</baseDesc>
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -53,7 +53,7 @@
     <defName>CZH_BackstoryChild_Runt</defName>
     <title>Runt</title>
     <titleShort>Runt</titleShort>
-    <baseDesc>Broken and dragging, this corpse still claws forward with stubborn predatory focus.</baseDesc>
+    <baseDesc>A broken corpse that still drags itself toward prey.</baseDesc>
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -67,7 +67,7 @@
     <defName>CZH_BackstoryAdult_Runt</defName>
     <title>Runt</title>
     <titleShort>Runt</titleShort>
-    <baseDesc>Its limbs are ruined, but it keeps dragging itself onward with feral purpose.</baseDesc>
+    <baseDesc>Its limbs are ruined, but it keeps dragging itself forward.</baseDesc>
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -82,7 +82,7 @@
     <defName>CZH_BackstoryChild_Boomer</defName>
     <title>Boomer</title>
     <titleShort>Boomer</titleShort>
-    <baseDesc>Swollen with unstable rot, this corpse wobbles toward prey like a pressurized sack of decay.</baseDesc>
+    <baseDesc>A swollen corpse ready to burst.</baseDesc>
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -96,7 +96,7 @@
     <defName>CZH_BackstoryAdult_Boomer</defName>
     <title>Boomer</title>
     <titleShort>Boomer</titleShort>
-    <baseDesc>It shambles like a ruptured brute, dangerous less for skill than for what bursts out when it breaks.</baseDesc>
+    <baseDesc>Dangerous for what happens when it bursts.</baseDesc>
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -111,7 +111,7 @@
     <defName>CZH_BackstoryChild_Sick</defName>
     <title>Sick</title>
     <titleShort>Sick</titleShort>
-    <baseDesc>It drips contagion, staggers through filth, and spreads rot more effectively than any thought ever could.</baseDesc>
+    <baseDesc>It spreads filth and infection wherever it goes.</baseDesc>
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -125,7 +125,7 @@
     <defName>CZH_BackstoryAdult_Sick</defName>
     <title>Sick</title>
     <titleShort>Sick</titleShort>
-    <baseDesc>This infected shell exists to foul the living and leave disease in its wake.</baseDesc>
+    <baseDesc>An infected corpse that leaves sickness behind.</baseDesc>
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -140,7 +140,7 @@
     <defName>CZH_BackstoryChild_Drowned</defName>
     <title>Drowned</title>
     <titleShort>Drowned</titleShort>
-    <baseDesc>Waterlogged and blue with ruin, this corpse moves best where footing is worst and breath means nothing.</baseDesc>
+    <baseDesc>A waterlogged corpse that moves best in wet ground.</baseDesc>
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -154,7 +154,7 @@
     <defName>CZH_BackstoryAdult_Drowned</defName>
     <title>Drowned</title>
     <titleShort>Drowned</titleShort>
-    <baseDesc>It lurches from marsh and surf with soaked patience, dead weight made hungry.</baseDesc>
+    <baseDesc>A drowned corpse that lurches in from the water.</baseDesc>
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -169,7 +169,7 @@
     <defName>CZH_BackstoryChild_Brute</defName>
     <title>Brute</title>
     <titleShort>Brute</titleShort>
-    <baseDesc>A broad and brutal hulk that overcomes prey through mass, force, and relentless pressure.</baseDesc>
+    <baseDesc>A hulking corpse that overwhelms prey with force.</baseDesc>
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -183,7 +183,7 @@
     <defName>CZH_BackstoryAdult_Brute</defName>
     <title>Brute</title>
     <titleShort>Brute</titleShort>
-    <baseDesc>It smashes through resistance with slow certainty, built more like a battering ram than a man.</baseDesc>
+    <baseDesc>More battering ram than person.</baseDesc>
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -198,7 +198,7 @@
     <defName>CZH_BackstoryChild_Grabber</defName>
     <title>Grabber</title>
     <titleShort>Grabber</titleShort>
-    <baseDesc>It hunts by seizing, hauling, and dragging prey close before the final rush.</baseDesc>
+    <baseDesc>It hunts by seizing and dragging prey close.</baseDesc>
     <slot>Childhood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -212,7 +212,7 @@
     <defName>CZH_BackstoryAdult_Grabber</defName>
     <title>Grabber</title>
     <titleShort>Grabber</titleShort>
-    <baseDesc>This long-reaching stalker is all hooks, pull, and ugly close-in violence.</baseDesc>
+    <baseDesc>A long reaching stalker built to pull prey in.</baseDesc>
     <slot>Adulthood</slot>
     <shuffleable>false</shuffleable>
     <workDisables>
@@ -225,74 +225,74 @@
 
   <!-- Lurker archetypes -->
   <BackstoryDef>
-    <defName>CZH_BackstoryChild_LurkerBuilder</defName><title>Lurker Builder</title><titleShort>Lurker Builder</titleShort><baseDesc>Some buried reflex for measuring, fitting, and patching still lingers beneath the rot.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryChild_LurkerBuilder</defName><title>Lurker Builder</title><titleShort>Lurker Builder</titleShort><baseDesc>Old building instincts still linger beneath the rot.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
     <skillGains><Construction>4</Construction><Crafting>2</Crafting></skillGains>
   </BackstoryDef>
   <BackstoryDef>
-    <defName>CZH_BackstoryAdult_LurkerBuilder</defName><title>Lurker Builder</title><titleShort>Lurker Builder</titleShort><baseDesc>Even half-dead, this lurker knows how to raise walls and put broken places back together.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryAdult_LurkerBuilder</defName><title>Lurker Builder</title><titleShort>Lurker Builder</titleShort><baseDesc>This lurker still knows how to build and repair.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
     <skillGains><Construction>5</Construction><Crafting>2</Crafting><Mining>1</Mining></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
-    <defName>CZH_BackstoryChild_LurkerMiner</defName><title>Lurker Miner</title><titleShort>Lurker Miner</titleShort><baseDesc>Old muscle memory still guides the pick and the swing.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryChild_LurkerMiner</defName><title>Lurker Miner</title><titleShort>Lurker Miner</titleShort><baseDesc>Old muscle memory still guides the pick.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
     <skillGains><Mining>4</Mining><Construction>1</Construction><Melee>1</Melee></skillGains>
   </BackstoryDef>
   <BackstoryDef>
-    <defName>CZH_BackstoryAdult_LurkerMiner</defName><title>Lurker Miner</title><titleShort>Lurker Miner</titleShort><baseDesc>This lurker still knows how to chew through rock and haul stone from the dark.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryAdult_LurkerMiner</defName><title>Lurker Miner</title><titleShort>Lurker Miner</titleShort><baseDesc>This lurker still knows how to mine.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
     <skillGains><Mining>5</Mining><Construction>1</Construction><Melee>1</Melee></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
-    <defName>CZH_BackstoryChild_LurkerFarmer</defName><title>Lurker Farmer</title><titleShort>Lurker Farmer</titleShort><baseDesc>Hands once used to soil and rows still remember how to tend living things.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryChild_LurkerFarmer</defName><title>Lurker Farmer</title><titleShort>Lurker Farmer</titleShort><baseDesc>These hands still remember field work.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
     <skillGains><Plants>4</Plants></skillGains>
   </BackstoryDef>
   <BackstoryDef>
-    <defName>CZH_BackstoryAdult_LurkerFarmer</defName><title>Lurker Farmer</title><titleShort>Lurker Farmer</titleShort><baseDesc>This lurker moves slowly, but it can still sow, cut, and gather with patient rhythm.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryAdult_LurkerFarmer</defName><title>Lurker Farmer</title><titleShort>Lurker Farmer</titleShort><baseDesc>This lurker can still sow and harvest.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
     <skillGains><Plants>5</Plants><Cooking>1</Cooking></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
-    <defName>CZH_BackstoryChild_LurkerDoctor</defName><title>Lurker Doctor</title><titleShort>Lurker Doctor</titleShort><baseDesc>Somewhere under the hunger, precise hands and clinical habits remain.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryChild_LurkerDoctor</defName><title>Lurker Doctor</title><titleShort>Lurker Doctor</titleShort><baseDesc>Steady hands still linger beneath the hunger.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
     <skillGains><Medicine>4</Medicine></skillGains>
   </BackstoryDef>
   <BackstoryDef>
-    <defName>CZH_BackstoryAdult_LurkerDoctor</defName><title>Lurker Doctor</title><titleShort>Lurker Doctor</titleShort><baseDesc>This lurker still recalls dressings, stitches, and the quiet routine of treatment.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryAdult_LurkerDoctor</defName><title>Lurker Doctor</title><titleShort>Lurker Doctor</titleShort><baseDesc>This lurker still remembers basic treatment.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
     <skillGains><Medicine>5</Medicine></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
-    <defName>CZH_BackstoryChild_LurkerWarden</defName><title>Lurker Warden</title><titleShort>Lurker Warden</titleShort><baseDesc>Discipline and routine shaped this one long before it became a shambling thing.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryChild_LurkerWarden</defName><title>Lurker Warden</title><titleShort>Lurker Warden</titleShort><baseDesc>Discipline still lingers beneath the rot.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
     <skillGains><Melee>2</Melee><Construction>1</Construction></skillGains>
   </BackstoryDef>
   <BackstoryDef>
-    <defName>CZH_BackstoryAdult_LurkerWarden</defName><title>Lurker Warden</title><titleShort>Lurker Warden</titleShort><baseDesc>This lurker still knows how to watch doors, control prisoners, and enforce order.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryAdult_LurkerWarden</defName><title>Lurker Warden</title><titleShort>Lurker Warden</titleShort><baseDesc>This lurker still knows how to handle prisoners.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
     <skillGains><Melee>2</Melee><Shooting>1</Shooting></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
-    <defName>CZH_BackstoryChild_LurkerSlave</defName><title>Lurker Slave</title><titleShort>Lurker Slave</titleShort><baseDesc>Endless labor carved obedience and endurance deep into deadened flesh.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryChild_LurkerSlave</defName><title>Lurker Slave</title><titleShort>Lurker Slave</titleShort><baseDesc>Endless labor left behind obedience and endurance.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
     <skillGains><Construction>2</Construction><Mining>2</Mining><Plants>2</Plants></skillGains>
   </BackstoryDef>
   <BackstoryDef>
-    <defName>CZH_BackstoryAdult_LurkerSlave</defName><title>Lurker Slave</title><titleShort>Lurker Slave</titleShort><baseDesc>This lurker is suited for hauling, field work, and the sort of labor no one else wants.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryAdult_LurkerSlave</defName><title>Lurker Slave</title><titleShort>Lurker Slave</titleShort><baseDesc>This lurker is suited for hard labor.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
     <skillGains><Construction>2</Construction><Mining>2</Mining><Plants>2</Plants><Melee>1</Melee></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
-    <defName>CZH_BackstoryChild_LurkerChef</defName><title>Lurker Chef</title><titleShort>Lurker Chef</titleShort><baseDesc>Knife work, heat, and practiced routine still linger in these ruined motions.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryChild_LurkerChef</defName><title>Lurker Chef</title><titleShort>Lurker Chef</titleShort><baseDesc>Kitchen habits still linger in these ruined motions.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
     <skillGains><Cooking>4</Cooking><Crafting>1</Crafting></skillGains>
   </BackstoryDef>
   <BackstoryDef>
-    <defName>CZH_BackstoryAdult_LurkerChef</defName><title>Lurker Chef</title><titleShort>Lurker Chef</titleShort><baseDesc>This lurker can still portion ingredients, tend stoves, and turn scraps into meals.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryAdult_LurkerChef</defName><title>Lurker Chef</title><titleShort>Lurker Chef</titleShort><baseDesc>This lurker can still cook.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
     <skillGains><Cooking>5</Cooking><Crafting>1</Crafting><Plants>1</Plants></skillGains>
   </BackstoryDef>
 
   <BackstoryDef>
-    <defName>CZH_BackstoryChild_LurkerScientist</defName><title>Lurker Scientist</title><titleShort>Lurker Scientist</titleShort><baseDesc>Amid the ruin, some fragment of method, analysis, and old curiosity still remains.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryChild_LurkerScientist</defName><title>Lurker Scientist</title><titleShort>Lurker Scientist</titleShort><baseDesc>A little method and curiosity still remain.</baseDesc><slot>Childhood</slot><shuffleable>false</shuffleable>
     <skillGains><Medicine>1</Medicine></skillGains>
   </BackstoryDef>
   <BackstoryDef>
-    <defName>CZH_BackstoryAdult_LurkerScientist</defName><title>Lurker Scientist</title><titleShort>Lurker Scientist</titleShort><baseDesc>This lurker still remembers how to study, record, and reason, even if the soul behind it is dim.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
+    <defName>CZH_BackstoryAdult_LurkerScientist</defName><title>Lurker Scientist</title><titleShort>Lurker Scientist</titleShort><baseDesc>This lurker still remembers how to study and record.</baseDesc><slot>Adulthood</slot><shuffleable>false</shuffleable>
     <skillGains><Medicine>1</Medicine><Crafting>1</Crafting></skillGains>
   </BackstoryDef>
 </Defs>

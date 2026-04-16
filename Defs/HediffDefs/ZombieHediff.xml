@@ -5,7 +5,7 @@
     <defName>CZH_ZombieBrainDestroyed</defName>
     <hediffClass>HediffWithComps</hediffClass>
     <label>brain destroyed</label>
-    <description>This zombie is dead because its brain has been destroyed. Zombies are not supposed to stay dead unless the brain is gone.</description>
+    <description>This zombie stays dead because its brain is destroyed.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -22,7 +22,7 @@
     <defName>CZH_ZombieRot</defName>
     <hediffClass>HediffWithComps</hediffClass>
     <label>zombie rot</label>
-    <description>This pawn is one of the dead. It is slow, rotten, and dangerous in a crowd, but it is also meant to go down fast under good fire. Head and face damage are especially decisive.</description>
+    <description>This pawn is undead. It is slow, rotten, and dangerous in groups.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -97,7 +97,7 @@
     <defName>CZH_ZombieFeignDeath</defName>
     <hediffClass>CustomizableZombieHorde.Hediff_ZombieFeignDeath</hediffClass>
     <label>Reanimating</label>
-    <description>Legacy reanimation state from older builds. In the current design zombies are supposed to die like normal pawns, so this status should clear itself rather than sticking around.</description>
+    <description>Legacy reanimation state.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -135,7 +135,7 @@
     <defName>CZH_ZombieLimbDecay</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>limb decay</label>
-    <description>The limb is rotted and weaker than a healthy pawn limb.</description>
+    <description>This limb is badly rotted.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -152,7 +152,7 @@
     <defName>CZH_ZombieOpenWound</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>rotting wound</label>
-    <description>A visible decayed wound left on the zombie's body.</description>
+    <description>A rotten wound.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -170,7 +170,7 @@
     <defName>CZH_ZombieRunner</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>runner strain</label>
-    <description>Likes: Open lanes, fleeing prey, fast pursuit, sudden pressure. Dislikes: Tight stalls, being slowed, losing momentum, blocked paths.</description>
+    <description>A rare fast zombie.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -195,7 +195,7 @@
     <defName>CZH_ZombieBiter</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>frail biter strain</label>
-    <description>Likes: Prey nearby, loud gunfire, moving toward the colony, fresh flesh. Dislikes: Empty ground, quiet areas, losing track of prey, being far from the fight.</description>
+    <description>A basic shambling zombie.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -214,7 +214,7 @@
     <defName>CZH_ZombieSkeletonBiter</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>skeletal biter strain</label>
-    <description>Likes: Fresh corpses nearby, feeding on corpses, battlefields full of bodies, being left alone while feeding. Dislikes: Feeding interrupted, corpses taken away, clean empty ground, being pulled away from a body.</description>
+    <description>A biter that feeds on corpses.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -233,7 +233,7 @@
     <defName>CZH_ZombieRunt</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>runt body</label>
-    <description>Likes: Packs nearby, tight paths, crawling toward prey, downed victims. Dislikes: Open ground, being left behind, fast moving prey, empty quiet spaces.</description>
+    <description>A small crawling zombie.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -252,7 +252,7 @@
     <defName>CZH_RuntAgeSevenMonths</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>7 Months</label>
-    <description>This runt is the youngest and weakest of the litter.</description>
+    <description>The youngest and weakest runt.</description>
     <isBad>false</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -272,7 +272,7 @@
     <defName>CZH_RuntAgeEightMonths</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>8 Months</label>
-    <description>This runt is still frail, but a little faster and meaner than the youngest littermates.</description>
+    <description>A slightly older runt.</description>
     <isBad>false</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -292,7 +292,7 @@
     <defName>CZH_RuntAgeNineMonths</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>9 Months</label>
-    <description>This runt is the oldest of the litter and the quickest on its feet, though still far weaker than a full grown corpse.</description>
+    <description>The oldest and quickest runt.</description>
     <isBad>false</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -334,7 +334,7 @@
     <defName>CZH_ZombieDrownedLand</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>drowned on land</label>
-    <description>Likes: Rain, water, wet ground, shoreline hunting, returning to water. Dislikes: Dry land, hot clear weather, being far from water, getting stranded inland.</description>
+    <description>A waterlogged zombie that prefers rain and water.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -360,7 +360,7 @@
     <defName>CZH_ZombieDrownedWater</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>drowned in water</label>
-    <description>Back in water, this drowned corpse becomes fast and violent.</description>
+    <description>Back in water, this drowned zombie becomes fast and violent.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -380,7 +380,7 @@
     <defName>CZH_ZombieDrownedRain</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>drowned in rain</label>
-    <description>Cold rain swells this drowned corpse into a rushing tide of rot. It surges toward living prey with unnatural speed.</description>
+    <description>Rain drives this drowned zombie into a fast rush.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -401,7 +401,7 @@
     <defName>CZH_ZombieNightRush</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>night rush</label>
-    <description>Darkness drives this zombie into a faster shambling surge.</description>
+    <description>Darkness makes this zombie move faster.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -420,7 +420,7 @@
     <defName>CZH_ZombieHerdMomentum</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>herd momentum</label>
-    <description>This zombie has been swept into the forward pressure of a crossing herd.</description>
+    <description>This zombie is being carried by the herd.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -439,7 +439,7 @@
     <defName>CZH_ZombieSickness</defName>
     <hediffClass>CustomizableZombieHorde.Hediff_ZombieInfection</hediffClass>
     <label>zombie infection</label>
-    <description>Contact with sick zombie blood or a filthy zombie bite has left this pawn infected. Bite caused infections can begin in a specific limb and may be stopped if that limb is amputated before the infection turns terminal. The stages are Fresh Bite at 1 percent, Itchy Bite at 10 percent, Infected Bite at 30 percent, Strange Flu at 50 percent, Infected Bloodstream at 60 percent, Necrosis and Dementia at 70 percent, Coma at 80 percent, and Transformation at 90 percent. During the Coma stage the pawn is unconscious but still alive. If they survive to 99 percent, the infection completes the turn and converts the living pawn into a colony lurker through the same path used by zombie bile injection. If the pawn dies earlier from other injuries, the corpse stays dead.</description>
+    <description>A zombie infection. During Coma the pawn is alive but unconscious. At 99 percent, the pawn becomes a lurker.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>true</tendable>
@@ -565,7 +565,7 @@
     <defName>CZH_ZombieReanimated</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>fully reanimated</label>
-    <description>This pawn completed the infection and is now fully reanimated. This is a completed turn state and cannot be cured.</description>
+    <description>This pawn has fully turned and cannot be cured.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -582,7 +582,7 @@
     <defName>CZH_ZombieAcidCorrosion</defName>
     <hediffClass>HediffWithComps</hediffClass>
     <label>zombie acid corrosion</label>
-    <description>Caustic zombie acid is still eating at the flesh and causing ongoing burn damage.</description>
+    <description>Zombie acid is still burning this pawn.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -607,25 +607,24 @@
   <HediffDef>
     <defName>CZH_ZombieBloodSepsis</defName>
     <hediffClass>HediffWithComps</hediffClass>
-    <label>zombie blood exposure</label>
-    <description>Undead blood is seeping into cuts and causing a weak but lingering damage over time effect.</description>
+    <label>infected blood exposure</label>
+    <description>This pawn is coated in infected zombie blood. Rain or standing water can wash it off.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
     <makesAlert>false</makesAlert>
-    <initialSeverity>0.10</initialSeverity>
+    <initialSeverity>1.0</initialSeverity>
     <maxSeverity>1.0</maxSeverity>
     <comps>
-      <li Class="CustomizableZombieHorde.HediffCompProperties_DamageOverTime">
-        <tickInterval>900</tickInterval>
-        <damageAmount>0.35</damageAmount>
-        <damageDef>Cut</damageDef>
-        <severityLossPerTick>0.02</severityLossPerTick>
+      <li Class="CustomizableZombieHorde.HediffCompProperties_InfectedBloodExposure">
+        <durationTicks>60000</durationTicks>
+        <infectionCheckIntervalTicks>3600</infectionCheckIntervalTicks>
+        <infectionChancePerCheck>0.05</infectionChancePerCheck>
       </li>
     </comps>
     <stages>
       <li>
-        <label>contaminated</label>
+        <label>coated</label>
       </li>
     </stages>
   </HediffDef>
@@ -634,7 +633,7 @@
     <defName>CZH_PregnantBoomer</defName>
     <hediffClass>HediffWithComps</hediffClass>
     <label>pregnant boomer</label>
-    <description>Likes: Crowded prey, close quarters, bursting near enemies, leaving something behind. Dislikes: Long range kills, empty lanes, isolated death, targets keeping their distance.</description>
+    <description>A boomer that can burst into runts.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -650,7 +649,7 @@
     <defName>CZH_PukedOn</defName>
     <hediffClass>HediffWithComps</hediffClass>
     <label>puked on</label>
-    <description>This pawn is coated in fresh zombie bile. The stench and dripping mess draw nearby zombies toward them.</description>
+    <description>This pawn is coated in fresh zombie bile. Nearby zombies are drawn to it.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -674,7 +673,7 @@
     <defName>CZH_ZombieTank</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>brute strain</label>
-    <description>This massive zombie strain is much stronger and larger than normal undead.</description>
+    <description>A large and powerful zombie strain.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>

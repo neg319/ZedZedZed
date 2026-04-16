@@ -73,15 +73,15 @@ namespace CustomizableZombieHorde
                 ["ZZZ_BadgeActive"] = "ACTIVE",
                 ["ZZZ_ButtonApply"] = "Apply",
                 ["ZZZ_ButtonRunNow"] = "Run now",
-                ["ZZZ_CorpseNoSpoil"] = "This zombie corpse does not spoil.",
+                ["ZZZ_CorpseNoSpoil"] = "This zombie corpse does not rot.",
                 ["ZZZ_HUDDanger"] = "Danger: {0}%",
                 ["ZZZ_HUDDangerOff"] = "Danger: off",
-                ["ZZZ_LurkerRecruitFail"] = "Recruitment attempt failed. A warden can keep trying without capturing the lurker.",
+                ["ZZZ_LurkerRecruitFail"] = "Recruitment failed. A warden can try again.",
                 ["ZZZ_PresetApocalypse"] = "Apocalypse",
                 ["ZZZ_PresetCasual"] = "Casual",
                 ["ZZZ_PresetRecommended"] = "Recommended",
-                ["ZZZ_SettingsHint"] = "Written to stay readable in the middle of a live save.",
-                ["ZZZ_SettingsSubtitle"] = "Outbreak pacing, strain control, colony cleanup, and a few dangerous little test tools.",
+                ["ZZZ_SettingsHint"] = "Made for live saves.",
+                ["ZZZ_SettingsSubtitle"] = "Outbreak settings, strain control, and colony cleanup.",
                 ["ZZZ_SettingsTitle"] = "Zed Zed Zed Settings",
                 ["ZZZ_StateChecked"] = "Checked",
                 ["ZZZ_StateDisabled"] = "Disabled",
@@ -1633,8 +1633,8 @@ namespace CustomizableZombieHorde
                 Thing food = ZombieLurkerUtility.FindAvailableTameFood(pawn, pawn.Map);
                 if (food == null)
                 {
-                    opts.Add(new FloatMenuOption("Recruit lurker like a prisoner using stockpiled rotten flesh or human meat", null));
-                    opts.Add(new FloatMenuOption("Tame lurker using stockpiled rotten flesh or human meat", null));
+                    opts.Add(new FloatMenuOption("Recruit a lurker with rotten flesh or human meat", null));
+                    opts.Add(new FloatMenuOption("Tame a lurker with rotten flesh or human meat", null));
                     continue;
                 }
 
@@ -1682,7 +1682,7 @@ namespace CustomizableZombieHorde
                 Thing kit = ZombieBileUtility.FindCarriedBileTreatmentKit(pawn);
                 if (kit == null)
                 {
-                    opts.Add(new FloatMenuOption("Administer bile treatment (requires a bile med kit)", null));
+                    opts.Add(new FloatMenuOption("Administer bile treatment", null));
                     continue;
                 }
 
@@ -1725,7 +1725,7 @@ namespace CustomizableZombieHorde
             Command_Action command = new Command_Action
             {
                 defaultLabel = "Double Tap",
-                defaultDesc = "Select a downed colonist, zombie, or dangerous corpse to finish it with a head shot.",
+                defaultDesc = "Finish a downed target with a head shot.",
                 action = delegate
                 {
                     ManualDoubleTapGizmoUtility.BeginDoubleTapTargeting(pawn);
@@ -2262,17 +2262,15 @@ namespace CustomizableZombieHorde
     [HarmonyPatch(typeof(ThoughtWorker), "CurrentState", new[] { typeof(Pawn) })]
     public static class Patch_ThoughtWorker_CurrentState_ZombieIndifference
     {
-        public static void Postfix(ThoughtWorker __instance, Pawn p, ref ThoughtState __result)
+        public static bool Prefix(ThoughtWorker __instance, Pawn p, ref ThoughtState __result)
         {
-            if (!__result.Active || !ZombieUtility.IsZombie(p))
+            if (!ZombieUtility.IsZombie(p))
             {
-                return;
+                return true;
             }
 
-            if (ZombieUtility.ShouldSuppressZombieThought(__instance?.def))
-            {
-                __result = ThoughtState.Inactive;
-            }
+            __result = ThoughtState.Inactive;
+            return false;
         }
     }
 

@@ -239,7 +239,7 @@ namespace CustomizableZombieHorde
             faction ??= ZombieFactionUtility.GetOrCreateZombieFaction();
 
             IntVec3 edgeCell;
-            if (!TryFindZombieEntryCell(map, out edgeCell))
+            if (!TryFindEntryCell(map, out edgeCell))
             {
                 edgeCell = FindAnyStandableCellNearEdge(map, insideOnly: true);
                 if (!edgeCell.IsValid)
@@ -280,13 +280,13 @@ namespace CustomizableZombieHorde
         public static bool SpawnHuddledPack(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool applyDifficulty = true, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
-            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Huddle", customLetterText: "A knot of " + prefix.ToLowerInvariant() + "s has gathered just inside the map. They will bunch up first, then start drifting deeper across the map, so they can become a real threat if you leave them alone.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.HuddledPack, populationState: populationState);
+            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Huddle", customLetterText: "A knot of " + prefix.ToLowerInvariant() + "s has gathered just inside the map.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.HuddledPack, populationState: populationState);
         }
 
         public static bool SpawnEdgeWanderers(Map map, int? forcedCount = null, bool sendLetter = true, bool ignoreCap = false, bool ignoreTimeOfDay = false, bool applyDifficulty = true, ZombiePopulationState populationState = ZombiePopulationState.Auto)
         {
             string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
-            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Edge Wanderers", customLetterText: "A band of " + prefix.ToLowerInvariant() + "s is slowly drifting along the edge of the map, probing the colony perimeter for an opening.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.EdgeWander, populationState: populationState);
+            return SpawnWave(map, forcedCount: forcedCount, sendLetter: sendLetter, customLetterLabel: prefix + " Edge Wanderers", customLetterText: "A band of " + prefix.ToLowerInvariant() + "s is drifting along the map edge.", applyDifficulty: applyDifficulty, ignoreCap: ignoreCap, ignoreTimeOfDay: ignoreTimeOfDay, behavior: ZombieSpawnEventType.EdgeWander, populationState: populationState);
         }
 
         public static int GetRecommendedHerdCount(Map map)
@@ -385,7 +385,7 @@ namespace CustomizableZombieHorde
             {
                 string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
                 string label = customLetterLabel ?? (prefix + " Herd");
-                string text = customLetterText ?? "A broad herd of " + prefix.ToLowerInvariant() + "s is crossing the map in a rolling wall of bodies. They are trying to move through the area, not stage a clean raid, but anything too close can still get swallowed by the flow.";
+                string text = customLetterText ?? "A broad herd of " + prefix.ToLowerInvariant() + "s is crossing the map.";
                 Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.ThreatBig, new TargetInfo(firstCell.IsValid ? firstCell : map.Center, map));
             }
 
@@ -509,7 +509,7 @@ namespace CustomizableZombieHorde
                 string prefix = ZombieDefUtility.CleanPrefix(CustomizableZombieHordeMod.Settings.zombiePrefix);
                 Find.LetterStack.ReceiveLetter(
                     prefix + " Ground Burst",
-                    "The soil splits open inside your base and a small pack of " + prefix.ToLowerInvariant() + "s claws its way up through the floor. This one starts inside your walls, so move fast and keep civilians clear.",
+                    "The soil splits open inside your base and a pack of " + prefix.ToLowerInvariant() + "s claws up through the floor.",
                     LetterDefOf.ThreatSmall,
                     new TargetInfo(firstCell.IsValid ? firstCell : map.Center, map));
             }
@@ -649,7 +649,9 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                IntVec3 spawnCell = FindBurstCellNear(map, center, i == 0 ? 1 : 4, i == 0 ? 2 : 7);
+                IntVec3 spawnCell = variant == ZombieVariant.Drowned
+                    ? FindDrownedBurstCellNear(map, center, i == 0 ? 0 : 2, i == 0 ? 2 : 6)
+                    : FindBurstCellNear(map, center, i == 0 ? 1 : 4, i == 0 ? 2 : 7);
                 if (!spawnCell.IsValid)
                 {
                     pawn.Destroy(DestroyMode.Vanish);
@@ -759,6 +761,28 @@ namespace CustomizableZombieHorde
             }
 
             return cell.DistanceTo(center);
+        }
+
+        private static IntVec3 FindDrownedBurstCellNear(Map map, IntVec3 center, int minRadius, int maxRadius)
+        {
+            List<IntVec3> cells = GenRadial.RadialCellsAround(center, maxRadius, true)
+                .Where(cell => cell.InBounds(map)
+                    && cell.Walkable(map)
+                    && cell.GetEdifice(map) == null
+                    && ZombieUtility.IsWaterCell(cell, map)
+                    && cell.DistanceTo(center) >= minRadius)
+                .ToList();
+            if (cells.Count > 0)
+            {
+                return cells.RandomElement();
+            }
+
+            if (center.InBounds(map) && center.Walkable(map) && ZombieUtility.IsWaterCell(center, map) && center.GetEdifice(map) == null)
+            {
+                return center;
+            }
+
+            return FindBurstCellNear(map, center, Mathf.Max(0, minRadius), maxRadius);
         }
 
         private static IntVec3 FindBurstCellNear(Map map, IntVec3 center, int minRadius, int maxRadius)
@@ -958,15 +982,15 @@ namespace CustomizableZombieHorde
             switch (behavior)
             {
                 case ZombieSpawnEventType.HuddledPack:
-                    return "A knot of " + prefix.ToLowerInvariant() + "s has huddled together just inside the map, swaying and waiting to be stirred up. Keep noncombatants away until you decide how to engage it.";
+                    return "A knot of " + prefix.ToLowerInvariant() + "s has huddled together just inside the map.";
                 case ZombieSpawnEventType.EdgeWander:
-                    return "A group of " + prefix.ToLowerInvariant() + "s is shambling around the approaches to your base, drifting between aimless wandering and sudden pushes inward.";
+                    return "A group of " + prefix.ToLowerInvariant() + "s is shambling around the edge of your base.";
                 case ZombieSpawnEventType.GroundBurst:
-                    return "A pack of " + prefix.ToLowerInvariant() + "s has burst from the ground inside your colony. This breach began inside your defenses, so respond quickly.";
+                    return "A pack of " + prefix.ToLowerInvariant() + "s has burst from the ground inside your colony.";
                 case ZombieSpawnEventType.Herd:
-                    return "A herd of " + prefix.ToLowerInvariant() + "s is crossing the map in a broad moving lane. It may ignore distant targets, but anything close to the flow can still get swallowed up.";
+                    return "A herd of " + prefix.ToLowerInvariant() + "s is crossing the map.";
                 default:
-                    return "A group of " + prefix.ToLowerInvariant() + "s has drifted in from off map and is leaning toward your colony. Pull back exposed workers and set a firing line before they get close.";
+                    return "A group of " + prefix.ToLowerInvariant() + "s has drifted in from off map and is moving toward your colony.";
             }
         }
 
@@ -1151,7 +1175,7 @@ namespace CustomizableZombieHorde
             return FindAnyStandableCell(map);
         }
 
-        private static bool TryFindZombieEntryCell(Map map, out IntVec3 edgeCell)
+        public static bool TryFindEntryCell(Map map, out IntVec3 edgeCell)
         {
             IntVec3 rawEdgeCell;
             if (RCellFinder.TryFindRandomPawnEntryCell(out rawEdgeCell, map, CellFinder.EdgeRoadChance_Ignore))

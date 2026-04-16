@@ -122,6 +122,8 @@ namespace CustomizableZombieHorde
             }
 
             ForceZombieFaction(pawn);
+            ClearZombieGuestState(pawn);
+            EnsureEmotionlessZombie(pawn);
             ClearZombieIdeoligion(pawn);
             EnsureZombieCannibalTrait(pawn);
         }
@@ -167,6 +169,43 @@ namespace CustomizableZombieHorde
                         }
                     }
                 }
+            }
+        }
+
+        public static void EnsureEmotionlessZombie(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn?.needs == null || pawn.needs.AllNeeds == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
+            {
+                return;
+            }
+
+            NeedDef moodDef = DefDatabase<NeedDef>.GetNamedSilentFail("Mood");
+            NeedDef joyDef = DefDatabase<NeedDef>.GetNamedSilentFail("Joy");
+
+            for (int i = pawn.needs.AllNeeds.Count - 1; i >= 0; i--)
+            {
+                Need need = pawn.needs.AllNeeds[i];
+                if (need?.def == moodDef || need?.def == joyDef)
+                {
+                    pawn.needs.AllNeeds.RemoveAt(i);
+                }
+            }
+        }
+
+        private static void ClearZombieGuestState(Pawn pawn)
+        {
+            if (pawn == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
+            {
+                return;
+            }
+
+            try
+            {
+                FieldInfo guestField = AccessTools.Field(typeof(Pawn), "guest") ?? AccessTools.Field(typeof(Pawn), "guestInt");
+                guestField?.SetValue(pawn, null);
+            }
+            catch
+            {
             }
 
             try

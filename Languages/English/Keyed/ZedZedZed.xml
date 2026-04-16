@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <ZZZ_SettingsTitle>Zed Zed Zed Settings</ZZZ_SettingsTitle>
-  <ZZZ_SettingsSubtitle>Outbreak pacing, strain control, colony cleanup, and a few dangerous little test tools.</ZZZ_SettingsSubtitle>
-  <ZZZ_SettingsHint>Written to stay readable in the middle of a live save.</ZZZ_SettingsHint>
+  <ZZZ_SettingsSubtitle>Outbreak settings, strain control, and colony cleanup.</ZZZ_SettingsSubtitle>
+  <ZZZ_SettingsHint>Made for live saves.</ZZZ_SettingsHint>
   <ZZZ_BadgeActive>ACTIVE</ZZZ_BadgeActive>
   <ZZZ_TabOverview>Overview</ZZZ_TabOverview>
   <ZZZ_TabEvents>Events</ZZZ_TabEvents>
@@ -21,6 +21,6 @@
   <ZZZ_ButtonRunNow>Run now</ZZZ_ButtonRunNow>
   <ZZZ_HUDDanger>Danger: {0}%</ZZZ_HUDDanger>
   <ZZZ_HUDDangerOff>Danger: off</ZZZ_HUDDangerOff>
-  <ZZZ_CorpseNoSpoil>This zombie corpse does not spoil.</ZZZ_CorpseNoSpoil>
-  <ZZZ_LurkerRecruitFail>Recruitment attempt failed. A warden can keep trying without capturing the lurker.</ZZZ_LurkerRecruitFail>
+  <ZZZ_CorpseNoSpoil>This zombie corpse does not rot.</ZZZ_CorpseNoSpoil>
+  <ZZZ_LurkerRecruitFail>Recruitment failed. A warden can try again.</ZZZ_LurkerRecruitFail>
 </LanguageData>

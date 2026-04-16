@@ -100,6 +100,16 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
+            return ApplyZombieSicknessDirect(pawn, part);
+        }
+
+        public static bool ApplyZombieSicknessDirect(Pawn pawn, BodyPartRecord part = null)
+        {
+            if (!CanCatchZombieSickness(pawn))
+            {
+                return false;
+            }
+
             try
             {
                 Hediff hediff = part != null

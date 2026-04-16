@@ -2,12 +2,12 @@
 <Defs>
   <TraitDef>
     <defName>CZH_Trait_ZombieSickImmune</defName>
-    <description>This pawn is naturally resistant to the sickness spread by diseased zombies and their blood.</description>
+    <description>This pawn resists sickness spread by diseased zombies and their blood.</description>
     <commonality>0.28</commonality>
     <degreeDatas>
       <li>
         <label>zombie-plague immune</label>
-        <description>This pawn cannot catch the sickness spread by sick zombies or their blood.</description>
+        <description>This pawn cannot catch sickness from sick zombies or their blood.</description>
         <degree>0</degree>
       </li>
     </degreeDatas>
@@ -15,12 +15,12 @@
 
   <TraitDef>
     <defName>CZH_Trait_HeadHunter</defName>
-    <description>This pawn instinctively goes for the head in combat and tries to put enemies down with precise cranial strikes.</description>
+    <description>This pawn tends to aim for the head.</description>
     <commonality>0.18</commonality>
     <degreeDatas>
       <li>
         <label>head hunter</label>
-        <description>This pawn always aims for the head in combat when the target has one.</description>
+        <description>This pawn aims for the head whenever possible.</description>
         <degree>0</degree>
       </li>
     </degreeDatas>
@@ -28,12 +28,12 @@
 
   <TraitDef>
     <defName>CZH_Trait_DeadScent</defName>
-    <description>This pawn carries a corpse-like scent and presence that leaves zombies strangely uninterested.</description>
+    <description>This pawn smells wrong to zombies.</description>
     <commonality>0.08</commonality>
     <degreeDatas>
       <li>
         <label>dead scent</label>
-        <description>Zombies do not treat this pawn as hostile and usually ignore them unless caught in collateral damage.</description>
+        <description>Zombies usually ignore this pawn.</description>
         <degree>0</degree>
       </li>
     </degreeDatas>
@@ -42,12 +42,12 @@
 
   <TraitDef>
     <defName>CZH_Trait_HardToKill</defName>
-    <description>This pawn is unnaturally resilient in a zombie outbreak and is much harder to put down.</description>
+    <description>This pawn is hard to put down in a zombie outbreak.</description>
     <commonality>0.16</commonality>
     <degreeDatas>
       <li>
         <label>hard to kill</label>
-        <description>This pawn takes less damage from zombies, is harder to pain-shock, and is less likely to catch zombie sickness.</description>
+        <description>This pawn takes less damage from zombies and is less likely to catch zombie sickness.</description>
         <degree>0</degree>
       </li>
     </degreeDatas>
@@ -55,12 +55,12 @@
 
   <TraitDef>
     <defName>CZH_Trait_SteadyHands</defName>
-    <description>This pawn keeps calm under pressure and can put accurate ranged fire into the undead.</description>
+    <description>This pawn stays steady under pressure.</description>
     <commonality>0.20</commonality>
     <degreeDatas>
       <li>
         <label>steady hands</label>
-        <description>This pawn shoots more accurately and deals more ranged damage to zombies.</description>
+        <description>This pawn shoots zombies more accurately and hits harder.</description>
         <degree>0</degree>
       </li>
     </degreeDatas>
@@ -68,12 +68,12 @@
 
   <TraitDef>
     <defName>CZH_Trait_QuickEscape</defName>
-    <description>This pawn has a survival instinct for slipping away before the dead can drag them down.</description>
+    <description>This pawn is good at slipping away from danger.</description>
     <commonality>0.18</commonality>
     <degreeDatas>
       <li>
         <label>quick escape</label>
-        <description>This pawn moves faster, dodges better in close combat, and tries to break away when zombies hit them.</description>
+        <description>This pawn moves faster and is better at escaping zombies.</description>
         <degree>0</degree>
       </li>
     </degreeDatas>
@@ -84,12 +84,12 @@
        New code now uses CZH_Trait_DeadScent everywhere instead. -->
   <TraitDef>
     <defName>CZH_Trait_ZombiePassive</defName>
-    <description>Legacy compatibility alias for dead scent.</description>
+    <description>Compatibility alias for dead scent.</description>
     <commonality>0.0</commonality>
     <degreeDatas>
       <li>
         <label>dead scent</label>
-        <description>Legacy compatibility alias for dead scent.</description>
+        <description>Compatibility alias for dead scent.</description>
         <degree>0</degree>
       </li>
     </degreeDatas>

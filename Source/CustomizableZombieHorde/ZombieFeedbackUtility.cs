@@ -18,7 +18,7 @@ namespace CustomizableZombieHorde
 
             Find.LetterStack.ReceiveLetter(
                 "A passive lurker has wandered in",
-                "A passive lurker has wandered onto the map. It does not join the horde, it does not attack colonists, and other undead should ignore it. Right click it with a colonist carrying rotten flesh or human meat to try taming it.",
+                "A passive lurker has wandered onto the map. It will not attack colonists. Right click it with rotten flesh or human meat to try taming it.",
                 LetterDefOf.NeutralEvent,
                 new TargetInfo(cell, map));
         }
@@ -26,24 +26,24 @@ namespace CustomizableZombieHorde
         public static void SendLurkerTamedMessage(Pawn lurker, Pawn tamer)
         {
             string tamerName = tamer?.LabelShortCap ?? "A colonist";
-            Messages.Message(tamerName + " has tamed a lurker. It joins the colony and remains ignored by other undead.", lurker, MessageTypeDefOf.PositiveEvent);
+            Messages.Message(tamerName + " has tamed a lurker. It joins the colony and other undead ignore it.", lurker, MessageTypeDefOf.PositiveEvent);
         }
 
         public static void SendLurkerTameFailedMessage(Pawn lurker)
         {
-            Messages.Message("The lurker shies away and remains wild. Carry rotten flesh or human meat to try again.", lurker, MessageTypeDefOf.NeutralEvent);
+            Messages.Message("The lurker stays wild. Carry rotten flesh or human meat to try again.", lurker, MessageTypeDefOf.NeutralEvent);
         }
 
         public static void SendBileTreatmentMessage(Pawn patient, Pawn doctor)
         {
             string doctorName = doctor?.LabelShortCap ?? "A colonist";
-            Messages.Message(doctorName + " administers a bile med kit and cures zombie sickness in " + patient.LabelShortCap + ".", patient, MessageTypeDefOf.PositiveEvent);
+            Messages.Message(doctorName + " uses a bile med kit and cures zombie sickness in " + patient.LabelShortCap + ".", patient, MessageTypeDefOf.PositiveEvent);
         }
 
         public static void SendBileInjectionMessage(Pawn patient, Pawn doctor)
         {
             string doctorName = doctor?.LabelShortCap ?? "A colonist";
-            Messages.Message(doctorName + " injects zombie bile into " + patient.LabelShortCap + ". They survive the procedure and become a colony lurker.", patient, MessageTypeDefOf.NeutralEvent);
+            Messages.Message(doctorName + " injects zombie bile into " + patient.LabelShortCap + ". They survive and become a colony lurker.", patient, MessageTypeDefOf.NeutralEvent);
         }
 
         public static void SendZombieSicknessMessage(Pawn pawn, BodyPartRecord part = null)
@@ -57,10 +57,10 @@ namespace CustomizableZombieHorde
                 ? " in the " + (part.Label ?? part.def?.label ?? "limb")
                 : string.Empty;
             string cureText = part != null
-                ? " If that limb is amputated before the infection turns terminal, the infection can be removed with it."
+                ? " Remove the limb before the infection turns terminal to stop it."
                 : string.Empty;
 
-            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness" + locationText + ". It progresses through Fresh Bite at 1%, Itchy Bite at 10%, Infected Bite at 30%, Strange Flu at 50%, Infected Bloodstream at 60%, Necrosis and Dementia at 70%, Coma at 80%, and Transformation at 90%. If it reaches 99%, the pawn becomes a colony lurker." + cureText, pawn, MessageTypeDefOf.NegativeHealthEvent);
+            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness" + locationText + ". At 99%, the pawn becomes a colony lurker." + cureText, pawn, MessageTypeDefOf.NegativeHealthEvent);
         }
 
 
@@ -101,7 +101,7 @@ namespace CustomizableZombieHorde
             }
 
             LastGrabberWarningTickByTarget[prey.thingIDNumber] = ticksGame;
-            Messages.Message(grabber.LabelShortCap + " grabs " + prey.LabelShortCap + " and pins them in place. They start struggling to break free.", prey, MessageTypeDefOf.NegativeEvent);
+            Messages.Message(grabber.LabelShortCap + " grabs " + prey.LabelShortCap + " and pins them in place.", prey, MessageTypeDefOf.NegativeEvent);
         }
 
         public static void TrySendGrabberEscapeMessage(Pawn prey, Pawn grabber)
@@ -131,11 +131,11 @@ namespace CustomizableZombieHorde
 
             if (profile.BileChance >= 0.999f)
             {
-                return "Butchering this corpse will yield " + countLabel + " zombie bile.";
+                return "Butchering this corpse yields " + countLabel + " zombie bile.";
             }
 
             int percent = (int)System.Math.Round(profile.BileChance * 100f);
-            return "Butchering this corpse has a " + percent + "% chance to yield " + countLabel + " zombie bile.";
+            return "This corpse has a " + percent + "% chance to yield " + countLabel + " zombie bile.";
         }
 
         public static string GetPawnInspectString(Pawn pawn)
@@ -154,12 +154,12 @@ namespace CustomizableZombieHorde
 
             if (ZombieLurkerUtility.IsPassiveLurker(pawn))
             {
-                lines.Add("Passive lurker. It will not attack colonists and other undead ignore it.");
-                lines.Add("Right click with a colonist carrying rotten flesh or human meat to try taming it.");
+                lines.Add("Passive lurker. It will not attack colonists.");
+                lines.Add("Right click with rotten flesh or human meat to try taming it.");
             }
             else if (ZombieLurkerUtility.IsColonyLurker(pawn))
             {
-                lines.Add("Tamed lurker. Other undead should ignore this colony member.");
+                lines.Add("Tamed lurker. Other undead ignore this colony member.");
             }
 
 
@@ -173,20 +173,20 @@ namespace CustomizableZombieHorde
 
                     if (ZombieBileUtility.NeedsBileTreatment(pawn))
                     {
-                        string localizedPartText = infection?.Part != null ? " If the infected limb is removed before terminal, that also cures it." : string.Empty;
-                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. A bile med kit can cure it before it reaches Infected Bloodstream at 60%." + localizedPartText);
+                        string localizedPartText = infection?.Part != null ? " Remove the infected limb before terminal to cure it." : string.Empty;
+                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. A bile med kit can cure it before 60%." + localizedPartText);
                     }
                     else if (ZombieInfectionUtility.IsComatose(pawn))
                     {
-                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. The pawn is unconscious but still alive. At 99% they become a colony lurker.");
+                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. The pawn is unconscious but alive. At 99%, they become a colony lurker.");
                     }
                     else if (ZombieInfectionUtility.IsInTransformationStage(pawn))
                     {
-                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. This is the final living stage. At 99% they become a colony lurker through the same change used by bile injection.");
+                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. Final stage. At 99%, they become a colony lurker.");
                     }
                     else if (ZombieInfectionUtility.IsTerminal(pawn))
                     {
-                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. Terminal begins at 60%, coma begins at 80%, and transformation begins at 90%.");
+                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. Terminal begins at 60%. Coma begins at 80%. Transformation begins at 90%.");
                     }
                     else if (ZombieInfectionUtility.HasReanimatedState(pawn))
                     {
@@ -195,7 +195,7 @@ namespace CustomizableZombieHorde
                 }
                 else if (ZombieInfectionUtility.HasReanimatedState(pawn))
                 {
-                    lines.Add("Fully turned. This pawn can no longer be cured.");
+                    lines.Add("Fully turned. This pawn cannot be cured.");
                 }
             }
 

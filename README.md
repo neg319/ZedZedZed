@@ -105,6 +105,17 @@ This repository is the full source package for the mod. It includes the GitHub A
 
 ## Curated changelog
 
+### Iteration 169, April 15, 2026
+- Reworked zombie blood exposure into infected blood exposure.
+- Ground blood contact now leaves a lingering contamination instead of dealing cut damage over time.
+- Every minute or so, infected blood exposure checks for open cut wounds and has a 5% chance to apply the real zombie infection, then clears itself on a successful infection.
+- Infected blood exposure now rinses off in rain or standing water and expires after about one in game day.
+
+### Iteration 168, April 15, 2026
+- Fixed rain spawned drowned top ups so they stop appearing around interior water near the colony.
+- Rain drowned now prefer shoreline and river cells near the map edge, then trickle in from there.
+- Tightened drowned pack placement so those rain spawns stay in water when a valid water cluster is available.
+
 ### Iteration 151, April 14, 2026
 - Reworked the strain writeups in the README and player facing settings text to use the current RimWorld style likes and dislikes phrasing.
 - Added a clearer split between main variants and special states so Runner strain and Pregnant Boomer are described accurately.

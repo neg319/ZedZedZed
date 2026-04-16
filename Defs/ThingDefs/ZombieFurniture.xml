@@ -3,7 +3,7 @@
   <ThingDef ParentName="Bed">
     <defName>CZH_RottenLeatherBed</defName>
     <label>rotten leather bed</label>
-    <description>A standard single bed rebuilt with rotten leather instead of wood. It uses the normal wooden bed footprint, the normal wooden bed behavior, and custom rotten leather textures.</description>
+    <description>A standard bed rebuilt with rotten leather.</description>
     <graphicData>
       <texPath>Things/Building/Furniture/RottenLeatherBed/RottenLeatherBed</texPath>
       <graphicClass>Graphic_Multi</graphicClass>
@@ -19,7 +19,7 @@
   <ThingDef ParentName="ArtableFurnitureBase">
     <defName>CZH_RottenLeatherChair</defName>
     <label>rotten leather chair</label>
-    <description>A patched chair wrapped in strips of treated rotten leather. It works like a proper chair, even if it looks like it came from the end of the world.</description>
+    <description>A rough chair wrapped in rotten leather.</description>
     <graphicData>
       <texPath>Things/Building/Furniture/RottenLeatherChair/RottenLeatherChair</texPath>
       <graphicClass>Graphic_Multi</graphicClass>
