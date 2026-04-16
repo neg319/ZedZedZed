@@ -14,46 +14,325 @@ namespace CustomizableZombieHorde
 {
     internal static class ZZZLocalize
     {
-        private static readonly Dictionary<string, string> EnglishFallbacks = new Dictionary<string, string>
+        private static readonly Dictionary<string, Dictionary<string, string>> LocalizedTextByFolder = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
         {
-            ["ZZZ.SettingsTitle"] = "Zed Zed Zed Settings",
-            ["ZZZ.SettingsSubtitle"] = "Outbreak pacing, strain control, colony cleanup, and a few dangerous little test tools.",
-            ["ZZZ.SettingsHint"] = "Written to stay readable in the middle of a live save.",
-            ["ZZZ.BadgeActive"] = "ACTIVE",
-            ["ZZZ.TabOverview"] = "Overview",
-            ["ZZZ.TabEvents"] = "Events",
-            ["ZZZ.TabVariants"] = "Variants",
-            ["ZZZ.TabNames"] = "Names",
-            ["ZZZ.TabColony"] = "Colony",
-            ["ZZZ.TabDebug"] = "Debug",
-            ["ZZZ.StateEnabled"] = "Enabled",
-            ["ZZZ.StateDisabled"] = "Disabled",
-            ["ZZZ.StateChecked"] = "Checked",
-            ["ZZZ.StateUnchecked"] = "Unchecked",
-            ["ZZZ.PresetCasual"] = "Casual",
-            ["ZZZ.PresetRecommended"] = "Recommended",
-            ["ZZZ.PresetApocalypse"] = "Apocalypse",
-            ["ZZZ.ButtonApply"] = "Apply",
-            ["ZZZ.ButtonRunNow"] = "Run now",
-            ["ZZZ.HUDDanger"] = "Danger: {0}%",
-            ["ZZZ.HUDDangerOff"] = "Danger: off",
-            ["ZZZ.LurkerRecruitFail"] = "Recruitment attempt failed. A warden can keep trying without capturing the lurker."
+            ["ChineseSimplified"] = new Dictionary<string, string>
+            {
+                ["ZZZ_BadgeActive"] = "已启用",
+                ["ZZZ_ButtonApply"] = "应用",
+                ["ZZZ_ButtonRunNow"] = "立即执行",
+                ["ZZZ_CorpseNoSpoil"] = "这个僵尸尸体不会腐烂。",
+                ["ZZZ_HUDDanger"] = "危险度：{0}%",
+                ["ZZZ_HUDDangerOff"] = "危险度：关闭",
+                ["ZZZ_LurkerRecruitFail"] = "招募尝试失败。无需抓捕，管理者之后还可以继续尝试。",
+                ["ZZZ_PresetApocalypse"] = "末日",
+                ["ZZZ_PresetCasual"] = "轻松",
+                ["ZZZ_PresetRecommended"] = "推荐",
+                ["ZZZ_SettingsHint"] = "在进行中的存档里也尽量保持清晰易读。",
+                ["ZZZ_SettingsSubtitle"] = "尸潮节奏、变种控制、殖民地清理，还有几个危险的小测试工具。",
+                ["ZZZ_SettingsTitle"] = "Zed Zed Zed 设置",
+                ["ZZZ_StateChecked"] = "已勾选",
+                ["ZZZ_StateDisabled"] = "已禁用",
+                ["ZZZ_StateEnabled"] = "已启用",
+                ["ZZZ_StateUnchecked"] = "未勾选",
+                ["ZZZ_TabColony"] = "殖民地",
+                ["ZZZ_TabDebug"] = "调试",
+                ["ZZZ_TabEvents"] = "事件",
+                ["ZZZ_TabNames"] = "名称",
+                ["ZZZ_TabOverview"] = "概览",
+                ["ZZZ_TabVariants"] = "变种",
+            },
+            ["ChineseTraditional"] = new Dictionary<string, string>
+            {
+                ["ZZZ_BadgeActive"] = "已啟用",
+                ["ZZZ_ButtonApply"] = "套用",
+                ["ZZZ_ButtonRunNow"] = "立即執行",
+                ["ZZZ_CorpseNoSpoil"] = "這具殭屍屍體不會腐爛。",
+                ["ZZZ_HUDDanger"] = "危險度：{0}%",
+                ["ZZZ_HUDDangerOff"] = "危險度：關閉",
+                ["ZZZ_LurkerRecruitFail"] = "招募嘗試失敗。管理者之後還可以在不抓捕的情況下繼續嘗試。",
+                ["ZZZ_PresetApocalypse"] = "末日",
+                ["ZZZ_PresetCasual"] = "輕鬆",
+                ["ZZZ_PresetRecommended"] = "推薦",
+                ["ZZZ_SettingsHint"] = "在進行中的存檔裡也盡量保持清楚易讀。",
+                ["ZZZ_SettingsSubtitle"] = "屍潮節奏、變種控制、殖民地清理，還有幾個危險的小型測試工具。",
+                ["ZZZ_SettingsTitle"] = "Zed Zed Zed 設定",
+                ["ZZZ_StateChecked"] = "已勾選",
+                ["ZZZ_StateDisabled"] = "已停用",
+                ["ZZZ_StateEnabled"] = "已啟用",
+                ["ZZZ_StateUnchecked"] = "未勾選",
+                ["ZZZ_TabColony"] = "殖民地",
+                ["ZZZ_TabDebug"] = "除錯",
+                ["ZZZ_TabEvents"] = "事件",
+                ["ZZZ_TabNames"] = "名稱",
+                ["ZZZ_TabOverview"] = "概覽",
+                ["ZZZ_TabVariants"] = "變種",
+            },
+            ["English"] = new Dictionary<string, string>
+            {
+                ["ZZZ_BadgeActive"] = "ACTIVE",
+                ["ZZZ_ButtonApply"] = "Apply",
+                ["ZZZ_ButtonRunNow"] = "Run now",
+                ["ZZZ_CorpseNoSpoil"] = "This zombie corpse does not spoil.",
+                ["ZZZ_HUDDanger"] = "Danger: {0}%",
+                ["ZZZ_HUDDangerOff"] = "Danger: off",
+                ["ZZZ_LurkerRecruitFail"] = "Recruitment attempt failed. A warden can keep trying without capturing the lurker.",
+                ["ZZZ_PresetApocalypse"] = "Apocalypse",
+                ["ZZZ_PresetCasual"] = "Casual",
+                ["ZZZ_PresetRecommended"] = "Recommended",
+                ["ZZZ_SettingsHint"] = "Written to stay readable in the middle of a live save.",
+                ["ZZZ_SettingsSubtitle"] = "Outbreak pacing, strain control, colony cleanup, and a few dangerous little test tools.",
+                ["ZZZ_SettingsTitle"] = "Zed Zed Zed Settings",
+                ["ZZZ_StateChecked"] = "Checked",
+                ["ZZZ_StateDisabled"] = "Disabled",
+                ["ZZZ_StateEnabled"] = "Enabled",
+                ["ZZZ_StateUnchecked"] = "Unchecked",
+                ["ZZZ_TabColony"] = "Colony",
+                ["ZZZ_TabDebug"] = "Debug",
+                ["ZZZ_TabEvents"] = "Events",
+                ["ZZZ_TabNames"] = "Names",
+                ["ZZZ_TabOverview"] = "Overview",
+                ["ZZZ_TabVariants"] = "Variants",
+            },
+            ["French"] = new Dictionary<string, string>
+            {
+                ["ZZZ_BadgeActive"] = "ACTIF",
+                ["ZZZ_ButtonApply"] = "Appliquer",
+                ["ZZZ_ButtonRunNow"] = "Exécuter",
+                ["ZZZ_CorpseNoSpoil"] = "Ce cadavre de zombie ne pourrit pas.",
+                ["ZZZ_HUDDanger"] = "Danger : {0}%",
+                ["ZZZ_HUDDangerOff"] = "Danger : désactivé",
+                ["ZZZ_LurkerRecruitFail"] = "La tentative de recrutement a échoué. Un gardien peut réessayer sans capturer le lurker.",
+                ["ZZZ_PresetApocalypse"] = "Apocalypse",
+                ["ZZZ_PresetCasual"] = "Détendu",
+                ["ZZZ_PresetRecommended"] = "Recommandé",
+                ["ZZZ_SettingsHint"] = "Écrit pour rester lisible même au milieu d’une sauvegarde en cours.",
+                ["ZZZ_SettingsSubtitle"] = "Rythme de l’épidémie, contrôle des souches, nettoyage de la colonie et quelques petits outils de test dangereux.",
+                ["ZZZ_SettingsTitle"] = "Paramètres de Zed Zed Zed",
+                ["ZZZ_StateChecked"] = "Coché",
+                ["ZZZ_StateDisabled"] = "Désactivé",
+                ["ZZZ_StateEnabled"] = "Activé",
+                ["ZZZ_StateUnchecked"] = "Décoché",
+                ["ZZZ_TabColony"] = "Colonie",
+                ["ZZZ_TabDebug"] = "Débogage",
+                ["ZZZ_TabEvents"] = "Événements",
+                ["ZZZ_TabNames"] = "Noms",
+                ["ZZZ_TabOverview"] = "Vue d’ensemble",
+                ["ZZZ_TabVariants"] = "Variantes",
+            },
+            ["German"] = new Dictionary<string, string>
+            {
+                ["ZZZ_BadgeActive"] = "AKTIV",
+                ["ZZZ_ButtonApply"] = "Anwenden",
+                ["ZZZ_ButtonRunNow"] = "Jetzt ausführen",
+                ["ZZZ_CorpseNoSpoil"] = "Dieser Zombiekadaver verrottet nicht.",
+                ["ZZZ_HUDDanger"] = "Gefahr: {0}%",
+                ["ZZZ_HUDDangerOff"] = "Gefahr: aus",
+                ["ZZZ_LurkerRecruitFail"] = "Der Rekrutierungsversuch ist fehlgeschlagen. Ein Aufseher kann es weiter versuchen, ohne den Lurker gefangen zu nehmen.",
+                ["ZZZ_PresetApocalypse"] = "Apokalypse",
+                ["ZZZ_PresetCasual"] = "Locker",
+                ["ZZZ_PresetRecommended"] = "Empfohlen",
+                ["ZZZ_SettingsHint"] = "Geschrieben, damit es selbst mitten in einem laufenden Spielstand gut lesbar bleibt.",
+                ["ZZZ_SettingsSubtitle"] = "Ausbruchstempo, Variantenkontrolle, Aufräumen der Kolonie und ein paar gefährliche kleine Testwerkzeuge.",
+                ["ZZZ_SettingsTitle"] = "Zed Zed Zed Einstellungen",
+                ["ZZZ_StateChecked"] = "Markiert",
+                ["ZZZ_StateDisabled"] = "Deaktiviert",
+                ["ZZZ_StateEnabled"] = "Aktiviert",
+                ["ZZZ_StateUnchecked"] = "Nicht markiert",
+                ["ZZZ_TabColony"] = "Kolonie",
+                ["ZZZ_TabDebug"] = "Debug",
+                ["ZZZ_TabEvents"] = "Ereignisse",
+                ["ZZZ_TabNames"] = "Namen",
+                ["ZZZ_TabOverview"] = "Übersicht",
+                ["ZZZ_TabVariants"] = "Varianten",
+            },
+            ["Japanese"] = new Dictionary<string, string>
+            {
+                ["ZZZ_BadgeActive"] = "稼働中",
+                ["ZZZ_ButtonApply"] = "適用",
+                ["ZZZ_ButtonRunNow"] = "今すぐ実行",
+                ["ZZZ_CorpseNoSpoil"] = "このゾンビの死体は腐敗しません。",
+                ["ZZZ_HUDDanger"] = "危険度: {0}%",
+                ["ZZZ_HUDDangerOff"] = "危険度: オフ",
+                ["ZZZ_LurkerRecruitFail"] = "勧誘に失敗しました。捕縛しなくても、看守はこのルーカーに再挑戦できます。",
+                ["ZZZ_PresetApocalypse"] = "アポカリプス",
+                ["ZZZ_PresetCasual"] = "カジュアル",
+                ["ZZZ_PresetRecommended"] = "推奨",
+                ["ZZZ_SettingsHint"] = "進行中のセーブでも読みやすいように調整しています。",
+                ["ZZZ_SettingsSubtitle"] = "発生ペース、変種の制御、コロニーの後始末、それから少し危険なテスト用ツール。",
+                ["ZZZ_SettingsTitle"] = "Zed Zed Zed 設定",
+                ["ZZZ_StateChecked"] = "選択済み",
+                ["ZZZ_StateDisabled"] = "無効",
+                ["ZZZ_StateEnabled"] = "有効",
+                ["ZZZ_StateUnchecked"] = "未選択",
+                ["ZZZ_TabColony"] = "コロニー",
+                ["ZZZ_TabDebug"] = "デバッグ",
+                ["ZZZ_TabEvents"] = "イベント",
+                ["ZZZ_TabNames"] = "名前",
+                ["ZZZ_TabOverview"] = "概要",
+                ["ZZZ_TabVariants"] = "変種",
+            },
+            ["Korean"] = new Dictionary<string, string>
+            {
+                ["ZZZ_BadgeActive"] = "활성",
+                ["ZZZ_ButtonApply"] = "적용",
+                ["ZZZ_ButtonRunNow"] = "지금 실행",
+                ["ZZZ_CorpseNoSpoil"] = "이 좀비 시체는 썩지 않습니다.",
+                ["ZZZ_HUDDanger"] = "위험도: {0}%",
+                ["ZZZ_HUDDangerOff"] = "위험도: 꺼짐",
+                ["ZZZ_LurkerRecruitFail"] = "영입 시도에 실패했습니다. 간수는 루커를 포획하지 않고도 다시 시도할 수 있습니다.",
+                ["ZZZ_PresetApocalypse"] = "아포칼립스",
+                ["ZZZ_PresetCasual"] = "가볍게",
+                ["ZZZ_PresetRecommended"] = "추천",
+                ["ZZZ_SettingsHint"] = "진행 중인 저장에서도 읽기 쉽도록 작성했습니다.",
+                ["ZZZ_SettingsSubtitle"] = "발병 흐름, 변종 제어, 식민지 정리, 그리고 조금 위험한 테스트 도구 몇 가지.",
+                ["ZZZ_SettingsTitle"] = "Zed Zed Zed 설정",
+                ["ZZZ_StateChecked"] = "체크됨",
+                ["ZZZ_StateDisabled"] = "비활성화",
+                ["ZZZ_StateEnabled"] = "활성화",
+                ["ZZZ_StateUnchecked"] = "체크 안 됨",
+                ["ZZZ_TabColony"] = "식민지",
+                ["ZZZ_TabDebug"] = "디버그",
+                ["ZZZ_TabEvents"] = "이벤트",
+                ["ZZZ_TabNames"] = "이름",
+                ["ZZZ_TabOverview"] = "개요",
+                ["ZZZ_TabVariants"] = "변종",
+            },
+            ["Polish"] = new Dictionary<string, string>
+            {
+                ["ZZZ_BadgeActive"] = "AKTYWNE",
+                ["ZZZ_ButtonApply"] = "Zastosuj",
+                ["ZZZ_ButtonRunNow"] = "Uruchom teraz",
+                ["ZZZ_CorpseNoSpoil"] = "Te zwłoki zombie nie gniją.",
+                ["ZZZ_HUDDanger"] = "Zagrożenie: {0}%",
+                ["ZZZ_HUDDangerOff"] = "Zagrożenie: wyłączone",
+                ["ZZZ_LurkerRecruitFail"] = "Próba rekrutacji nie powiodła się. Strażnik może próbować dalej bez pojmania lurkera.",
+                ["ZZZ_PresetApocalypse"] = "Apokalipsa",
+                ["ZZZ_PresetCasual"] = "Luźno",
+                ["ZZZ_PresetRecommended"] = "Zalecane",
+                ["ZZZ_SettingsHint"] = "Napisane tak, żeby dało się to czytać nawet w trakcie aktywnego sejwa.",
+                ["ZZZ_SettingsSubtitle"] = "Tempo plagi, kontrola odmian, sprzątanie kolonii i kilka niebezpiecznych narzędzi testowych.",
+                ["ZZZ_SettingsTitle"] = "Ustawienia Zed Zed Zed",
+                ["ZZZ_StateChecked"] = "Zaznaczone",
+                ["ZZZ_StateDisabled"] = "Wyłączone",
+                ["ZZZ_StateEnabled"] = "Włączone",
+                ["ZZZ_StateUnchecked"] = "Niezaznaczone",
+                ["ZZZ_TabColony"] = "Kolonia",
+                ["ZZZ_TabDebug"] = "Debug",
+                ["ZZZ_TabEvents"] = "Zdarzenia",
+                ["ZZZ_TabNames"] = "Nazwy",
+                ["ZZZ_TabOverview"] = "Przegląd",
+                ["ZZZ_TabVariants"] = "Warianty",
+            },
+            ["PortugueseBrazilian"] = new Dictionary<string, string>
+            {
+                ["ZZZ_BadgeActive"] = "ATIVO",
+                ["ZZZ_ButtonApply"] = "Aplicar",
+                ["ZZZ_ButtonRunNow"] = "Executar agora",
+                ["ZZZ_CorpseNoSpoil"] = "Este cadáver de zumbi não apodrece.",
+                ["ZZZ_HUDDanger"] = "Perigo: {0}%",
+                ["ZZZ_HUDDangerOff"] = "Perigo: desligado",
+                ["ZZZ_LurkerRecruitFail"] = "A tentativa de recrutamento falhou. Um carcereiro pode tentar de novo sem capturar o lurker.",
+                ["ZZZ_PresetApocalypse"] = "Apocalipse",
+                ["ZZZ_PresetCasual"] = "Leve",
+                ["ZZZ_PresetRecommended"] = "Recomendado",
+                ["ZZZ_SettingsHint"] = "Escrito para continuar legível no meio de um save em andamento.",
+                ["ZZZ_SettingsSubtitle"] = "Ritmo do surto, controle das variantes, limpeza da colônia e algumas ferramentinhas de teste perigosas.",
+                ["ZZZ_SettingsTitle"] = "Configurações do Zed Zed Zed",
+                ["ZZZ_StateChecked"] = "Marcado",
+                ["ZZZ_StateDisabled"] = "Desativado",
+                ["ZZZ_StateEnabled"] = "Ativado",
+                ["ZZZ_StateUnchecked"] = "Desmarcado",
+                ["ZZZ_TabColony"] = "Colônia",
+                ["ZZZ_TabDebug"] = "Depuração",
+                ["ZZZ_TabEvents"] = "Eventos",
+                ["ZZZ_TabNames"] = "Nomes",
+                ["ZZZ_TabOverview"] = "Visão geral",
+                ["ZZZ_TabVariants"] = "Variantes",
+            },
+            ["Russian"] = new Dictionary<string, string>
+            {
+                ["ZZZ_BadgeActive"] = "АКТИВНО",
+                ["ZZZ_ButtonApply"] = "Применить",
+                ["ZZZ_ButtonRunNow"] = "Запустить",
+                ["ZZZ_CorpseNoSpoil"] = "Этот труп зомби не разлагается.",
+                ["ZZZ_HUDDanger"] = "Опасность: {0}%",
+                ["ZZZ_HUDDangerOff"] = "Опасность: выкл.",
+                ["ZZZ_LurkerRecruitFail"] = "Попытка вербовки не удалась. Надзиратель может попробовать снова, не захватывая луркера.",
+                ["ZZZ_PresetApocalypse"] = "Апокалипсис",
+                ["ZZZ_PresetCasual"] = "Легко",
+                ["ZZZ_PresetRecommended"] = "Рекомендуется",
+                ["ZZZ_SettingsHint"] = "Сделано так, чтобы всё оставалось читаемым прямо во время живого сохранения.",
+                ["ZZZ_SettingsSubtitle"] = "Ритм вспышки, контроль разновидностей, уборка колонии и несколько опасных тестовых инструментов.",
+                ["ZZZ_SettingsTitle"] = "Настройки Zed Zed Zed",
+                ["ZZZ_StateChecked"] = "Отмечено",
+                ["ZZZ_StateDisabled"] = "Выключено",
+                ["ZZZ_StateEnabled"] = "Включено",
+                ["ZZZ_StateUnchecked"] = "Не отмечено",
+                ["ZZZ_TabColony"] = "Колония",
+                ["ZZZ_TabDebug"] = "Отладка",
+                ["ZZZ_TabEvents"] = "События",
+                ["ZZZ_TabNames"] = "Имена",
+                ["ZZZ_TabOverview"] = "Обзор",
+                ["ZZZ_TabVariants"] = "Варианты",
+            },
+            ["Spanish"] = new Dictionary<string, string>
+            {
+                ["ZZZ_BadgeActive"] = "ACTIVO",
+                ["ZZZ_ButtonApply"] = "Aplicar",
+                ["ZZZ_ButtonRunNow"] = "Ejecutar ahora",
+                ["ZZZ_CorpseNoSpoil"] = "Este cadáver zombi no se pudre.",
+                ["ZZZ_HUDDanger"] = "Peligro: {0}%",
+                ["ZZZ_HUDDangerOff"] = "Peligro: desactivado",
+                ["ZZZ_LurkerRecruitFail"] = "El intento de reclutamiento falló. Un encargado puede seguir intentándolo sin capturar al lurker.",
+                ["ZZZ_PresetApocalypse"] = "Apocalipsis",
+                ["ZZZ_PresetCasual"] = "Suave",
+                ["ZZZ_PresetRecommended"] = "Recomendado",
+                ["ZZZ_SettingsHint"] = "Escrito para seguir siendo legible en medio de una partida activa.",
+                ["ZZZ_SettingsSubtitle"] = "Ritmo del brote, control de variantes, limpieza de la colonia y unas cuantas herramientas de prueba peligrosas.",
+                ["ZZZ_SettingsTitle"] = "Configuración de Zed Zed Zed",
+                ["ZZZ_StateChecked"] = "Marcado",
+                ["ZZZ_StateDisabled"] = "Desactivado",
+                ["ZZZ_StateEnabled"] = "Activado",
+                ["ZZZ_StateUnchecked"] = "Sin marcar",
+                ["ZZZ_TabColony"] = "Colonia",
+                ["ZZZ_TabDebug"] = "Depuración",
+                ["ZZZ_TabEvents"] = "Eventos",
+                ["ZZZ_TabNames"] = "Nombres",
+                ["ZZZ_TabOverview"] = "Resumen",
+                ["ZZZ_TabVariants"] = "Variantes",
+            },
         };
 
         public static string T(string key)
         {
-            string translated = key.Translate().ToString();
-            if (LooksUnresolved(key, translated) && EnglishFallbacks.TryGetValue(key, out string fallback))
+            if (string.IsNullOrWhiteSpace(key))
             {
-                return fallback;
+                return string.Empty;
             }
 
-            return translated;
+            string activeFolder = LanguageDatabase.activeLanguage?.folderName;
+            if (!string.IsNullOrEmpty(activeFolder) &&
+                LocalizedTextByFolder.TryGetValue(activeFolder, out Dictionary<string, string> activeLanguageStrings) &&
+                activeLanguageStrings.TryGetValue(key, out string activeValue) &&
+                !string.IsNullOrWhiteSpace(activeValue))
+            {
+                return activeValue;
+            }
+
+            if (LocalizedTextByFolder.TryGetValue("English", out Dictionary<string, string> englishStrings) &&
+                englishStrings.TryGetValue(key, out string englishValue) &&
+                !string.IsNullOrWhiteSpace(englishValue))
+            {
+                return englishValue;
+            }
+
+            return key;
         }
 
         public static string TShort(string key)
         {
-            return T("ZZZ." + key);
+            return T("ZZZ_" + key);
         }
 
         public static string Format(string key, params object[] args)
@@ -67,44 +346,6 @@ namespace CustomizableZombieHorde
             {
                 return template;
             }
-        }
-
-        private static bool LooksUnresolved(string key, string translated)
-        {
-            if (string.IsNullOrEmpty(translated))
-            {
-                return true;
-            }
-
-            if (string.Equals(translated, key, StringComparison.Ordinal))
-            {
-                return true;
-            }
-
-            string sanitizedTranslated = StripCombiningMarks(translated);
-            string sanitizedKey = StripCombiningMarks(key);
-            return string.Equals(sanitizedTranslated, sanitizedKey, StringComparison.Ordinal);
-        }
-
-        private static string StripCombiningMarks(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                return value ?? string.Empty;
-            }
-
-            string normalized = value.Normalize(NormalizationForm.FormD);
-            StringBuilder builder = new StringBuilder(normalized.Length);
-            foreach (char c in normalized)
-            {
-                UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(c);
-                if (category != UnicodeCategory.NonSpacingMark && category != UnicodeCategory.SpacingCombiningMark && category != UnicodeCategory.EnclosingMark)
-                {
-                    builder.Append(c);
-                }
-            }
-
-            return builder.ToString().Normalize(NormalizationForm.FormC);
         }
     }
 
@@ -849,7 +1090,7 @@ namespace CustomizableZombieHorde
             float capPercent = cap > 0 ? (currentCount / (float)cap) * 100f : 0f;
             string familyLabel = GetCounterDisplayLabel();
             string countText = familyLabel + ": " + currentCount;
-            string dangerText = cap > 0 ? ZZZLocalize.Format("ZZZ.HUDDanger", capPercent.ToString("0")) : ZZZLocalize.T("ZZZ.HUDDangerOff");
+            string dangerText = cap > 0 ? ZZZLocalize.Format("ZZZ_HUDDanger", capPercent.ToString("0")) : ZZZLocalize.T("ZZZ_HUDDangerOff");
 
             Rect rect = new Rect(UI.screenWidth - 362f, 6f, 168f, 62f);
             Rect countRect = new Rect(rect.x + 8f, rect.y + 5f, rect.width - 16f, 24f);
@@ -1688,7 +1929,7 @@ namespace CustomizableZombieHorde
                 return true;
             }
 
-            __result = ZZZLocalize.T("ZZZ.CorpseNoSpoil");
+            __result = ZZZLocalize.T("ZZZ_CorpseNoSpoil");
             return false;
         }
     }

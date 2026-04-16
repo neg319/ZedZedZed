@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  <ZZZ.SettingsTitle>Zed Zed Zed 설정</ZZZ.SettingsTitle>
-  <ZZZ.SettingsSubtitle>발병 흐름, 변종 제어, 식민지 정리, 그리고 조금 위험한 테스트 도구 몇 가지.</ZZZ.SettingsSubtitle>
-  <ZZZ.SettingsHint>진행 중인 저장에서도 읽기 쉽도록 작성했습니다.</ZZZ.SettingsHint>
-  <ZZZ.BadgeActive>활성</ZZZ.BadgeActive>
-  <ZZZ.TabOverview>개요</ZZZ.TabOverview>
-  <ZZZ.TabEvents>이벤트</ZZZ.TabEvents>
-  <ZZZ.TabVariants>변종</ZZZ.TabVariants>
-  <ZZZ.TabNames>이름</ZZZ.TabNames>
-  <ZZZ.TabColony>식민지</ZZZ.TabColony>
-  <ZZZ.TabDebug>디버그</ZZZ.TabDebug>
-  <ZZZ.StateEnabled>활성화</ZZZ.StateEnabled>
-  <ZZZ.StateDisabled>비활성화</ZZZ.StateDisabled>
-  <ZZZ.StateChecked>체크됨</ZZZ.StateChecked>
-  <ZZZ.StateUnchecked>체크 안 됨</ZZZ.StateUnchecked>
-  <ZZZ.PresetCasual>가볍게</ZZZ.PresetCasual>
-  <ZZZ.PresetRecommended>추천</ZZZ.PresetRecommended>
-  <ZZZ.PresetApocalypse>아포칼립스</ZZZ.PresetApocalypse>
-  <ZZZ.ButtonApply>적용</ZZZ.ButtonApply>
-  <ZZZ.ButtonRunNow>지금 실행</ZZZ.ButtonRunNow>
-  <ZZZ.HUDDanger>위험도: {0}%</ZZZ.HUDDanger>
-  <ZZZ.HUDDangerOff>위험도: 꺼짐</ZZZ.HUDDangerOff>
-  <ZZZ.CorpseNoSpoil>이 좀비 시체는 썩지 않습니다.</ZZZ.CorpseNoSpoil>
-  <ZZZ.LurkerRecruitFail>영입 시도에 실패했습니다. 간수는 루커를 포획하지 않고도 다시 시도할 수 있습니다.</ZZZ.LurkerRecruitFail>
+  <ZZZ_SettingsTitle>Zed Zed Zed 설정</ZZZ_SettingsTitle>
+  <ZZZ_SettingsSubtitle>발병 흐름, 변종 제어, 식민지 정리, 그리고 조금 위험한 테스트 도구 몇 가지.</ZZZ_SettingsSubtitle>
+  <ZZZ_SettingsHint>진행 중인 저장에서도 읽기 쉽도록 작성했습니다.</ZZZ_SettingsHint>
+  <ZZZ_BadgeActive>활성</ZZZ_BadgeActive>
+  <ZZZ_TabOverview>개요</ZZZ_TabOverview>
+  <ZZZ_TabEvents>이벤트</ZZZ_TabEvents>
+  <ZZZ_TabVariants>변종</ZZZ_TabVariants>
+  <ZZZ_TabNames>이름</ZZZ_TabNames>
+  <ZZZ_TabColony>식민지</ZZZ_TabColony>
+  <ZZZ_TabDebug>디버그</ZZZ_TabDebug>
+  <ZZZ_StateEnabled>활성화</ZZZ_StateEnabled>
+  <ZZZ_StateDisabled>비활성화</ZZZ_StateDisabled>
+  <ZZZ_StateChecked>체크됨</ZZZ_StateChecked>
+  <ZZZ_StateUnchecked>체크 안 됨</ZZZ_StateUnchecked>
+  <ZZZ_PresetCasual>가볍게</ZZZ_PresetCasual>
+  <ZZZ_PresetRecommended>추천</ZZZ_PresetRecommended>
+  <ZZZ_PresetApocalypse>아포칼립스</ZZZ_PresetApocalypse>
+  <ZZZ_ButtonApply>적용</ZZZ_ButtonApply>
+  <ZZZ_ButtonRunNow>지금 실행</ZZZ_ButtonRunNow>
+  <ZZZ_HUDDanger>위험도: {0}%</ZZZ_HUDDanger>
+  <ZZZ_HUDDangerOff>위험도: 꺼짐</ZZZ_HUDDangerOff>
+  <ZZZ_CorpseNoSpoil>이 좀비 시체는 썩지 않습니다.</ZZZ_CorpseNoSpoil>
+  <ZZZ_LurkerRecruitFail>영입 시도에 실패했습니다. 간수는 루커를 포획하지 않고도 다시 시도할 수 있습니다.</ZZZ_LurkerRecruitFail>
 </LanguageData>

@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  <ZZZ.SettingsTitle>Configurações do Zed Zed Zed</ZZZ.SettingsTitle>
-  <ZZZ.SettingsSubtitle>Ritmo do surto, controle das variantes, limpeza da colônia e algumas ferramentinhas de teste perigosas.</ZZZ.SettingsSubtitle>
-  <ZZZ.SettingsHint>Escrito para continuar legível no meio de um save em andamento.</ZZZ.SettingsHint>
-  <ZZZ.BadgeActive>ATIVO</ZZZ.BadgeActive>
-  <ZZZ.TabOverview>Visão geral</ZZZ.TabOverview>
-  <ZZZ.TabEvents>Eventos</ZZZ.TabEvents>
-  <ZZZ.TabVariants>Variantes</ZZZ.TabVariants>
-  <ZZZ.TabNames>Nomes</ZZZ.TabNames>
-  <ZZZ.TabColony>Colônia</ZZZ.TabColony>
-  <ZZZ.TabDebug>Depuração</ZZZ.TabDebug>
-  <ZZZ.StateEnabled>Ativado</ZZZ.StateEnabled>
-  <ZZZ.StateDisabled>Desativado</ZZZ.StateDisabled>
-  <ZZZ.StateChecked>Marcado</ZZZ.StateChecked>
-  <ZZZ.StateUnchecked>Desmarcado</ZZZ.StateUnchecked>
-  <ZZZ.PresetCasual>Leve</ZZZ.PresetCasual>
-  <ZZZ.PresetRecommended>Recomendado</ZZZ.PresetRecommended>
-  <ZZZ.PresetApocalypse>Apocalipse</ZZZ.PresetApocalypse>
-  <ZZZ.ButtonApply>Aplicar</ZZZ.ButtonApply>
-  <ZZZ.ButtonRunNow>Executar agora</ZZZ.ButtonRunNow>
-  <ZZZ.HUDDanger>Perigo: {0}%</ZZZ.HUDDanger>
-  <ZZZ.HUDDangerOff>Perigo: desligado</ZZZ.HUDDangerOff>
-  <ZZZ.CorpseNoSpoil>Este cadáver de zumbi não apodrece.</ZZZ.CorpseNoSpoil>
-  <ZZZ.LurkerRecruitFail>A tentativa de recrutamento falhou. Um carcereiro pode tentar de novo sem capturar o lurker.</ZZZ.LurkerRecruitFail>
+  <ZZZ_SettingsTitle>Configurações do Zed Zed Zed</ZZZ_SettingsTitle>
+  <ZZZ_SettingsSubtitle>Ritmo do surto, controle das variantes, limpeza da colônia e algumas ferramentinhas de teste perigosas.</ZZZ_SettingsSubtitle>
+  <ZZZ_SettingsHint>Escrito para continuar legível no meio de um save em andamento.</ZZZ_SettingsHint>
+  <ZZZ_BadgeActive>ATIVO</ZZZ_BadgeActive>
+  <ZZZ_TabOverview>Visão geral</ZZZ_TabOverview>
+  <ZZZ_TabEvents>Eventos</ZZZ_TabEvents>
+  <ZZZ_TabVariants>Variantes</ZZZ_TabVariants>
+  <ZZZ_TabNames>Nomes</ZZZ_TabNames>
+  <ZZZ_TabColony>Colônia</ZZZ_TabColony>
+  <ZZZ_TabDebug>Depuração</ZZZ_TabDebug>
+  <ZZZ_StateEnabled>Ativado</ZZZ_StateEnabled>
+  <ZZZ_StateDisabled>Desativado</ZZZ_StateDisabled>
+  <ZZZ_StateChecked>Marcado</ZZZ_StateChecked>
+  <ZZZ_StateUnchecked>Desmarcado</ZZZ_StateUnchecked>
+  <ZZZ_PresetCasual>Leve</ZZZ_PresetCasual>
+  <ZZZ_PresetRecommended>Recomendado</ZZZ_PresetRecommended>
+  <ZZZ_PresetApocalypse>Apocalipse</ZZZ_PresetApocalypse>
+  <ZZZ_ButtonApply>Aplicar</ZZZ_ButtonApply>
+  <ZZZ_ButtonRunNow>Executar agora</ZZZ_ButtonRunNow>
+  <ZZZ_HUDDanger>Perigo: {0}%</ZZZ_HUDDanger>
+  <ZZZ_HUDDangerOff>Perigo: desligado</ZZZ_HUDDangerOff>
+  <ZZZ_CorpseNoSpoil>Este cadáver de zumbi não apodrece.</ZZZ_CorpseNoSpoil>
+  <ZZZ_LurkerRecruitFail>A tentativa de recrutamento falhou. Um carcereiro pode tentar de novo sem capturar o lurker.</ZZZ_LurkerRecruitFail>
 </LanguageData>

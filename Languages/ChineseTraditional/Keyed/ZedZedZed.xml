@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  <ZZZ.SettingsTitle>Zed Zed Zed 設定</ZZZ.SettingsTitle>
-  <ZZZ.SettingsSubtitle>屍潮節奏、變種控制、殖民地清理，還有幾個危險的小型測試工具。</ZZZ.SettingsSubtitle>
-  <ZZZ.SettingsHint>在進行中的存檔裡也盡量保持清楚易讀。</ZZZ.SettingsHint>
-  <ZZZ.BadgeActive>已啟用</ZZZ.BadgeActive>
-  <ZZZ.TabOverview>概覽</ZZZ.TabOverview>
-  <ZZZ.TabEvents>事件</ZZZ.TabEvents>
-  <ZZZ.TabVariants>變種</ZZZ.TabVariants>
-  <ZZZ.TabNames>名稱</ZZZ.TabNames>
-  <ZZZ.TabColony>殖民地</ZZZ.TabColony>
-  <ZZZ.TabDebug>除錯</ZZZ.TabDebug>
-  <ZZZ.StateEnabled>已啟用</ZZZ.StateEnabled>
-  <ZZZ.StateDisabled>已停用</ZZZ.StateDisabled>
-  <ZZZ.StateChecked>已勾選</ZZZ.StateChecked>
-  <ZZZ.StateUnchecked>未勾選</ZZZ.StateUnchecked>
-  <ZZZ.PresetCasual>輕鬆</ZZZ.PresetCasual>
-  <ZZZ.PresetRecommended>推薦</ZZZ.PresetRecommended>
-  <ZZZ.PresetApocalypse>末日</ZZZ.PresetApocalypse>
-  <ZZZ.ButtonApply>套用</ZZZ.ButtonApply>
-  <ZZZ.ButtonRunNow>立即執行</ZZZ.ButtonRunNow>
-  <ZZZ.HUDDanger>危險度：{0}%</ZZZ.HUDDanger>
-  <ZZZ.HUDDangerOff>危險度：關閉</ZZZ.HUDDangerOff>
-  <ZZZ.CorpseNoSpoil>這具殭屍屍體不會腐爛。</ZZZ.CorpseNoSpoil>
-  <ZZZ.LurkerRecruitFail>招募嘗試失敗。管理者之後還可以在不抓捕的情況下繼續嘗試。</ZZZ.LurkerRecruitFail>
+  <ZZZ_SettingsTitle>Zed Zed Zed 設定</ZZZ_SettingsTitle>
+  <ZZZ_SettingsSubtitle>屍潮節奏、變種控制、殖民地清理，還有幾個危險的小型測試工具。</ZZZ_SettingsSubtitle>
+  <ZZZ_SettingsHint>在進行中的存檔裡也盡量保持清楚易讀。</ZZZ_SettingsHint>
+  <ZZZ_BadgeActive>已啟用</ZZZ_BadgeActive>
+  <ZZZ_TabOverview>概覽</ZZZ_TabOverview>
+  <ZZZ_TabEvents>事件</ZZZ_TabEvents>
+  <ZZZ_TabVariants>變種</ZZZ_TabVariants>
+  <ZZZ_TabNames>名稱</ZZZ_TabNames>
+  <ZZZ_TabColony>殖民地</ZZZ_TabColony>
+  <ZZZ_TabDebug>除錯</ZZZ_TabDebug>
+  <ZZZ_StateEnabled>已啟用</ZZZ_StateEnabled>
+  <ZZZ_StateDisabled>已停用</ZZZ_StateDisabled>
+  <ZZZ_StateChecked>已勾選</ZZZ_StateChecked>
+  <ZZZ_StateUnchecked>未勾選</ZZZ_StateUnchecked>
+  <ZZZ_PresetCasual>輕鬆</ZZZ_PresetCasual>
+  <ZZZ_PresetRecommended>推薦</ZZZ_PresetRecommended>
+  <ZZZ_PresetApocalypse>末日</ZZZ_PresetApocalypse>
+  <ZZZ_ButtonApply>套用</ZZZ_ButtonApply>
+  <ZZZ_ButtonRunNow>立即執行</ZZZ_ButtonRunNow>
+  <ZZZ_HUDDanger>危險度：{0}%</ZZZ_HUDDanger>
+  <ZZZ_HUDDangerOff>危險度：關閉</ZZZ_HUDDangerOff>
+  <ZZZ_CorpseNoSpoil>這具殭屍屍體不會腐爛。</ZZZ_CorpseNoSpoil>
+  <ZZZ_LurkerRecruitFail>招募嘗試失敗。管理者之後還可以在不抓捕的情況下繼續嘗試。</ZZZ_LurkerRecruitFail>
 </LanguageData>

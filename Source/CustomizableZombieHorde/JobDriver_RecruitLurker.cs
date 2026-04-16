@@ -82,7 +82,7 @@ namespace CustomizableZombieHorde
                 }
                 else
                 {
-                    Messages.Message(ZZZLocalize.T("ZZZ.LurkerRecruitFail"), lurker, MessageTypeDefOf.RejectInput, false);
+                    Messages.Message(ZZZLocalize.T("ZZZ_LurkerRecruitFail"), lurker, MessageTypeDefOf.RejectInput, false);
                     ZombieLurkerUtility.EnsurePassiveLurkerBehavior(lurker);
                 }
             });

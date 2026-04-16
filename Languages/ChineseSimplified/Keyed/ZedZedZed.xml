@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  <ZZZ.SettingsTitle>Zed Zed Zed 设置</ZZZ.SettingsTitle>
-  <ZZZ.SettingsSubtitle>尸潮节奏、变种控制、殖民地清理，还有几个危险的小测试工具。</ZZZ.SettingsSubtitle>
-  <ZZZ.SettingsHint>在进行中的存档里也尽量保持清晰易读。</ZZZ.SettingsHint>
-  <ZZZ.BadgeActive>已启用</ZZZ.BadgeActive>
-  <ZZZ.TabOverview>概览</ZZZ.TabOverview>
-  <ZZZ.TabEvents>事件</ZZZ.TabEvents>
-  <ZZZ.TabVariants>变种</ZZZ.TabVariants>
-  <ZZZ.TabNames>名称</ZZZ.TabNames>
-  <ZZZ.TabColony>殖民地</ZZZ.TabColony>
-  <ZZZ.TabDebug>调试</ZZZ.TabDebug>
-  <ZZZ.StateEnabled>已启用</ZZZ.StateEnabled>
-  <ZZZ.StateDisabled>已禁用</ZZZ.StateDisabled>
-  <ZZZ.StateChecked>已勾选</ZZZ.StateChecked>
-  <ZZZ.StateUnchecked>未勾选</ZZZ.StateUnchecked>
-  <ZZZ.PresetCasual>轻松</ZZZ.PresetCasual>
-  <ZZZ.PresetRecommended>推荐</ZZZ.PresetRecommended>
-  <ZZZ.PresetApocalypse>末日</ZZZ.PresetApocalypse>
-  <ZZZ.ButtonApply>应用</ZZZ.ButtonApply>
-  <ZZZ.ButtonRunNow>立即执行</ZZZ.ButtonRunNow>
-  <ZZZ.HUDDanger>危险度：{0}%</ZZZ.HUDDanger>
-  <ZZZ.HUDDangerOff>危险度：关闭</ZZZ.HUDDangerOff>
-  <ZZZ.CorpseNoSpoil>这个僵尸尸体不会腐烂。</ZZZ.CorpseNoSpoil>
-  <ZZZ.LurkerRecruitFail>招募尝试失败。无需抓捕，管理者之后还可以继续尝试。</ZZZ.LurkerRecruitFail>
+  <ZZZ_SettingsTitle>Zed Zed Zed 设置</ZZZ_SettingsTitle>
+  <ZZZ_SettingsSubtitle>尸潮节奏、变种控制、殖民地清理，还有几个危险的小测试工具。</ZZZ_SettingsSubtitle>
+  <ZZZ_SettingsHint>在进行中的存档里也尽量保持清晰易读。</ZZZ_SettingsHint>
+  <ZZZ_BadgeActive>已启用</ZZZ_BadgeActive>
+  <ZZZ_TabOverview>概览</ZZZ_TabOverview>
+  <ZZZ_TabEvents>事件</ZZZ_TabEvents>
+  <ZZZ_TabVariants>变种</ZZZ_TabVariants>
+  <ZZZ_TabNames>名称</ZZZ_TabNames>
+  <ZZZ_TabColony>殖民地</ZZZ_TabColony>
+  <ZZZ_TabDebug>调试</ZZZ_TabDebug>
+  <ZZZ_StateEnabled>已启用</ZZZ_StateEnabled>
+  <ZZZ_StateDisabled>已禁用</ZZZ_StateDisabled>
+  <ZZZ_StateChecked>已勾选</ZZZ_StateChecked>
+  <ZZZ_StateUnchecked>未勾选</ZZZ_StateUnchecked>
+  <ZZZ_PresetCasual>轻松</ZZZ_PresetCasual>
+  <ZZZ_PresetRecommended>推荐</ZZZ_PresetRecommended>
+  <ZZZ_PresetApocalypse>末日</ZZZ_PresetApocalypse>
+  <ZZZ_ButtonApply>应用</ZZZ_ButtonApply>
+  <ZZZ_ButtonRunNow>立即执行</ZZZ_ButtonRunNow>
+  <ZZZ_HUDDanger>危险度：{0}%</ZZZ_HUDDanger>
+  <ZZZ_HUDDangerOff>危险度：关闭</ZZZ_HUDDangerOff>
+  <ZZZ_CorpseNoSpoil>这个僵尸尸体不会腐烂。</ZZZ_CorpseNoSpoil>
+  <ZZZ_LurkerRecruitFail>招募尝试失败。无需抓捕，管理者之后还可以继续尝试。</ZZZ_LurkerRecruitFail>
 </LanguageData>

@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  <ZZZ.SettingsTitle>Ustawienia Zed Zed Zed</ZZZ.SettingsTitle>
-  <ZZZ.SettingsSubtitle>Tempo plagi, kontrola odmian, sprzątanie kolonii i kilka niebezpiecznych narzędzi testowych.</ZZZ.SettingsSubtitle>
-  <ZZZ.SettingsHint>Napisane tak, żeby dało się to czytać nawet w trakcie aktywnego sejwa.</ZZZ.SettingsHint>
-  <ZZZ.BadgeActive>AKTYWNE</ZZZ.BadgeActive>
-  <ZZZ.TabOverview>Przegląd</ZZZ.TabOverview>
-  <ZZZ.TabEvents>Zdarzenia</ZZZ.TabEvents>
-  <ZZZ.TabVariants>Warianty</ZZZ.TabVariants>
-  <ZZZ.TabNames>Nazwy</ZZZ.TabNames>
-  <ZZZ.TabColony>Kolonia</ZZZ.TabColony>
-  <ZZZ.TabDebug>Debug</ZZZ.TabDebug>
-  <ZZZ.StateEnabled>Włączone</ZZZ.StateEnabled>
-  <ZZZ.StateDisabled>Wyłączone</ZZZ.StateDisabled>
-  <ZZZ.StateChecked>Zaznaczone</ZZZ.StateChecked>
-  <ZZZ.StateUnchecked>Niezaznaczone</ZZZ.StateUnchecked>
-  <ZZZ.PresetCasual>Luźno</ZZZ.PresetCasual>
-  <ZZZ.PresetRecommended>Zalecane</ZZZ.PresetRecommended>
-  <ZZZ.PresetApocalypse>Apokalipsa</ZZZ.PresetApocalypse>
-  <ZZZ.ButtonApply>Zastosuj</ZZZ.ButtonApply>
-  <ZZZ.ButtonRunNow>Uruchom teraz</ZZZ.ButtonRunNow>
-  <ZZZ.HUDDanger>Zagrożenie: {0}%</ZZZ.HUDDanger>
-  <ZZZ.HUDDangerOff>Zagrożenie: wyłączone</ZZZ.HUDDangerOff>
-  <ZZZ.CorpseNoSpoil>Te zwłoki zombie nie gniją.</ZZZ.CorpseNoSpoil>
-  <ZZZ.LurkerRecruitFail>Próba rekrutacji nie powiodła się. Strażnik może próbować dalej bez pojmania lurkera.</ZZZ.LurkerRecruitFail>
+  <ZZZ_SettingsTitle>Ustawienia Zed Zed Zed</ZZZ_SettingsTitle>
+  <ZZZ_SettingsSubtitle>Tempo plagi, kontrola odmian, sprzątanie kolonii i kilka niebezpiecznych narzędzi testowych.</ZZZ_SettingsSubtitle>
+  <ZZZ_SettingsHint>Napisane tak, żeby dało się to czytać nawet w trakcie aktywnego sejwa.</ZZZ_SettingsHint>
+  <ZZZ_BadgeActive>AKTYWNE</ZZZ_BadgeActive>
+  <ZZZ_TabOverview>Przegląd</ZZZ_TabOverview>
+  <ZZZ_TabEvents>Zdarzenia</ZZZ_TabEvents>
+  <ZZZ_TabVariants>Warianty</ZZZ_TabVariants>
+  <ZZZ_TabNames>Nazwy</ZZZ_TabNames>
+  <ZZZ_TabColony>Kolonia</ZZZ_TabColony>
+  <ZZZ_TabDebug>Debug</ZZZ_TabDebug>
+  <ZZZ_StateEnabled>Włączone</ZZZ_StateEnabled>
+  <ZZZ_StateDisabled>Wyłączone</ZZZ_StateDisabled>
+  <ZZZ_StateChecked>Zaznaczone</ZZZ_StateChecked>
+  <ZZZ_StateUnchecked>Niezaznaczone</ZZZ_StateUnchecked>
+  <ZZZ_PresetCasual>Luźno</ZZZ_PresetCasual>
+  <ZZZ_PresetRecommended>Zalecane</ZZZ_PresetRecommended>
+  <ZZZ_PresetApocalypse>Apokalipsa</ZZZ_PresetApocalypse>
+  <ZZZ_ButtonApply>Zastosuj</ZZZ_ButtonApply>
+  <ZZZ_ButtonRunNow>Uruchom teraz</ZZZ_ButtonRunNow>
+  <ZZZ_HUDDanger>Zagrożenie: {0}%</ZZZ_HUDDanger>
+  <ZZZ_HUDDangerOff>Zagrożenie: wyłączone</ZZZ_HUDDangerOff>
+  <ZZZ_CorpseNoSpoil>Te zwłoki zombie nie gniją.</ZZZ_CorpseNoSpoil>
+  <ZZZ_LurkerRecruitFail>Próba rekrutacji nie powiodła się. Strażnik może próbować dalej bez pojmania lurkera.</ZZZ_LurkerRecruitFail>
 </LanguageData>

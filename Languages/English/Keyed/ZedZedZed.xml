@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  <ZZZ.SettingsTitle>Zed Zed Zed Settings</ZZZ.SettingsTitle>
-  <ZZZ.SettingsSubtitle>Outbreak pacing, strain control, colony cleanup, and a few dangerous little test tools.</ZZZ.SettingsSubtitle>
-  <ZZZ.SettingsHint>Written to stay readable in the middle of a live save.</ZZZ.SettingsHint>
-  <ZZZ.BadgeActive>ACTIVE</ZZZ.BadgeActive>
-  <ZZZ.TabOverview>Overview</ZZZ.TabOverview>
-  <ZZZ.TabEvents>Events</ZZZ.TabEvents>
-  <ZZZ.TabVariants>Variants</ZZZ.TabVariants>
-  <ZZZ.TabNames>Names</ZZZ.TabNames>
-  <ZZZ.TabColony>Colony</ZZZ.TabColony>
-  <ZZZ.TabDebug>Debug</ZZZ.TabDebug>
-  <ZZZ.StateEnabled>Enabled</ZZZ.StateEnabled>
-  <ZZZ.StateDisabled>Disabled</ZZZ.StateDisabled>
-  <ZZZ.StateChecked>Checked</ZZZ.StateChecked>
-  <ZZZ.StateUnchecked>Unchecked</ZZZ.StateUnchecked>
-  <ZZZ.PresetCasual>Casual</ZZZ.PresetCasual>
-  <ZZZ.PresetRecommended>Recommended</ZZZ.PresetRecommended>
-  <ZZZ.PresetApocalypse>Apocalypse</ZZZ.PresetApocalypse>
-  <ZZZ.ButtonApply>Apply</ZZZ.ButtonApply>
-  <ZZZ.ButtonRunNow>Run now</ZZZ.ButtonRunNow>
-  <ZZZ.HUDDanger>Danger: {0}%</ZZZ.HUDDanger>
-  <ZZZ.HUDDangerOff>Danger: off</ZZZ.HUDDangerOff>
-  <ZZZ.CorpseNoSpoil>This zombie corpse does not spoil.</ZZZ.CorpseNoSpoil>
-  <ZZZ.LurkerRecruitFail>Recruitment attempt failed. A warden can keep trying without capturing the lurker.</ZZZ.LurkerRecruitFail>
+  <ZZZ_SettingsTitle>Zed Zed Zed Settings</ZZZ_SettingsTitle>
+  <ZZZ_SettingsSubtitle>Outbreak pacing, strain control, colony cleanup, and a few dangerous little test tools.</ZZZ_SettingsSubtitle>
+  <ZZZ_SettingsHint>Written to stay readable in the middle of a live save.</ZZZ_SettingsHint>
+  <ZZZ_BadgeActive>ACTIVE</ZZZ_BadgeActive>
+  <ZZZ_TabOverview>Overview</ZZZ_TabOverview>
+  <ZZZ_TabEvents>Events</ZZZ_TabEvents>
+  <ZZZ_TabVariants>Variants</ZZZ_TabVariants>
+  <ZZZ_TabNames>Names</ZZZ_TabNames>
+  <ZZZ_TabColony>Colony</ZZZ_TabColony>
+  <ZZZ_TabDebug>Debug</ZZZ_TabDebug>
+  <ZZZ_StateEnabled>Enabled</ZZZ_StateEnabled>
+  <ZZZ_StateDisabled>Disabled</ZZZ_StateDisabled>
+  <ZZZ_StateChecked>Checked</ZZZ_StateChecked>
+  <ZZZ_StateUnchecked>Unchecked</ZZZ_StateUnchecked>
+  <ZZZ_PresetCasual>Casual</ZZZ_PresetCasual>
+  <ZZZ_PresetRecommended>Recommended</ZZZ_PresetRecommended>
+  <ZZZ_PresetApocalypse>Apocalypse</ZZZ_PresetApocalypse>
+  <ZZZ_ButtonApply>Apply</ZZZ_ButtonApply>
+  <ZZZ_ButtonRunNow>Run now</ZZZ_ButtonRunNow>
+  <ZZZ_HUDDanger>Danger: {0}%</ZZZ_HUDDanger>
+  <ZZZ_HUDDangerOff>Danger: off</ZZZ_HUDDangerOff>
+  <ZZZ_CorpseNoSpoil>This zombie corpse does not spoil.</ZZZ_CorpseNoSpoil>
+  <ZZZ_LurkerRecruitFail>Recruitment attempt failed. A warden can keep trying without capturing the lurker.</ZZZ_LurkerRecruitFail>
 </LanguageData>

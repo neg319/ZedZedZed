@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-  <ZZZ.SettingsTitle>Zed Zed Zed Einstellungen</ZZZ.SettingsTitle>
-  <ZZZ.SettingsSubtitle>Ausbruchstempo, Variantenkontrolle, Aufräumen der Kolonie und ein paar gefährliche kleine Testwerkzeuge.</ZZZ.SettingsSubtitle>
-  <ZZZ.SettingsHint>Geschrieben, damit es selbst mitten in einem laufenden Spielstand gut lesbar bleibt.</ZZZ.SettingsHint>
-  <ZZZ.BadgeActive>AKTIV</ZZZ.BadgeActive>
-  <ZZZ.TabOverview>Übersicht</ZZZ.TabOverview>
-  <ZZZ.TabEvents>Ereignisse</ZZZ.TabEvents>
-  <ZZZ.TabVariants>Varianten</ZZZ.TabVariants>
-  <ZZZ.TabNames>Namen</ZZZ.TabNames>
-  <ZZZ.TabColony>Kolonie</ZZZ.TabColony>
-  <ZZZ.TabDebug>Debug</ZZZ.TabDebug>
-  <ZZZ.StateEnabled>Aktiviert</ZZZ.StateEnabled>
-  <ZZZ.StateDisabled>Deaktiviert</ZZZ.StateDisabled>
-  <ZZZ.StateChecked>Markiert</ZZZ.StateChecked>
-  <ZZZ.StateUnchecked>Nicht markiert</ZZZ.StateUnchecked>
-  <ZZZ.PresetCasual>Locker</ZZZ.PresetCasual>
-  <ZZZ.PresetRecommended>Empfohlen</ZZZ.PresetRecommended>
-  <ZZZ.PresetApocalypse>Apokalypse</ZZZ.PresetApocalypse>
-  <ZZZ.ButtonApply>Anwenden</ZZZ.ButtonApply>
-  <ZZZ.ButtonRunNow>Jetzt ausführen</ZZZ.ButtonRunNow>
-  <ZZZ.HUDDanger>Gefahr: {0}%</ZZZ.HUDDanger>
-  <ZZZ.HUDDangerOff>Gefahr: aus</ZZZ.HUDDangerOff>
-  <ZZZ.CorpseNoSpoil>Dieser Zombiekadaver verrottet nicht.</ZZZ.CorpseNoSpoil>
-  <ZZZ.LurkerRecruitFail>Der Rekrutierungsversuch ist fehlgeschlagen. Ein Aufseher kann es weiter versuchen, ohne den Lurker gefangen zu nehmen.</ZZZ.LurkerRecruitFail>
+  <ZZZ_SettingsTitle>Zed Zed Zed Einstellungen</ZZZ_SettingsTitle>
+  <ZZZ_SettingsSubtitle>Ausbruchstempo, Variantenkontrolle, Aufräumen der Kolonie und ein paar gefährliche kleine Testwerkzeuge.</ZZZ_SettingsSubtitle>
+  <ZZZ_SettingsHint>Geschrieben, damit es selbst mitten in einem laufenden Spielstand gut lesbar bleibt.</ZZZ_SettingsHint>
+  <ZZZ_BadgeActive>AKTIV</ZZZ_BadgeActive>
+  <ZZZ_TabOverview>Übersicht</ZZZ_TabOverview>
+  <ZZZ_TabEvents>Ereignisse</ZZZ_TabEvents>
+  <ZZZ_TabVariants>Varianten</ZZZ_TabVariants>
+  <ZZZ_TabNames>Namen</ZZZ_TabNames>
+  <ZZZ_TabColony>Kolonie</ZZZ_TabColony>
+  <ZZZ_TabDebug>Debug</ZZZ_TabDebug>
+  <ZZZ_StateEnabled>Aktiviert</ZZZ_StateEnabled>
+  <ZZZ_StateDisabled>Deaktiviert</ZZZ_StateDisabled>
+  <ZZZ_StateChecked>Markiert</ZZZ_StateChecked>
+  <ZZZ_StateUnchecked>Nicht markiert</ZZZ_StateUnchecked>
+  <ZZZ_PresetCasual>Locker</ZZZ_PresetCasual>
+  <ZZZ_PresetRecommended>Empfohlen</ZZZ_PresetRecommended>
+  <ZZZ_PresetApocalypse>Apokalypse</ZZZ_PresetApocalypse>
+  <ZZZ_ButtonApply>Anwenden</ZZZ_ButtonApply>
+  <ZZZ_ButtonRunNow>Jetzt ausführen</ZZZ_ButtonRunNow>
+  <ZZZ_HUDDanger>Gefahr: {0}%</ZZZ_HUDDanger>
+  <ZZZ_HUDDangerOff>Gefahr: aus</ZZZ_HUDDangerOff>
+  <ZZZ_CorpseNoSpoil>Dieser Zombiekadaver verrottet nicht.</ZZZ_CorpseNoSpoil>
+  <ZZZ_LurkerRecruitFail>Der Rekrutierungsversuch ist fehlgeschlagen. Ein Aufseher kann es weiter versuchen, ohne den Lurker gefangen zu nehmen.</ZZZ_LurkerRecruitFail>
 </LanguageData>
