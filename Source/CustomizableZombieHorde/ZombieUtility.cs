@@ -127,8 +127,9 @@ namespace CustomizableZombieHorde
 
             ForceZombieFaction(pawn);
             ClearZombieGuestState(pawn);
+            RestoreHostileZombieNeedTracker(pawn);
             EnsureEmotionlessZombie(pawn);
-            RemoveHostileZombieNeeds(pawn);
+            RemoveHostileZombieFoodNeed(pawn);
             NormalizeZombieMalnutritionState(pawn);
             ClearZombieIdeoligion(pawn);
             EnsureZombieCannibalTrait(pawn);
@@ -196,52 +197,64 @@ namespace CustomizableZombieHorde
                     pawn.needs.AllNeeds.RemoveAt(i);
                 }
             }
-
-            ClearNeedTrackerField(pawn, "mood");
-            ClearNeedTrackerField(pawn, "joy");
         }
 
-        private static void RemoveHostileZombieNeeds(Pawn pawn)
+        private static void RemoveHostileZombieFoodNeed(Pawn pawn)
         {
-            if (!IsZombie(pawn) || pawn?.needs == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
+            if (!IsZombie(pawn) || pawn?.needs == null || pawn.needs.AllNeeds == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
+            {
+                return;
+            }
+
+            NeedDef foodDef = NeedDefOf.Food ?? DefDatabase<NeedDef>.GetNamedSilentFail("Food");
+            if (foodDef == null)
+            {
+                return;
+            }
+
+            for (int i = pawn.needs.AllNeeds.Count - 1; i >= 0; i--)
+            {
+                Need need = pawn.needs.AllNeeds[i];
+                if (need?.def == foodDef)
+                {
+                    pawn.needs.AllNeeds.RemoveAt(i);
+                }
+            }
+
+            SetNeedTrackerField(pawn, "food", null);
+        }
+
+        private static void RestoreHostileZombieNeedTracker(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
             {
                 return;
             }
 
             try
             {
-                pawn.needs.AllNeeds?.Clear();
+                if (pawn.needs == null)
+                {
+                    ConstructorInfo ctor = AccessTools.Constructor(typeof(Pawn_NeedsTracker), new[] { typeof(Pawn) });
+                    object tracker = ctor?.Invoke(new object[] { pawn });
+                    SetPawnField(pawn, "needs", tracker);
+                    SetPawnField(pawn, "needsInt", tracker);
+                }
             }
             catch
             {
             }
 
-            string[] fieldNames =
+            try
             {
-                "mood",
-                "food",
-                "rest",
-                "joy",
-                "beauty",
-                "comfort",
-                "roomsize",
-                "outdoors",
-                "chemical_Alcohol",
-                "chemical_Smokeleaf",
-                "chemical_Ambrosia",
-                "chemical_GoJuice",
-                "chemical_Psychoid",
-                "chemical_WakeUp",
-                "chemical_Luciferium"
-            };
-
-            for (int i = 0; i < fieldNames.Length; i++)
+                AccessTools.Method(pawn.needs?.GetType(), "AddOrRemoveNeedsAsAppropriate")?.Invoke(pawn.needs, null);
+            }
+            catch
             {
-                ClearNeedTrackerField(pawn, fieldNames[i]);
             }
         }
 
-        private static void ClearNeedTrackerField(Pawn pawn, string fieldName)
+        private static void SetNeedTrackerField(Pawn pawn, string fieldName, object value)
         {
             if (pawn?.needs == null || fieldName.NullOrEmpty())
             {
@@ -251,7 +264,24 @@ namespace CustomizableZombieHorde
             try
             {
                 FieldInfo field = AccessTools.Field(pawn.needs.GetType(), fieldName);
-                field?.SetValue(pawn.needs, null);
+                field?.SetValue(pawn.needs, value);
+            }
+            catch
+            {
+            }
+        }
+
+        private static void SetPawnField(Pawn pawn, string fieldName, object value)
+        {
+            if (pawn == null || fieldName.NullOrEmpty())
+            {
+                return;
+            }
+
+            try
+            {
+                FieldInfo field = AccessTools.Field(typeof(Pawn), fieldName);
+                field?.SetValue(pawn, value);
             }
             catch
             {
