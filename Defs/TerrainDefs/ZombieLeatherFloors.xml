@@ -58,7 +58,7 @@
   <TerrainDef>
     <defName>CZH_PatchworkRottenLeatherFloor</defName>
     <label>patchwork rotten leather floor</label>
-    <description>A patchwork floor of stitched zombie hide.</description>
+    <description>A stitched floor of zombie hide.</description>
     <texturePath>Terrain/PatchworkLeatherFloor</texturePath>
     <renderPrecedence>214</renderPrecedence>
     <constructEffect>ConstructDirt</constructEffect>

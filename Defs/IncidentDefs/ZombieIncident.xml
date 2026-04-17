@@ -25,7 +25,7 @@
       <li>Map_PlayerHome</li>
     </targetTags>
     <letterLabel>A lurker shambles nearby</letterLabel>
-    <letterText>A strange passive zombie has wandered onto the map. It does not join the horde and might be tamed with rotten flesh or human meat.</letterText>
+    <letterText>A passive lurker has wandered onto the map. It will not join the horde.</letterText>
     <baseChance>0.03</baseChance>
     <minRefireDays>15</minRefireDays>
   </IncidentDef>
@@ -40,7 +40,7 @@
       <li>Map_PlayerHome</li>
     </targetTags>
     <letterLabel>Zombie Herd Crossing</letterLabel>
-    <letterText>A broad herd of zombies is crossing the map in a slow wall of bodies.</letterText>
+    <letterText>A broad herd of zombies is crossing the map.</letterText>
     <baseChance>0</baseChance>
     <pointsScaleable>false</pointsScaleable>
     <minThreatPoints>35</minThreatPoints>

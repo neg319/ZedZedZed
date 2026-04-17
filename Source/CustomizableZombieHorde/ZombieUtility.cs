@@ -114,6 +114,10 @@ namespace CustomizableZombieHorde
             }
         }
 
+        public const int ZombieMalnutritionUpdateIntervalTicks = 600;
+        public const float ZombieMalnutritionDaysToLethal = 2f;
+        private const float ZombieMalnutritionStartingSeverity = 0.01f;
+
         public static void NormalizeCoreZombieState(Pawn pawn)
         {
             if (!IsZombie(pawn) || pawn == null)
@@ -124,6 +128,8 @@ namespace CustomizableZombieHorde
             ForceZombieFaction(pawn);
             ClearZombieGuestState(pawn);
             EnsureEmotionlessZombie(pawn);
+            RemoveHostileZombieNeeds(pawn);
+            NormalizeZombieMalnutritionState(pawn);
             ClearZombieIdeoligion(pawn);
             EnsureZombieCannibalTrait(pawn);
         }
@@ -190,6 +196,155 @@ namespace CustomizableZombieHorde
                     pawn.needs.AllNeeds.RemoveAt(i);
                 }
             }
+
+            ClearNeedTrackerField(pawn, "mood");
+            ClearNeedTrackerField(pawn, "joy");
+        }
+
+        private static void RemoveHostileZombieNeeds(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn?.needs == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
+            {
+                return;
+            }
+
+            try
+            {
+                pawn.needs.AllNeeds?.Clear();
+            }
+            catch
+            {
+            }
+
+            string[] fieldNames =
+            {
+                "mood",
+                "food",
+                "rest",
+                "joy",
+                "beauty",
+                "comfort",
+                "roomsize",
+                "outdoors",
+                "chemical_Alcohol",
+                "chemical_Smokeleaf",
+                "chemical_Ambrosia",
+                "chemical_GoJuice",
+                "chemical_Psychoid",
+                "chemical_WakeUp",
+                "chemical_Luciferium"
+            };
+
+            for (int i = 0; i < fieldNames.Length; i++)
+            {
+                ClearNeedTrackerField(pawn, fieldNames[i]);
+            }
+        }
+
+        private static void ClearNeedTrackerField(Pawn pawn, string fieldName)
+        {
+            if (pawn?.needs == null || fieldName.NullOrEmpty())
+            {
+                return;
+            }
+
+            try
+            {
+                FieldInfo field = AccessTools.Field(pawn.needs.GetType(), fieldName);
+                field?.SetValue(pawn.needs, null);
+            }
+            catch
+            {
+            }
+        }
+
+        private static void NormalizeZombieMalnutritionState(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn?.health?.hediffSet == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
+            {
+                return;
+            }
+
+            Hediff malnutrition = GetZombieMalnutrition(pawn);
+            if (malnutrition == null)
+            {
+                AddZombieMalnutrition(pawn, ZombieMalnutritionStartingSeverity);
+                return;
+            }
+
+            if (malnutrition.Severity > ZombieMalnutritionStartingSeverity)
+            {
+                malnutrition.Severity = ZombieMalnutritionStartingSeverity;
+            }
+        }
+
+        public static void AdvanceZombieMalnutrition(Pawn pawn, int intervalTicks)
+        {
+            if (!IsZombie(pawn)
+                || pawn?.health?.hediffSet == null
+                || pawn.Dead
+                || pawn.Destroyed
+                || ZombieLurkerUtility.IsLurker(pawn)
+                || IsPlayerAlignedZombie(pawn))
+            {
+                return;
+            }
+
+            if (intervalTicks <= 0)
+            {
+                intervalTicks = ZombieMalnutritionUpdateIntervalTicks;
+            }
+
+            Hediff malnutrition = GetZombieMalnutrition(pawn);
+            if (malnutrition == null)
+            {
+                malnutrition = AddZombieMalnutrition(pawn, ZombieMalnutritionStartingSeverity);
+                if (malnutrition == null)
+                {
+                    return;
+                }
+            }
+
+            float totalTicksToLethal = 60000f * Mathf.Max(0.25f, ZombieMalnutritionDaysToLethal);
+            float severityGain = intervalTicks / totalTicksToLethal;
+            if (severityGain <= 0f)
+            {
+                return;
+            }
+
+            malnutrition.Severity = Mathf.Min(1f, malnutrition.Severity + severityGain);
+        }
+
+        private static Hediff AddZombieMalnutrition(Pawn pawn, float severity)
+        {
+            HediffDef malnutritionDef = HediffDefOf.Malnutrition ?? DefDatabase<HediffDef>.GetNamedSilentFail("Malnutrition");
+            if (malnutritionDef == null || pawn?.health == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                Hediff malnutrition = HediffMaker.MakeHediff(malnutritionDef, pawn);
+                malnutrition.Severity = Mathf.Max(ZombieMalnutritionStartingSeverity, severity);
+                pawn.health.AddHediff(malnutrition);
+                return malnutrition;
+            }
+            catch
+            {
+                return pawn.health.hediffSet?.GetFirstHediffOfDef(malnutritionDef);
+            }
+        }
+
+        private static Hediff GetZombieMalnutrition(Pawn pawn)
+        {
+            HediffDef malnutritionDef = HediffDefOf.Malnutrition ?? DefDatabase<HediffDef>.GetNamedSilentFail("Malnutrition");
+            if (malnutritionDef == null)
+            {
+                return null;
+            }
+
+            return pawn?.health?.hediffSet?.GetFirstHediffOfDef(malnutritionDef);
         }
 
         private static void ClearZombieGuestState(Pawn pawn)

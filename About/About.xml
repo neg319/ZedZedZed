@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ModMetaData>
   <name>Zed Zed Zed</name>
-  <author>Johnny Berry / Vyberware</author>
+  <author>neg</author>
   <packageId>vyberware.zedzedzed</packageId>
   <supportedVersions>
     <li>1.6</li>
@@ -15,12 +15,47 @@
     </li>
   </modDependencies>
   <description>
-Zed Zed Zed is a RimWorld zombie mod built around steady pressure, rough nights, and colonies that never feel fully safe.
+Zed Zed Zed adds an ongoing zombie outbreak to RimWorld, along with a lot of extra difficulty.
 
-The outbreak mixes edge trickles, huddled packs, base pushes, ground bursts, grave events, moon attacks, and full herd crossings. The horde includes biters, bone biters, runts, boomers, sick zombies, drowned, brutes, grabbers, and passive lurkers.
+I started working on this because the best zombie mod ever made, "Zombieland," stopped being updated. By the time Zed Zed Zed was nearly finished, somebody had updated Zombieland and got it working again. I decided to release this anyway.
 
-The mod also adds zombie infection, bile med kits, bile surgery, zombie resources, rotten leather furniture and floors, custom naming, debug tools, and a small HUD that shows current danger on your home map.
+This one leans into constant pressure instead of a single event. Zombies can trickle in from the edges, press harder at night, surge during moon events, cross the map in herds, burst up inside the colony, and crawl out of spawning graves.
 
-Built for RimWorld 1.6. Requires Harmony.
+Included
+- Multiple zombie types with different behavior
+- Infection, bile treatment, and colony lurkers
+- Rotten resources, custom floors, and custom furniture
+- Mod settings, naming options, a danger HUD, and debug tools
+
+Q and A
+Q: What kind of zombie mod is this?
+A: It is an ongoing outbreak mod. The dead keep coming back into the story instead of showing up once and disappearing.
+
+Q: Does it only add basic zombies?
+A: No. It includes biters, runts, boomers, sick zombies, drowned, brutes, grabbers, bone biters, and lurkers.
+
+Q: Are all zombies hostile?
+A: No. Lurkers are the exception. They can wander near the colony, be captured, and become part of your story.
+
+Q: Can infected colonists be saved?
+A: Sometimes. Early infection can be treated, and there is still a short window before it turns terminal.
+
+Q: Does weather matter?
+A: Yes. Rain matters, especially for drowned zombies.
+
+Q: Can I tune the mod to fit my save?
+A: Yes. I added a full settings menu so you can adjust pacing, events, strain mix, naming, and debug options.
+
+Q: Does it add more than combat?
+A: Yes. It also adds infection pressure, treatment, rotten resources, cleanup problems, and a few ways to make use of the aftermath.
+
+Q: Why release this now that Zombieland works again?
+A: Because I still like this version of a zombie outbreak. It has its own tone, its own systems, and it grew into something I wanted to finish and share.
+
+Q: Do I need Harmony?
+A: Yes.
+
+Q: Was this mod made with AI?
+A: Parts of it were vibe coded with ChatGPT over well more than 175 iterations. The images and textures were generated first, then edited by hand.
   </description>
 </ModMetaData>

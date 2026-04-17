@@ -22,7 +22,7 @@
     <defName>CZH_ZombieRot</defName>
     <hediffClass>HediffWithComps</hediffClass>
     <label>zombie rot</label>
-    <description>This pawn is undead. It is slow, rotten, and dangerous in groups.</description>
+    <description>This pawn is undead. Slow, rotten, and dangerous in groups.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -312,7 +312,7 @@
     <defName>CZH_ZombieBrute</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>brute strain</label>
-    <description>Likes: Close melee, breaking through defenses, smashing prey, dense fighting. Dislikes: Being kited, long range fire, prey escaping, getting stalled before reaching the target.</description>
+    <description>A huge zombie built for close combat.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>
@@ -673,7 +673,7 @@
     <defName>CZH_ZombieTank</defName>
     <hediffClass>CustomizableZombieHorde.HiddenZombieStatusHediff</hediffClass>
     <label>brute strain</label>
-    <description>A large and powerful zombie strain.</description>
+    <description>A large, powerful zombie.</description>
     <isBad>true</isBad>
     <scenarioCanAdd>false</scenarioCanAdd>
     <tendable>false</tendable>

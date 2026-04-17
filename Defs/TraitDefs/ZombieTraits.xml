@@ -2,7 +2,7 @@
 <Defs>
   <TraitDef>
     <defName>CZH_Trait_ZombieSickImmune</defName>
-    <description>This pawn resists sickness spread by diseased zombies and their blood.</description>
+    <description>This pawn resists sickness from diseased zombies and their blood.</description>
     <commonality>0.28</commonality>
     <degreeDatas>
       <li>

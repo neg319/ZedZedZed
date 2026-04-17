@@ -17,8 +17,8 @@ namespace CustomizableZombieHorde
             }
 
             Find.LetterStack.ReceiveLetter(
-                "A passive lurker has wandered in",
-                "A passive lurker has wandered onto the map. It will not attack colonists. Right click it with rotten flesh or human meat to try taming it.",
+                "A lurker has wandered in",
+                "A passive lurker has wandered onto the map. It will not attack colonists. Right click it with rotten flesh or human meat to tame it.",
                 LetterDefOf.NeutralEvent,
                 new TargetInfo(cell, map));
         }
@@ -26,24 +26,24 @@ namespace CustomizableZombieHorde
         public static void SendLurkerTamedMessage(Pawn lurker, Pawn tamer)
         {
             string tamerName = tamer?.LabelShortCap ?? "A colonist";
-            Messages.Message(tamerName + " has tamed a lurker. It joins the colony and other undead ignore it.", lurker, MessageTypeDefOf.PositiveEvent);
+            Messages.Message(tamerName + " tamed a lurker. It joins the colony, and other undead ignore it.", lurker, MessageTypeDefOf.PositiveEvent);
         }
 
         public static void SendLurkerTameFailedMessage(Pawn lurker)
         {
-            Messages.Message("The lurker stays wild. Carry rotten flesh or human meat to try again.", lurker, MessageTypeDefOf.NeutralEvent);
+            Messages.Message("The lurker stays wild. Bring rotten flesh or human meat to try again.", lurker, MessageTypeDefOf.NeutralEvent);
         }
 
         public static void SendBileTreatmentMessage(Pawn patient, Pawn doctor)
         {
             string doctorName = doctor?.LabelShortCap ?? "A colonist";
-            Messages.Message(doctorName + " uses a bile med kit and cures zombie sickness in " + patient.LabelShortCap + ".", patient, MessageTypeDefOf.PositiveEvent);
+            Messages.Message(doctorName + " uses a bile med kit to cure zombie sickness in " + patient.LabelShortCap + ".", patient, MessageTypeDefOf.PositiveEvent);
         }
 
         public static void SendBileInjectionMessage(Pawn patient, Pawn doctor)
         {
             string doctorName = doctor?.LabelShortCap ?? "A colonist";
-            Messages.Message(doctorName + " injects zombie bile into " + patient.LabelShortCap + ". They survive and become a colony lurker.", patient, MessageTypeDefOf.NeutralEvent);
+            Messages.Message(doctorName + " injects zombie bile into " + patient.LabelShortCap + ". They survive and become a lurker.", patient, MessageTypeDefOf.NeutralEvent);
         }
 
         public static void SendZombieSicknessMessage(Pawn pawn, BodyPartRecord part = null)
@@ -57,10 +57,10 @@ namespace CustomizableZombieHorde
                 ? " in the " + (part.Label ?? part.def?.label ?? "limb")
                 : string.Empty;
             string cureText = part != null
-                ? " Remove the limb before the infection turns terminal to stop it."
+                ? " Remove the limb before it turns terminal to stop it."
                 : string.Empty;
 
-            Messages.Message(pawn.LabelShortCap + " has contracted zombie sickness" + locationText + ". At 99%, the pawn becomes a colony lurker." + cureText, pawn, MessageTypeDefOf.NegativeHealthEvent);
+            Messages.Message(pawn.LabelShortCap + " has zombie sickness" + locationText + ". At 99%, they become a lurker." + cureText, pawn, MessageTypeDefOf.NegativeHealthEvent);
         }
 
 
@@ -72,8 +72,8 @@ namespace CustomizableZombieHorde
             }
 
             string text = becameLurker
-                ? pawn.LabelShortCap + " finishes the transformation and becomes a lurker."
-                : pawn.LabelShortCap + " finishes the transformation and joins the horde.";
+                ? pawn.LabelShortCap + " turns into a lurker."
+                : pawn.LabelShortCap + " turns and joins the horde.";
             Messages.Message(text, pawn, MessageTypeDefOf.NegativeEvent);
         }
 
@@ -84,7 +84,7 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Messages.Message(pawn.LabelShortCap + " completes the transformation and becomes a colony lurker.", pawn, MessageTypeDefOf.NegativeEvent);
+            Messages.Message(pawn.LabelShortCap + " turns into a lurker.", pawn, MessageTypeDefOf.NegativeEvent);
         }
 
         public static void TrySendGrabberPullWarning(Pawn prey, Pawn grabber)
@@ -101,7 +101,7 @@ namespace CustomizableZombieHorde
             }
 
             LastGrabberWarningTickByTarget[prey.thingIDNumber] = ticksGame;
-            Messages.Message(grabber.LabelShortCap + " grabs " + prey.LabelShortCap + " and pins them in place.", prey, MessageTypeDefOf.NegativeEvent);
+            Messages.Message(grabber.LabelShortCap + " grabs " + prey.LabelShortCap + " and pins them.", prey, MessageTypeDefOf.NegativeEvent);
         }
 
         public static void TrySendGrabberEscapeMessage(Pawn prey, Pawn grabber)
@@ -131,7 +131,7 @@ namespace CustomizableZombieHorde
 
             if (profile.BileChance >= 0.999f)
             {
-                return "Butchering this corpse yields " + countLabel + " zombie bile.";
+                return "Butchering yields " + countLabel + " zombie bile.";
             }
 
             int percent = (int)System.Math.Round(profile.BileChance * 100f);
@@ -155,11 +155,11 @@ namespace CustomizableZombieHorde
             if (ZombieLurkerUtility.IsPassiveLurker(pawn))
             {
                 lines.Add("Passive lurker. It will not attack colonists.");
-                lines.Add("Right click with rotten flesh or human meat to try taming it.");
+                lines.Add("Right click with rotten flesh or human meat to tame it.");
             }
             else if (ZombieLurkerUtility.IsColonyLurker(pawn))
             {
-                lines.Add("Tamed lurker. Other undead ignore this colony member.");
+                lines.Add("Tamed lurker. Other undead ignore it.");
             }
 
 
@@ -173,16 +173,16 @@ namespace CustomizableZombieHorde
 
                     if (ZombieBileUtility.NeedsBileTreatment(pawn))
                     {
-                        string localizedPartText = infection?.Part != null ? " Remove the infected limb before terminal to cure it." : string.Empty;
+                        string localizedPartText = infection?.Part != null ? " Remove the infected limb before it turns terminal to cure it." : string.Empty;
                         lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. A bile med kit can cure it before 60%." + localizedPartText);
                     }
                     else if (ZombieInfectionUtility.IsComatose(pawn))
                     {
-                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. The pawn is unconscious but alive. At 99%, they become a colony lurker.");
+                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. They are unconscious but alive. At 99%, they become a lurker.");
                     }
                     else if (ZombieInfectionUtility.IsInTransformationStage(pawn))
                     {
-                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. Final stage. At 99%, they become a colony lurker.");
+                        lines.Add("Zombie sickness: " + stageLabel + ", " + completionLabel + " complete. Final stage. At 99%, they become a lurker.");
                     }
                     else if (ZombieInfectionUtility.IsTerminal(pawn))
                     {
@@ -190,12 +190,12 @@ namespace CustomizableZombieHorde
                     }
                     else if (ZombieInfectionUtility.HasReanimatedState(pawn))
                     {
-                        lines.Add("Zombie sickness: fully turned, " + completionLabel + " complete. This pawn can no longer be cured.");
+                        lines.Add("Zombie sickness: fully turned, " + completionLabel + " complete. It cannot be cured.");
                     }
                 }
                 else if (ZombieInfectionUtility.HasReanimatedState(pawn))
                 {
-                    lines.Add("Fully turned. This pawn cannot be cured.");
+                    lines.Add("Fully turned. It cannot be cured.");
                 }
             }
 

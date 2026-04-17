@@ -109,7 +109,7 @@
   <ThingDef ParentName="CZH_ResourceBase">
     <defName>CZH_GoldTooth</defName>
     <label>gold tooth</label>
-    <description>A gold tooth taken from zombie remains.</description>
+    <description>A gold tooth pulled from zombie remains.</description>
     <graphicData>
       <texPath>Things/Item/Resource/GoldTooth</texPath>
       <graphicClass>Graphic_Single</graphicClass>

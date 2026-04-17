@@ -37,7 +37,7 @@
   <RecipeDef>
     <defName>CZH_CraftBileTreatmentKit</defName>
     <label>craft bile med kit</label>
-    <description>Refine zombie bile and basic supplies into a field kit that cures zombie sickness before it reaches terminal.</description>
+    <description>Make a field kit that cures zombie sickness before it turns terminal.</description>
     <jobString>assembling a bile med kit.</jobString>
     <workAmount>1200</workAmount>
     <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
@@ -88,7 +88,7 @@
   <RecipeDef ParentName="SurgeryFlesh">
     <defName>CZH_InjectZombieBile</defName>
     <label>administer zombie bile</label>
-    <description>Administer zombie bile to a living humanlike patient. The patient survives, but the procedure turns them into a colony lurker.</description>
+    <description>Inject zombie bile into a living humanlike pawn. They survive, but turn into a colony lurker.</description>
     <jobString>administering zombie bile.</jobString>
     <workerClass>CustomizableZombieHorde.Recipe_InjectZombieBile</workerClass>
     <uiIconPath>Things/Item/Resource/ZombieBile</uiIconPath>

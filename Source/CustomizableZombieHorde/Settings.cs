@@ -631,15 +631,15 @@ namespace CustomizableZombieHorde
             BeginScrollableListing(rect, ref overviewScrollPosition, ref overviewViewHeight, out Listing_Standard listing, out Rect viewRect);
 
             DrawInfoCard(listing, "About this tab", "Start here.");
-            DrawSectionLabel(listing, "Quick setup", "These are the main settings.");
+            DrawSectionLabel(listing, "Quick setup", "Main settings.");
             DrawPresetButtons(listing);
             DrawDifficultyCard(listing);
             DrawToggleCard(listing, "Show zombie HUD", "Shows zombie count and Danger.", ref showZombieCounter);
-            DrawInfoCard(listing, "How Danger is calculated", "Danger is active zombies compared to your target. Day target = colonists × outbreak intensity. Night target = day target × 1.5.");
+            DrawInfoCard(listing, "How Danger works", "Danger is active zombies compared to your target.");
 
-            DrawSectionLabel(listing, "Core outbreak feel", "These settings control day and night pressure.");
-            DrawInfoCard(listing, "Zombie combat rules", "Zombies are slow, fragile, and most dangerous in groups. Runners are rare. Zombies move faster at night. Lurkers are the friendly exception.");
-            DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a fresh spawn to become a runner.", ref fastZombieChance, 0f, 0.20f, 0.01f);
+            DrawSectionLabel(listing, "Core outbreak feel", "Controls day and night pressure.");
+            DrawInfoCard(listing, "Zombie combat rules", "Zombies are slow, fragile, and worst in groups. Runners are rare. Zombies move faster at night.");
+            DrawPercentStepperCard(listing, "Runner strain chance", "Chance for a new zombie to become a runner.", ref fastZombieChance, 0f, 0.20f, 0.01f);
 
             listing.End();
             overviewViewHeight = Mathf.Max(1200f, listing.CurHeight + 24f);
@@ -651,8 +651,8 @@ namespace CustomizableZombieHorde
             BeginScrollableListing(rect, ref eventsScrollPosition, ref eventsViewHeight, out Listing_Standard listing, out Rect viewRect);
 
             DrawInfoCard(listing, "About this tab", "Controls event timing and map pressure.");
-            DrawSectionLabel(listing, "Constant edge trickle", "Small groups keep drifting in from the map edge.");
-            DrawToggleCard(listing, "Enable edge trickle", "Lets small groups keep coming in from the map edge.", ref enableEdgeTrickle);
+            DrawSectionLabel(listing, "Constant edge trickle", "Small groups keep coming in from the map edge.");
+            DrawToggleCard(listing, "Enable edge trickle", "Lets small groups come in from the map edge.", ref enableEdgeTrickle);
             if (enableEdgeTrickle)
             {
                 DrawFloatStepperCard(listing, "Time between trickles", "Lower values make edge groups show up more often.", ref trickleIntervalHours, 0.5f, 24f, 0.25f, "hours");
@@ -661,22 +661,22 @@ namespace CustomizableZombieHorde
             }
             else
             {
-                DrawInfoCard(listing, "Edge trickle is off", "Only larger events and debug spawns will add new zombies from off map.");
+                DrawInfoCard(listing, "Edge trickle is off", "Only larger events and debug spawns add new zombies.");
             }
 
-            DrawSectionLabel(listing, "Colony scaled population", "Sets the normal zombie target for the map.");
-            DrawToggleCard(listing, "Scale zombie population to colonists", "Uses colonist count to set normal zombie pressure.", ref useColonistScaledPopulation);
+            DrawSectionLabel(listing, "Colony scaled population", "Sets the normal zombie target.");
+            DrawToggleCard(listing, "Scale zombie population to colonists", "Uses colonist count to set normal pressure.", ref useColonistScaledPopulation);
             if (useColonistScaledPopulation)
             {
-                DrawInfoCard(listing, "How normal population works", $"Day target = colonists × outbreak intensity. Right now that is {DaytimeTargetMultiplier:0.0} zombies per colonist by day and {NighttimeTargetMultiplier:0.0} by night.");
+                DrawInfoCard(listing, "How normal population works", $"Day target = colonists × outbreak intensity. Right now that is {DaytimeTargetMultiplier:0.0} by day and {NighttimeTargetMultiplier:0.0} by night.");
                 DrawInfoCard(listing, "What still pushes past that", "Moon events and other surges can still push Danger over 100%.");
             }
             else
             {
-                DrawInfoCard(listing, "Colonist scaling is off", "Uses the old fixed rules instead.");
+                DrawInfoCard(listing, "Colonist scaling is off", "Uses the old fixed rules.");
             }
 
-            DrawSectionLabel(listing, "Moon events", "Large night attacks tied to the moon cycle.");
+            DrawSectionLabel(listing, "Moon events", "Large attacks tied to the moon cycle.");
             DrawToggleCard(listing, "Enable moon events", "Roughly every 30 days, a larger horde can show up. Blood moons are worse.", ref enableMoonEvents);
             if (enableMoonEvents)
             {
@@ -689,16 +689,16 @@ namespace CustomizableZombieHorde
             }
             else
             {
-                DrawInfoCard(listing, "Moon events are off", "Full moon and blood moon attacks are disabled.");
+                DrawInfoCard(listing, "Moon events are off", "Moon attacks are disabled.");
             }
 
-            DrawSectionLabel(listing, "Herd crossings", "Large herds cross the map from one side to the other.");
+            DrawSectionLabel(listing, "Herd crossings", "Large herds cross the map.");
             DrawToggleCard(listing, "Enable herd events", "Lets herds cross the map.", ref enableHerdEvents);
             if (enableHerdEvents)
             {
                 DrawFloatStepperCard(listing, "Minimum days between herds", "Shortest possible gap between herd events.", ref herdEventMinDays, 4f, 30f, 0.5f, "days");
                 DrawFloatStepperCard(listing, "Maximum days between herds", "Longest possible gap between herd events.", ref herdEventMaxDays, herdEventMinDays, 40f, 0.5f, "days");
-                DrawInfoCard(listing, "Herd size", "Herd size is automatic. It scales with colonist count.");
+                DrawInfoCard(listing, "Herd size", "Herd size is automatic.");
             }
             else
             {
@@ -741,9 +741,9 @@ namespace CustomizableZombieHorde
             BeginScrollableListing(rect, ref variantsScrollPosition, ref variantsViewHeight, out Listing_Standard listing, out Rect viewRect);
 
             DrawInfoCard(listing, "About this tab", "Choose which strains can spawn.");
-            DrawSectionLabel(listing, "Main strain roster", "Turn each main strain on or off.");
+            DrawSectionLabel(listing, "Main strain roster", "Turn each strain on or off.");
             DrawVariantCard(listing, "Standard biters", "Basic shambling zombies.", ref allowBiters);
-            DrawVariantCard(listing, "Boomers", "Bloated zombies that burst in close range.", ref allowBoomers);
+            DrawVariantCard(listing, "Boomers", "Bloated zombies that burst up close.", ref allowBoomers);
             DrawVariantCard(listing, "Sick", "Spreads filth and infection.", ref allowSick);
             DrawVariantCard(listing, "Drowned", "Prefers water and rain.", ref allowDrowned);
             DrawVariantCard(listing, "Brutes", "Large melee zombies.", ref allowBrutes);
@@ -755,11 +755,11 @@ namespace CustomizableZombieHorde
                 DrawWarningCard(listing, "No strains are enabled. Standard biters will be used.");
             }
 
-            DrawSectionLabel(listing, "Special states and exceptions", "Special cases that still affect play.");
+            DrawSectionLabel(listing, "Special cases", "Special cases that still affect play.");
             DrawInfoCard(listing, "Bone Biter", "Feeds on corpses.");
-            DrawInfoCard(listing, "Lurker", "A passive colony side zombie.");
+            DrawInfoCard(listing, "Lurker", "A passive zombie.");
             DrawInfoCard(listing, "Runner strain", "A rare fast zombie.");
-            DrawInfoCard(listing, "Pregnant Boomer", "A boomer that can burst into runts.");
+            DrawInfoCard(listing, "Pregnant Boomer", "Can burst into runts.");
 
             DrawSectionLabel(listing, "Recommended setup", "Most players will want every strain enabled.");
             if (DrawActionCard(listing, "Enable every strain", "Turns every strain back on."))
@@ -810,21 +810,21 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref advancedScrollPosition, ref advancedViewHeight, out Listing_Standard listing, out Rect viewRect);
 
-            DrawInfoCard(listing, "About this tab", "Colony side cleanup and infection settings.");
+            DrawInfoCard(listing, "About this tab", "Cleanup and infection settings.");
 
             DrawSectionLabel(listing, "Prioritized double tapping", "Lets pawns finish fresh zombie corpses automatically.");
             DrawToggleCard(listing, "Enable prioritized double tapping", "Selected work types can finish fresh zombie corpses.", ref enablePrioritizedDoubleTap);
             DrawDoubleTapWorkTypeChecklist(listing);
             if (!enablePrioritizedDoubleTap)
             {
-                DrawInfoCard(listing, "Double tapping is off", "The checklist is saved, but inactive until this is enabled.");
+                DrawInfoCard(listing, "Double tapping is off", "The checklist stays saved until this is enabled.");
             }
 
             DrawSectionLabel(listing, "Corpse handling", "Rules for zombie corpses after a fight.");
             DrawToggleCard(listing, "Allow zombie corpses by default", "Fresh zombie corpses start allowed.", ref autoAllowZombieCorpses);
 
             DrawSectionLabel(listing, "Zombie infection", "This only affects living pawns.");
-            DrawIntStepperCard(listing, "Days until infection reaches 99% transformation", "How many days an untreated infection takes to reach 99 percent.", ref infectionDaysToTurn, 1, 30, 1);
+            DrawIntStepperCard(listing, "Days until infection reaches 99% transformation", "How many days an untreated infection takes to reach 99%.", ref infectionDaysToTurn, 1, 30, 1);
 
             DrawSectionLabel(listing, "Reset", "Reset everything to the recommended setup.");
             if (DrawActionCard(listing, "Reset settings to recommended defaults", "Reset all settings to recommended values."))
@@ -841,7 +841,7 @@ namespace CustomizableZombieHorde
         {
             BeginScrollableListing(rect, ref debugScrollPosition, ref debugViewHeight, out Listing_Standard listing, out Rect viewRect);
 
-            DrawInfoCard(listing, "About this tab", "Use this tab to force events and test behavior.");
+            DrawInfoCard(listing, "About this tab", "Force events and test behavior.");
             DrawSectionLabel(listing, "Debug mode", "Best used for testing.");
             DrawToggleCard(listing, "Enable debug controls", "Shows debug buttons while a colony map is loaded.", ref enableDebugControls);
             DrawSectionLabel(listing, "Debug spawn sizing", "Used only by debug spawns and forced events.");
@@ -861,7 +861,7 @@ namespace CustomizableZombieHorde
             }
             else
             {
-                DrawSectionLabel(listing, "Manual event buttons", "These actions happen immediately on the current map.");
+                DrawSectionLabel(listing, "Manual event buttons", "These happen immediately on the current map.");
                 DrawDebugActionButton(listing, component, "Force edge wave now", "Forced an edge wave.", "Could not force an edge wave.");
                 DrawDebugActionButton(listing, component, "Force nightly edge wave now", "Forced the nightly edge wave.", "Could not force the nightly edge wave.");
                 DrawDebugActionButton(listing, component, "Force huddled pack now", "Forced a huddled pack.", "Could not force a huddled pack.");
