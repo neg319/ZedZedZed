@@ -331,10 +331,13 @@ namespace CustomizableZombieHorde
             try
             {
                 object noInteraction = null;
-                Type interactionModeType = AccessTools.TypeByName("RimWorld.GuestInteractionModeDef");
+                Type interactionModeType = AccessTools.TypeByName("RimWorld.GuestInteractionModeDef")
+                    ?? AccessTools.TypeByName("RimWorld.PrisonerInteractionModeDef");
                 if (interactionModeType != null)
                 {
-                    noInteraction = DefDatabase<GuestInteractionModeDef>.GetNamedSilentFail("NoInteraction");
+                    Type defDatabaseType = typeof(DefDatabase<>).MakeGenericType(interactionModeType);
+                    MethodInfo getNamedSilentFail = AccessTools.Method(defDatabaseType, "GetNamedSilentFail", new[] { typeof(string) });
+                    noInteraction = getNamedSilentFail?.Invoke(null, new object[] { "NoInteraction" });
                 }
 
                 if (noInteraction != null)
