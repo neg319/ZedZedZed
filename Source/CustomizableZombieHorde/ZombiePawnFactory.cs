@@ -411,6 +411,7 @@ namespace CustomizableZombieHorde
 
             ZombieUtility.RefreshDrownedState(pawn);
             ZombieUtility.NormalizeCoreZombieState(pawn);
+            ZombieUtility.RemoveZombieMalnutrition(pawn);
             if (pawn.needs?.mood != null)
             {
                 pawn.needs.mood.CurLevel = 0.05f;

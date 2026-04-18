@@ -12,6 +12,8 @@ namespace CustomizableZombieHorde
 {
     public static class ZombieUtility
     {
+        private static readonly Dictionary<int, int> LastZombiePrepTickByPawnId = new Dictionary<int, int>();
+        private const int ZombiePrepIntervalTicks = 600;
         private static readonly HashSet<BodyPartDef> LimbPartDefs = new HashSet<BodyPartDef>
         {
             BodyPartDefOf.Arm,
@@ -123,7 +125,6 @@ namespace CustomizableZombieHorde
 
             ForceZombieFaction(pawn);
             EnsureZombieGuestTrackerSafe(pawn);
-            RestoreHostileZombieNeedTracker(pawn);
             ClearZombieIdeoligion(pawn);
             EnsureZombieCannibalTrait(pawn);
         }
@@ -174,22 +175,10 @@ namespace CustomizableZombieHorde
 
         public static void EnsureEmotionlessZombie(Pawn pawn)
         {
-            if (!IsZombie(pawn) || pawn == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
-            {
-                return;
-            }
-
-            RestoreHostileZombieNeedTracker(pawn);
         }
 
         private static void RemoveHostileZombieFoodNeed(Pawn pawn)
         {
-            if (!IsZombie(pawn) || pawn == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
-            {
-                return;
-            }
-
-            RestoreHostileZombieNeedTracker(pawn);
         }
 
         private static void RestoreHostileZombieNeedTracker(Pawn pawn)
@@ -2260,8 +2249,12 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            if (!ShouldRunZombiePrepNow(pawn))
+            {
+                return;
+            }
+
             NormalizeCoreZombieState(pawn);
-            RemoveZombieMalnutrition(pawn);
             TryEndZombieMentalState(pawn);
             StripAllUsableItems(pawn);
             TrimZombieApparel(pawn);
@@ -2269,6 +2262,29 @@ namespace CustomizableZombieHorde
             SetZombieDisplayName(pawn);
             EnsureZombieInfectionState(pawn);
             TryRecoverFromSpawnIncap(pawn);
+        }
+
+        private static bool ShouldRunZombiePrepNow(Pawn pawn)
+        {
+            if (pawn == null)
+            {
+                return false;
+            }
+
+            if (Current.Game == null || Find.TickManager == null)
+            {
+                return true;
+            }
+
+            int pawnId = pawn.thingIDNumber;
+            int currentTick = Find.TickManager.TicksGame;
+            if (LastZombiePrepTickByPawnId.TryGetValue(pawnId, out int lastTick) && currentTick - lastTick < ZombiePrepIntervalTicks)
+            {
+                return false;
+            }
+
+            LastZombiePrepTickByPawnId[pawnId] = currentTick;
+            return true;
         }
 
         public static LocomotionUrgency GetZombieUrgency(Pawn pawn)
