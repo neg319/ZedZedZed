@@ -913,7 +913,7 @@ namespace CustomizableZombieHorde
             }
         }
     }
-    [HarmonyPatch(typeof(Pawn), nameof(Pawn.Tick))]
+    [HarmonyPatch(typeof(Pawn), "Tick")]
     public static class Patch_Pawn_Tick_HostileZombieNullRefShield
     {
         public static Exception Finalizer(Exception __exception, Pawn __instance)
