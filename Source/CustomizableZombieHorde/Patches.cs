@@ -913,6 +913,39 @@ namespace CustomizableZombieHorde
             }
         }
     }
+    [HarmonyPatch(typeof(Pawn), nameof(Pawn.Tick))]
+    public static class Patch_Pawn_Tick_HostileZombieNullRefShield
+    {
+        public static Exception Finalizer(Exception __exception, Pawn __instance)
+        {
+            if (__exception == null)
+            {
+                return null;
+            }
+
+            if (!(__exception is NullReferenceException) || __instance == null || !ZombieUtility.IsZombie(__instance))
+            {
+                return __exception;
+            }
+
+            try
+            {
+                ZombieUtility.NormalizeCoreZombieState(__instance);
+                ZombieUtility.PrepareSpawnedZombie(__instance);
+                if (!ZombieLurkerUtility.IsLurker(__instance) && !ZombieUtility.IsPlayerAlignedZombie(__instance))
+                {
+                    ZombieUtility.EnsureZombieAggression(__instance);
+                }
+            }
+            catch
+            {
+            }
+
+            return null;
+        }
+    }
+
+
 
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.Kill))]
     public static class Patch_Pawn_Kill

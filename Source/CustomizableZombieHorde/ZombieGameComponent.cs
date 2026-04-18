@@ -144,11 +144,6 @@ namespace CustomizableZombieHorde
                 HandlePopulationTopUps(ticksGame);
             }
 
-            if (ticksGame % ZombieUtility.ZombieMalnutritionUpdateIntervalTicks == 0)
-            {
-                HandleZombieMalnutrition();
-            }
-
             if (ticksGame % 900 == 0)
             {
                 EnsureZombiePresence(ticksGame);
@@ -186,26 +181,6 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private void HandleZombieMalnutrition()
-        {
-            if (Find.Maps == null)
-            {
-                return;
-            }
-
-            foreach (Map map in Find.Maps)
-            {
-                if (map?.mapPawns?.AllPawnsSpawned == null)
-                {
-                    continue;
-                }
-
-                foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned)
-                {
-                    ZombieUtility.AdvanceZombieMalnutrition(pawn, ZombieUtility.ZombieMalnutritionUpdateIntervalTicks);
-                }
-            }
-        }
 
         private void ScheduleNextGlobalReanimationCheck(int currentTick)
         {

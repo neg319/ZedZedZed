@@ -114,10 +114,6 @@ namespace CustomizableZombieHorde
             }
         }
 
-        public const int ZombieMalnutritionUpdateIntervalTicks = 600;
-        public const float ZombieMalnutritionDaysToLethal = 2f;
-        private const float ZombieMalnutritionStartingSeverity = 0.01f;
-
         public static void NormalizeCoreZombieState(Pawn pawn)
         {
             if (!IsZombie(pawn) || pawn == null)
@@ -126,9 +122,8 @@ namespace CustomizableZombieHorde
             }
 
             ForceZombieFaction(pawn);
-            ClearZombieGuestState(pawn);
+            EnsureZombieGuestTrackerSafe(pawn);
             RestoreHostileZombieNeedTracker(pawn);
-            NormalizeZombieMalnutritionState(pawn);
             ClearZombieIdeoligion(pawn);
             EnsureZombieCannibalTrait(pawn);
         }
@@ -261,106 +256,73 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private static void NormalizeZombieMalnutritionState(Pawn pawn)
+        public static void RemoveZombieMalnutrition(Pawn pawn)
         {
-            if (!IsZombie(pawn) || pawn?.health?.hediffSet == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
+            if (!IsZombie(pawn) || pawn?.health?.hediffSet == null)
             {
                 return;
             }
 
-            Hediff malnutrition = GetZombieMalnutrition(pawn);
-            if (malnutrition == null)
-            {
-                AddZombieMalnutrition(pawn, ZombieMalnutritionStartingSeverity);
-                return;
-            }
-
-            if (malnutrition.Severity > ZombieMalnutritionStartingSeverity)
-            {
-                malnutrition.Severity = ZombieMalnutritionStartingSeverity;
-            }
-        }
-
-        public static void AdvanceZombieMalnutrition(Pawn pawn, int intervalTicks)
-        {
-            if (!IsZombie(pawn)
-                || pawn?.health?.hediffSet == null
-                || pawn.Dead
-                || pawn.Destroyed
-                || ZombieLurkerUtility.IsLurker(pawn)
-                || IsPlayerAlignedZombie(pawn))
-            {
-                return;
-            }
-
-            if (intervalTicks <= 0)
-            {
-                intervalTicks = ZombieMalnutritionUpdateIntervalTicks;
-            }
-
-            Hediff malnutrition = GetZombieMalnutrition(pawn);
-            if (malnutrition == null)
-            {
-                malnutrition = AddZombieMalnutrition(pawn, ZombieMalnutritionStartingSeverity);
-                if (malnutrition == null)
-                {
-                    return;
-                }
-            }
-
-            float totalTicksToLethal = 60000f * Mathf.Max(0.25f, ZombieMalnutritionDaysToLethal);
-            float severityGain = intervalTicks / totalTicksToLethal;
-            if (severityGain <= 0f)
-            {
-                return;
-            }
-
-            malnutrition.Severity = Mathf.Min(1f, malnutrition.Severity + severityGain);
-        }
-
-        private static Hediff AddZombieMalnutrition(Pawn pawn, float severity)
-        {
             HediffDef malnutritionDef = HediffDefOf.Malnutrition ?? DefDatabase<HediffDef>.GetNamedSilentFail("Malnutrition");
-            if (malnutritionDef == null || pawn?.health == null)
+            if (malnutritionDef == null)
             {
-                return null;
+                return;
+            }
+
+            Hediff malnutrition = pawn.health.hediffSet.GetFirstHediffOfDef(malnutritionDef);
+            if (malnutrition == null)
+            {
+                return;
             }
 
             try
             {
-                Hediff malnutrition = HediffMaker.MakeHediff(malnutritionDef, pawn);
-                malnutrition.Severity = Mathf.Max(ZombieMalnutritionStartingSeverity, severity);
-                pawn.health.AddHediff(malnutrition);
-                return malnutrition;
+                pawn.health.RemoveHediff(malnutrition);
             }
             catch
             {
-                return pawn.health.hediffSet?.GetFirstHediffOfDef(malnutritionDef);
             }
         }
 
-        private static Hediff GetZombieMalnutrition(Pawn pawn)
-        {
-            HediffDef malnutritionDef = HediffDefOf.Malnutrition ?? DefDatabase<HediffDef>.GetNamedSilentFail("Malnutrition");
-            if (malnutritionDef == null)
-            {
-                return null;
-            }
-
-            return pawn?.health?.hediffSet?.GetFirstHediffOfDef(malnutritionDef);
-        }
-
-        private static void ClearZombieGuestState(Pawn pawn)
+        private static void EnsureZombieGuestTrackerSafe(Pawn pawn)
         {
             if (pawn == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
             {
                 return;
             }
 
+            object guestTracker = null;
             try
             {
-                FieldInfo guestField = AccessTools.Field(typeof(Pawn), "guest") ?? AccessTools.Field(typeof(Pawn), "guestInt");
-                guestField?.SetValue(pawn, null);
+                guestTracker = pawn.guest;
+            }
+            catch
+            {
+            }
+
+            if (guestTracker == null)
+            {
+                try
+                {
+                    ConstructorInfo ctor = AccessTools.Constructor(typeof(Pawn_GuestTracker), new[] { typeof(Pawn) });
+                    guestTracker = ctor?.Invoke(new object[] { pawn });
+                    SetPawnField(pawn, "guest", guestTracker);
+                    SetPawnField(pawn, "guestInt", guestTracker);
+                }
+                catch
+                {
+                }
+            }
+
+            if (guestTracker == null)
+            {
+                return;
+            }
+
+            try
+            {
+                AccessTools.Field(guestTracker.GetType(), "hostFactionInt")?.SetValue(guestTracker, null);
+                AccessTools.Field(guestTracker.GetType(), "hostFaction")?.SetValue(guestTracker, null);
             }
             catch
             {
@@ -368,11 +330,17 @@ namespace CustomizableZombieHorde
 
             try
             {
-                object guest = pawn.guest;
-                if (guest != null)
+                object noInteraction = null;
+                Type interactionModeType = AccessTools.TypeByName("RimWorld.GuestInteractionModeDef");
+                if (interactionModeType != null)
                 {
-                    AccessTools.Field(guest.GetType(), "hostFactionInt")?.SetValue(guest, null);
-                    AccessTools.Field(guest.GetType(), "hostFaction")?.SetValue(guest, null);
+                    noInteraction = DefDatabase<GuestInteractionModeDef>.GetNamedSilentFail("NoInteraction");
+                }
+
+                if (noInteraction != null)
+                {
+                    AccessTools.Field(guestTracker.GetType(), "interactionMode")?.SetValue(guestTracker, noInteraction);
+                    AccessTools.Field(guestTracker.GetType(), "interactionModeInt")?.SetValue(guestTracker, noInteraction);
                 }
             }
             catch
@@ -2290,6 +2258,7 @@ namespace CustomizableZombieHorde
             }
 
             NormalizeCoreZombieState(pawn);
+            RemoveZombieMalnutrition(pawn);
             TryEndZombieMentalState(pawn);
             StripAllUsableItems(pawn);
             TrimZombieApparel(pawn);
