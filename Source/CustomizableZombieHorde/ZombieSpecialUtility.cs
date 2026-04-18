@@ -1593,6 +1593,14 @@ namespace CustomizableZombieHorde
                 return;
             }
 
+            List<Pawn> boneBiters = map.mapPawns?.AllPawnsSpawned?
+                .Where(pawn => IsBoneBiter(pawn) && !pawn.Dead && !pawn.Destroyed)
+                .ToList() ?? new List<Pawn>();
+            if (boneBiters.Count == 0)
+            {
+                return;
+            }
+
             List<Corpse> corpses = map.listerThings.ThingsInGroup(ThingRequestGroup.Corpse).OfType<Corpse>().ToList();
             foreach (Corpse corpse in corpses)
             {
@@ -1601,7 +1609,15 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                int nearbyBoneBiters = map.mapPawns.AllPawnsSpawned.Count(pawn => IsBoneBiter(pawn) && !pawn.Dead && !pawn.Destroyed && pawn.PositionHeld.DistanceToSquared(corpse.PositionHeld) <= 2.9f * 2.9f);
+                int nearbyBoneBiters = 0;
+                for (int i = 0; i < boneBiters.Count; i++)
+                {
+                    if (boneBiters[i].PositionHeld.DistanceToSquared(corpse.PositionHeld) <= 9f)
+                    {
+                        nearbyBoneBiters++;
+                    }
+                }
+
                 if (nearbyBoneBiters <= 0)
                 {
                     continue;

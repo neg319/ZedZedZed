@@ -110,13 +110,18 @@ namespace CustomizableZombieHorde
 
             int ticksGame = Find.TickManager.TicksGame;
 
-            if (ticksGame % 180 == 0)
+            if (ticksGame % 300 == 0)
             {
-                SanitizeLivingZombies();
+                SanitizeLivingZombies(ticksGame);
                 HandleSickBloodContact();
                 HandleZombieFeeding();
                 HandleZombieInfectionProgression();
                 HandleDeadInfectedCorpseProgression();
+                RefreshCurrentMapCount();
+                ZombieDoubleTapUtility.HandlePrioritizedDoubleTap();
+                EnsureZombieCorpsesAllowed();
+                HandlePopulationTopUps(ticksGame);
+                HandleGuaranteedNightlySpawns(ticksGame);
             }
 
             if (ticksGame % 12 == 0)
@@ -131,27 +136,14 @@ namespace CustomizableZombieHorde
                 HandleHerdCrossingProgress();
             }
 
-            if (ticksGame % 90 == 0)
+            if (ticksGame % 150 == 0)
             {
-                StabilizeZombieMovementJobs();
-            }
-
-            if (ticksGame % 300 == 0)
-            {
-                RefreshCurrentMapCount();
-                ZombieDoubleTapUtility.HandlePrioritizedDoubleTap();
-                EnsureZombieCorpsesAllowed();
-                HandlePopulationTopUps(ticksGame);
+                StabilizeZombieMovementJobs(ticksGame);
             }
 
             if (ticksGame % 900 == 0)
             {
                 EnsureZombiePresence(ticksGame);
-            }
-
-            if (ticksGame % 300 == 0)
-            {
-                HandleGuaranteedNightlySpawns(ticksGame);
             }
 
             if (ticksGame % 600 == 0)
@@ -1632,26 +1624,28 @@ namespace CustomizableZombieHorde
             return IntVec3.Invalid;
         }
 
-        private void SanitizeLivingZombies()
+        private void SanitizeLivingZombies(int currentTick)
         {
             HashSet<int> liveZombieIds = new HashSet<int>();
+            int bucket = Mathf.Abs((currentTick / 300) % 4);
             foreach (Map map in Find.Maps)
             {
                 foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned)
                 {
                     if (!ZombieUtility.IsZombie(pawn))
                     {
-                        if (ZombieRulesUtility.IsZombieAlignedCritter(pawn))
-                        {
-                            ZombieUtility.SetZombieDisplayName(pawn);
-                        }
-
                         continue;
                     }
 
                     liveZombieIds.Add(pawn.thingIDNumber);
 
-                    if (pawn.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_ZombieRot) != true)
+                    bool missingRot = pawn.health?.hediffSet?.HasHediff(ZombieDefOf.CZH_ZombieRot) != true;
+                    if (!missingRot && !ShouldProcessZombieBucket(pawn, bucket, 4))
+                    {
+                        continue;
+                    }
+
+                    if (missingRot)
                     {
                         ZombiePawnFactory.FinalizeZombie(pawn, initialSpawn: false);
                     }
@@ -1660,13 +1654,12 @@ namespace CustomizableZombieHorde
                         ZombieInfectionUtility.ApplyReanimatedState(pawn);
                     }
 
-                    ZombieUtility.SetZombieDisplayName(pawn);
                     ZombieUtility.RefreshNightSpeedBoost(pawn);
+                    ZombieUtility.RefreshDrownedState(pawn);
 
                     if (ZombieFeignDeathUtility.IsFeigningDeath(pawn))
                     {
                         ZombieFeignDeathUtility.ForceZombieIntoDownedState(pawn);
-                        ZombieUtility.RefreshDrownedState(pawn);
                         continue;
                     }
 
@@ -1679,24 +1672,16 @@ namespace CustomizableZombieHorde
                     if (ZombieLurkerUtility.IsColonyLurker(pawn))
                     {
                         ZombieLurkerUtility.EnsureColonyLurkerState(pawn);
-                        ZombieUtility.RefreshDrownedState(pawn);
                         continue;
                     }
 
                     if (ZombieUtility.IsPlayerAlignedZombie(pawn))
                     {
                         ZombieUtility.EnsureFriendlyZombieState(pawn);
-                        ZombieUtility.RefreshDrownedState(pawn);
                         continue;
                     }
 
-                    ZombieUtility.StripAllUsableItems(pawn);
-                    ZombieUtility.MarkZombieApparelTainted(pawn, degradeApparel: false);
-                    ZombieUtility.RefreshDrownedState(pawn);
                     ZombieUtility.HandleDrownedRegeneration(pawn);
-                    ZombieUtility.EnsureZombieAggression(pawn);
-                    ZombieSpecialUtility.HandleDrownedBehavior(pawn);
-                    ZombieSpecialUtility.HandleSickSpitAttack(pawn);
                 }
             }
 
@@ -1708,6 +1693,16 @@ namespace CustomizableZombieHorde
                     zombieBehaviorByPawnId.Remove(staleId);
                 }
             }
+        }
+
+        private static bool ShouldProcessZombieBucket(Pawn pawn, int bucket, int bucketCount)
+        {
+            if (pawn == null || bucketCount <= 1)
+            {
+                return true;
+            }
+
+            return Mathf.Abs(pawn.thingIDNumber) % bucketCount == bucket;
         }
 
         private void HandleActiveFeignDeath(int currentTick)
@@ -1731,8 +1726,9 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private void StabilizeZombieMovementJobs()
+        private void StabilizeZombieMovementJobs(int currentTick)
         {
+            int bucket = Mathf.Abs((currentTick / 150) % 3);
             foreach (Map map in Find.Maps)
             {
                 if (map?.mapPawns?.AllPawnsSpawned == null)
@@ -1743,6 +1739,11 @@ namespace CustomizableZombieHorde
                 foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned)
                 {
                     if (!ZombieUtility.IsZombie(pawn) || pawn.Dead || pawn.Destroyed || pawn.Downed)
+                    {
+                        continue;
+                    }
+
+                    if (!ShouldProcessZombieBucket(pawn, bucket, 3))
                     {
                         continue;
                     }
