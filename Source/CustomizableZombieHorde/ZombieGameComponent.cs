@@ -40,6 +40,7 @@ namespace CustomizableZombieHorde
         private Dictionary<int, int> nextPopulationTopUpTickByMap = new Dictionary<int, int>();
         private Dictionary<int, int> zombieBehaviorByPawnId = new Dictionary<int, int>();
         private Dictionary<int, int> zombieHerdDirectionByPawnId = new Dictionary<int, int>();
+        private Dictionary<int, int> lastMovementRescueTickByPawnId = new Dictionary<int, int>();
         private List<int> infectionHeadFatalPawnIds = new List<int>();
         private List<int> infectionLurkerPawnIds = new List<int>();
 
@@ -80,6 +81,7 @@ namespace CustomizableZombieHorde
             Scribe_Collections.Look(ref nextPopulationTopUpTickByMap, "nextPopulationTopUpTickByMap", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref zombieBehaviorByPawnId, "zombieBehaviorByPawnId", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref zombieHerdDirectionByPawnId, "zombieHerdDirectionByPawnId", LookMode.Value, LookMode.Value);
+            Scribe_Collections.Look(ref lastMovementRescueTickByPawnId, "lastMovementRescueTickByPawnId", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref infectionHeadFatalPawnIds, "infectionHeadFatalPawnIds", LookMode.Value);
             Scribe_Collections.Look(ref infectionLurkerPawnIds, "infectionLurkerPawnIds", LookMode.Value);
             base.ExposeData();
@@ -97,6 +99,7 @@ namespace CustomizableZombieHorde
             nextPopulationTopUpTickByMap ??= new Dictionary<int, int>();
             zombieBehaviorByPawnId ??= new Dictionary<int, int>();
             zombieHerdDirectionByPawnId ??= new Dictionary<int, int>();
+            lastMovementRescueTickByPawnId ??= new Dictionary<int, int>();
             infectionHeadFatalPawnIds ??= new List<int>();
             infectionLurkerPawnIds ??= new List<int>();
         }
@@ -1693,6 +1696,15 @@ namespace CustomizableZombieHorde
                     zombieBehaviorByPawnId.Remove(staleId);
                 }
             }
+
+            if (lastMovementRescueTickByPawnId != null)
+            {
+                List<int> staleIds = lastMovementRescueTickByPawnId.Keys.Where(id => !liveZombieIds.Contains(id)).ToList();
+                foreach (int staleId in staleIds)
+                {
+                    lastMovementRescueTickByPawnId.Remove(staleId);
+                }
+            }
         }
 
         private static bool ShouldProcessZombieBucket(Pawn pawn, int bucket, int bucketCount)
@@ -1728,7 +1740,8 @@ namespace CustomizableZombieHorde
 
         private void StabilizeZombieMovementJobs(int currentTick)
         {
-            int bucket = Mathf.Abs((currentTick / 150) % 3);
+            int bucketCount = 6;
+            int bucket = Mathf.Abs((currentTick / 150) % bucketCount);
             foreach (Map map in Find.Maps)
             {
                 if (map?.mapPawns?.AllPawnsSpawned == null)
@@ -1743,7 +1756,7 @@ namespace CustomizableZombieHorde
                         continue;
                     }
 
-                    if (!ShouldProcessZombieBucket(pawn, bucket, 3))
+                    if (!ShouldProcessZombieBucket(pawn, bucket, bucketCount))
                     {
                         continue;
                     }
@@ -1767,7 +1780,13 @@ namespace CustomizableZombieHorde
                             || !pawn.CurJob.targetA.IsValid
                             || !pawn.CurJob.targetA.Cell.InBounds(map)
                             || ZombieSpecialUtility.DistanceToNearestEdge(pawn.CurJob.targetA.Cell, map) <= currentEdgeDistance);
-                    if (!pinnedToEdge && !strandedNearEdge && !ZombieUtility.IsBadZombieJob(pawn, pawn.CurJob, map))
+                    bool badJob = ZombieUtility.IsBadZombieJob(pawn, pawn.CurJob, map);
+                    if (!pinnedToEdge && !strandedNearEdge && !badJob)
+                    {
+                        continue;
+                    }
+
+                    if (!CanAttemptMovementRescue(pawn, currentTick))
                     {
                         continue;
                     }
@@ -1780,9 +1799,26 @@ namespace CustomizableZombieHorde
                     {
                     }
 
+                    lastMovementRescueTickByPawnId[pawn.thingIDNumber] = currentTick;
                     ZombieUtility.EnsureZombieAggression(pawn);
                 }
             }
+        }
+
+        private bool CanAttemptMovementRescue(Pawn pawn, int currentTick)
+        {
+            if (pawn == null)
+            {
+                return false;
+            }
+
+            lastMovementRescueTickByPawnId ??= new Dictionary<int, int>();
+            if (lastMovementRescueTickByPawnId.TryGetValue(pawn.thingIDNumber, out int lastTick) && currentTick - lastTick < 450)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private void HandleHerdCrossingProgress()
