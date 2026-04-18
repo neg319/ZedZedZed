@@ -18,10 +18,6 @@ namespace CustomizableZombieHorde
         private static readonly Dictionary<int, int> BoneBiterDisturbedUntilTickByPawn = new Dictionary<int, int>();
         private static readonly Dictionary<int, CombatNoiseFocus> CombatNoiseFocusByZombie = new Dictionary<int, CombatNoiseFocus>();
         private static readonly Dictionary<int, int> LastForcedNoiseRetargetTickByZombie = new Dictionary<int, int>();
-        private static readonly Dictionary<int, IntVec3> CachedBaseCenterByMapId = new Dictionary<int, IntVec3>();
-        private static readonly Dictionary<int, int> CachedBaseCenterTickByMapId = new Dictionary<int, int>();
-        private static readonly Dictionary<int, bool> CachedMapHasWaterByMapId = new Dictionary<int, bool>();
-        private static readonly Dictionary<int, int> CachedMapHasWaterTickByMapId = new Dictionary<int, int>();
         private const int SickSpitCooldownTicks = 936;
         private const int BoneBiterDisturbedTicks = 900;
         private const float BoneBiterMealSearchRadius = 28f;
@@ -372,10 +368,16 @@ namespace CustomizableZombieHorde
                 return focusedTarget;
             }
 
-            return FindBestLivingPrey(pawn, Mathf.Max(radius, 22f));
+            Pawn bileTarget = FindBestLivingPrey(pawn, Mathf.Max(radius, 22f), true);
+            if (bileTarget != null)
+            {
+                return bileTarget;
+            }
+
+            return FindBestLivingPrey(pawn, radius, false);
         }
 
-        private static Pawn FindBestLivingPrey(Pawn pawn, float radius)
+        private static Pawn FindBestLivingPrey(Pawn pawn, float radius, bool requirePukedOn)
         {
             if (pawn?.MapHeld?.mapPawns?.AllPawnsSpawned == null)
             {
@@ -406,6 +408,11 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
+                if (requirePukedOn && !hasPukedOn)
+                {
+                    continue;
+                }
+
                 float distance = pawn.PositionHeld.DistanceToSquared(other.PositionHeld);
                 if (distance > radiusSquared)
                 {
@@ -417,7 +424,7 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                float score = ScorePreyTarget(pawn, other, distance, preferAnimals);
+                float score = ScorePreyTarget(pawn, other, distance, preferAnimals, requirePukedOn);
                 if (score >= bestScore)
                 {
                     continue;
@@ -450,7 +457,7 @@ namespace CustomizableZombieHorde
             return pawn.thingIDNumber % 5 == 0;
         }
 
-        private static float ScorePreyTarget(Pawn hunter, Pawn prey, float distanceSquared, bool preferAnimals)
+        private static float ScorePreyTarget(Pawn hunter, Pawn prey, float distanceSquared, bool preferAnimals, bool requirePukedOn)
         {
             float distance = Mathf.Sqrt(distanceSquared);
             float score = distance;
@@ -476,9 +483,9 @@ namespace CustomizableZombieHorde
                 score -= 0.5f;
             }
 
-            if (HasPukedOn(prey))
+            if (requirePukedOn && HasPukedOn(prey))
             {
-                score -= 5.5f;
+                score -= 3.0f;
             }
 
             if (prey.Downed)
@@ -1404,45 +1411,62 @@ namespace CustomizableZombieHorde
                 return IntVec3.Invalid;
             }
 
-            List<(IntVec3 Cell, float Score)> ordered = candidates
-                .Where(cell => cell.IsValid && cell.InBounds(map) && cell.Standable(map) && cell != pawn.PositionHeld)
-                .Select(cell => new { Cell = cell, AnchorDistanceSquared = anchor.IsValid ? cell.DistanceToSquared(anchor) : 0f })
-                .Where(entry => !anchor.IsValid || (entry.AnchorDistanceSquared >= minAnchorDistanceSquared && (maxAnchorDistanceSquared <= 0f || entry.AnchorDistanceSquared <= maxAnchorDistanceSquared)))
-                .Select(entry => (entry.Cell, Score: ScoreVisitorStyleCell(map, entry.Cell, anchor, preferRoads, preferOpenGround)))
-                .Where(entry => entry.Score > float.MinValue / 4f)
-                .OrderByDescending(entry => entry.Score)
-                .Take(8)
-                .ToList();
+            List<(IntVec3 Cell, float Score)> scored = new List<(IntVec3, float)>();
+            foreach (IntVec3 cell in candidates)
+            {
+                if (!cell.IsValid || !cell.InBounds(map) || !cell.Standable(map) || cell == pawn.PositionHeld)
+                {
+                    continue;
+                }
 
-            if (ordered.Count == 0)
+                float anchorDistanceSquared = anchor.IsValid ? cell.DistanceToSquared(anchor) : 0f;
+                if (anchor.IsValid && anchorDistanceSquared < minAnchorDistanceSquared)
+                {
+                    continue;
+                }
+
+                if (anchor.IsValid && maxAnchorDistanceSquared > 0f && anchorDistanceSquared > maxAnchorDistanceSquared)
+                {
+                    continue;
+                }
+
+                bool reachable;
+                try
+                {
+                    reachable = pawn.CanReach(cell, PathEndMode.OnCell, Danger.Deadly);
+                }
+                catch
+                {
+                    reachable = cell.Walkable(map);
+                }
+
+                if (!reachable)
+                {
+                    continue;
+                }
+
+                float score = ScoreVisitorStyleCell(map, cell, anchor, preferRoads, preferOpenGround);
+                if (score <= float.MinValue / 4f)
+                {
+                    continue;
+                }
+
+                scored.Add((cell, score));
+            }
+
+            if (scored.Count == 0)
             {
                 return IntVec3.Invalid;
             }
 
+            List<(IntVec3 Cell, float Score)> ordered = scored
+                .OrderByDescending(entry => entry.Score)
+                .Take(8)
+                .ToList();
             int ticksGame = Find.TickManager?.TicksGame ?? 0;
             int step = ticksPerStep <= 0 ? 0 : ticksGame / ticksPerStep;
             int pawnOffset = pawn == null ? 0 : Mathf.Abs(pawn.thingIDNumber / 3);
-
-            for (int offset = 0; offset < ordered.Count; offset++)
-            {
-                IntVec3 candidate = ordered[(pawnOffset + step + offset) % ordered.Count].Cell;
-                bool reachable;
-                try
-                {
-                    reachable = pawn.CanReach(candidate, PathEndMode.OnCell, Danger.Deadly);
-                }
-                catch
-                {
-                    reachable = candidate.Walkable(map);
-                }
-
-                if (reachable)
-                {
-                    return candidate;
-                }
-            }
-
-            return ordered[0].Cell;
+            return ordered[(pawnOffset + step) % ordered.Count].Cell;
         }
 
         private static float ScoreVisitorStyleCell(Map map, IntVec3 cell, IntVec3 anchor, bool preferRoads, bool preferOpenGround)
@@ -1515,18 +1539,6 @@ namespace CustomizableZombieHorde
                 return IntVec3.Invalid;
             }
 
-            int ticksGame = Find.TickManager?.TicksGame ?? 0;
-            int mapId = map.uniqueID;
-            if (CachedBaseCenterTickByMapId.TryGetValue(mapId, out int cachedTick)
-                && ticksGame - cachedTick < 600
-                && CachedBaseCenterByMapId.TryGetValue(mapId, out IntVec3 cachedCenter)
-                && cachedCenter.IsValid)
-            {
-                return cachedCenter;
-            }
-
-            IntVec3 result = IntVec3.Invalid;
-
             List<IntVec3> homeCells = map.areaManager?.Home?.ActiveCells?.Where(cell => cell.Standable(map)).ToList();
             if (homeCells != null && homeCells.Count > 0)
             {
@@ -1538,9 +1550,10 @@ namespace CustomizableZombieHorde
                     sumZ += cell.z;
                 }
 
-                result = new IntVec3(sumX / homeCells.Count, 0, sumZ / homeCells.Count);
+                return new IntVec3(sumX / homeCells.Count, 0, sumZ / homeCells.Count);
             }
-            else if (map.mapPawns?.FreeColonistsSpawned != null && map.mapPawns.FreeColonistsSpawned.Count > 0)
+
+            if (map.mapPawns?.FreeColonistsSpawned != null && map.mapPawns.FreeColonistsSpawned.Count > 0)
             {
                 int sumX = 0;
                 int sumZ = 0;
@@ -1559,18 +1572,11 @@ namespace CustomizableZombieHorde
 
                 if (count > 0)
                 {
-                    result = new IntVec3(sumX / count, 0, sumZ / count);
+                    return new IntVec3(sumX / count, 0, sumZ / count);
                 }
             }
 
-            if (!result.IsValid)
-            {
-                result = map.Center;
-            }
-
-            CachedBaseCenterByMapId[mapId] = result;
-            CachedBaseCenterTickByMapId[mapId] = ticksGame;
-            return result;
+            return map.Center;
         }
 
         public static int DistanceToNearestEdge(IntVec3 cell, Map map)
@@ -1587,14 +1593,6 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            List<Pawn> boneBiters = map.mapPawns?.AllPawnsSpawned?
-                .Where(pawn => IsBoneBiter(pawn) && !pawn.Dead && !pawn.Destroyed)
-                .ToList() ?? new List<Pawn>();
-            if (boneBiters.Count == 0)
-            {
-                return;
-            }
-
             List<Corpse> corpses = map.listerThings.ThingsInGroup(ThingRequestGroup.Corpse).OfType<Corpse>().ToList();
             foreach (Corpse corpse in corpses)
             {
@@ -1603,15 +1601,7 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                int nearbyBoneBiters = 0;
-                for (int i = 0; i < boneBiters.Count; i++)
-                {
-                    if (boneBiters[i].PositionHeld.DistanceToSquared(corpse.PositionHeld) <= 9f)
-                    {
-                        nearbyBoneBiters++;
-                    }
-                }
-
+                int nearbyBoneBiters = map.mapPawns.AllPawnsSpawned.Count(pawn => IsBoneBiter(pawn) && !pawn.Dead && !pawn.Destroyed && pawn.PositionHeld.DistanceToSquared(corpse.PositionHeld) <= 2.9f * 2.9f);
                 if (nearbyBoneBiters <= 0)
                 {
                     continue;
@@ -1636,29 +1626,15 @@ namespace CustomizableZombieHorde
                 return false;
             }
 
-            int ticksGame = Find.TickManager?.TicksGame ?? 0;
-            int mapId = map.uniqueID;
-            if (CachedMapHasWaterTickByMapId.TryGetValue(mapId, out int cachedTick)
-                && ticksGame - cachedTick < 2500
-                && CachedMapHasWaterByMapId.TryGetValue(mapId, out bool cachedValue))
-            {
-                return cachedValue;
-            }
-
-            bool hasWater = false;
-
             foreach (IntVec3 cell in map.AllCells)
             {
                 if (ZombieUtility.IsWaterCell(cell, map))
                 {
-                    hasWater = true;
-                    break;
+                    return true;
                 }
             }
 
-            CachedMapHasWaterByMapId[mapId] = hasWater;
-            CachedMapHasWaterTickByMapId[mapId] = ticksGame;
-            return hasWater;
+            return false;
         }
 
         public static void DropZombieBlood(Pawn pawn)
@@ -2348,61 +2324,61 @@ namespace CustomizableZombieHorde
 
         public static void HandleSickBloodContact(Map map)
         {
-            if (map?.mapPawns?.AllPawnsSpawned == null)
+            if (map == null)
             {
                 return;
             }
 
-            ThingDef acidDef = ZombieDefOf.CZH_Filth_ZombieAcid;
-            ThingDef bloodDef = ZombieDefOf.CZH_Filth_ZombieBlood;
-            ThingDef sickBloodDef = ZombieDefOf.CZH_Filth_SickZombieBlood;
-
-            foreach (Pawn pawn in map.mapPawns.AllPawnsSpawned)
+            if (ZombieDefOf.CZH_Filth_ZombieAcid != null)
             {
-                if (pawn == null || pawn.Dead || ZombieUtility.ShouldZombiesIgnore(pawn))
+                List<Thing> acidFilth = map.listerThings.ThingsOfDef(ZombieDefOf.CZH_Filth_ZombieAcid);
+                for (int i = 0; i < acidFilth.Count; i++)
                 {
-                    continue;
-                }
-
-                List<Thing> things = pawn.PositionHeld.GetThingList(map);
-                bool hasAcid = false;
-                bool hasBlood = false;
-                bool hasSickBlood = false;
-                for (int i = 0; i < things.Count; i++)
-                {
-                    ThingDef def = things[i]?.def;
-                    if (acidDef != null && def == acidDef)
+                    IntVec3 cell = acidFilth[i].Position;
+                    List<Thing> things = cell.GetThingList(map);
+                    for (int j = 0; j < things.Count; j++)
                     {
-                        hasAcid = true;
-                    }
-                    else if (bloodDef != null && def == bloodDef)
-                    {
-                        hasBlood = true;
-                    }
-                    else if (sickBloodDef != null && def == sickBloodDef)
-                    {
-                        hasSickBlood = true;
-                    }
-
-                    if (hasAcid && hasBlood && hasSickBlood)
-                    {
-                        break;
+                        if (things[j] is Pawn pawn && !pawn.Dead && !ZombieUtility.ShouldZombiesIgnore(pawn))
+                        {
+                            ApplyAcidCorrosion(pawn, 0.12f);
+                        }
                     }
                 }
+            }
 
-                if (hasAcid)
+            if (ZombieDefOf.CZH_Filth_ZombieBlood != null)
+            {
+                List<Thing> bloodFilth = map.listerThings.ThingsOfDef(ZombieDefOf.CZH_Filth_ZombieBlood);
+                for (int i = 0; i < bloodFilth.Count; i++)
                 {
-                    ApplyAcidCorrosion(pawn, 0.12f);
+                    IntVec3 cell = bloodFilth[i].Position;
+                    List<Thing> things = cell.GetThingList(map);
+                    for (int j = 0; j < things.Count; j++)
+                    {
+                        if (things[j] is Pawn pawn && !pawn.Dead && !ZombieUtility.ShouldZombiesIgnore(pawn))
+                        {
+                            ApplyZombieBloodExposure(pawn, 0.04f);
+                        }
+                    }
                 }
+            }
 
-                if (hasBlood)
-                {
-                    ApplyZombieBloodExposure(pawn, 0.04f);
-                }
+            if (ZombieDefOf.CZH_Filth_SickZombieBlood == null)
+            {
+                return;
+            }
 
-                if (hasSickBlood)
+            List<Thing> filth = map.listerThings.ThingsOfDef(ZombieDefOf.CZH_Filth_SickZombieBlood);
+            for (int i = 0; i < filth.Count; i++)
+            {
+                IntVec3 cell = filth[i].Position;
+                List<Thing> things = cell.GetThingList(map);
+                for (int j = 0; j < things.Count; j++)
                 {
-                    ApplyZombieBloodExposure(pawn, 0.05f);
+                    if (things[j] is Pawn pawn && !pawn.Dead && !ZombieUtility.ShouldZombiesIgnore(pawn))
+                    {
+                        ApplyZombieBloodExposure(pawn, 0.05f);
+                    }
                 }
             }
         }

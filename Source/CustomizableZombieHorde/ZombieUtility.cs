@@ -12,8 +12,6 @@ namespace CustomizableZombieHorde
 {
     public static class ZombieUtility
     {
-        private static readonly Dictionary<int, int> LastZombiePrepTickByPawnId = new Dictionary<int, int>();
-        private const int ZombiePrepIntervalTicks = 600;
         private static readonly HashSet<BodyPartDef> LimbPartDefs = new HashSet<BodyPartDef>
         {
             BodyPartDefOf.Arm,
@@ -124,7 +122,10 @@ namespace CustomizableZombieHorde
             }
 
             ForceZombieFaction(pawn);
-            EnsureZombieGuestTrackerSafe(pawn);
+            ClearZombieGuestState(pawn);
+            EnsureEmotionlessZombie(pawn);
+            RemoveHostileZombieNeeds(pawn);
+            ClearZombieHungerState(pawn);
             ClearZombieIdeoligion(pawn);
             EnsureZombieCannibalTrait(pawn);
         }
@@ -175,79 +176,87 @@ namespace CustomizableZombieHorde
 
         public static void EnsureEmotionlessZombie(Pawn pawn)
         {
-        }
-
-        private static void RemoveHostileZombieFoodNeed(Pawn pawn)
-        {
-        }
-
-        private static void RestoreHostileZombieNeedTracker(Pawn pawn)
-        {
-            if (!IsZombie(pawn) || pawn == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
+            if (!IsZombie(pawn) || pawn?.needs == null || pawn.needs.AllNeeds == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
             {
                 return;
             }
 
-            bool rebuildTracker = pawn.needs == null;
+            NeedDef moodDef = DefDatabase<NeedDef>.GetNamedSilentFail("Mood");
+            NeedDef joyDef = DefDatabase<NeedDef>.GetNamedSilentFail("Joy");
 
-            try
+            for (int i = pawn.needs.AllNeeds.Count - 1; i >= 0; i--)
             {
-                if (!rebuildTracker)
+                Need need = pawn.needs.AllNeeds[i];
+                if (need?.def == moodDef || need?.def == joyDef)
                 {
-                    rebuildTracker = pawn.needs.AllNeeds == null
-                        || pawn.needs.AllNeeds.Count == 0
-                        || pawn.needs.food == null
-                        || pawn.needs.mood == null;
-                }
-            }
-            catch
-            {
-                rebuildTracker = true;
-            }
-
-            if (rebuildTracker)
-            {
-                try
-                {
-                    ConstructorInfo ctor = AccessTools.Constructor(typeof(Pawn_NeedsTracker), new[] { typeof(Pawn) });
-                    object tracker = ctor?.Invoke(new object[] { pawn });
-                    SetPawnField(pawn, "needs", tracker);
-                    SetPawnField(pawn, "needsInt", tracker);
-                }
-                catch
-                {
+                    pawn.needs.AllNeeds.RemoveAt(i);
                 }
             }
 
-            try
-            {
-                AccessTools.Method(pawn.needs?.GetType(), "AddOrRemoveNeedsAsAppropriate")?.Invoke(pawn.needs, null);
-            }
-            catch
-            {
-            }
+            ClearNeedTrackerField(pawn, "mood");
+            ClearNeedTrackerField(pawn, "joy");
         }
 
-        private static void SetPawnField(Pawn pawn, string fieldName, object value)
+        private static void RemoveHostileZombieNeeds(Pawn pawn)
         {
-            if (pawn == null || fieldName.NullOrEmpty())
+            if (!IsZombie(pawn) || pawn?.needs == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
             {
                 return;
             }
 
             try
             {
-                FieldInfo field = AccessTools.Field(typeof(Pawn), fieldName);
-                field?.SetValue(pawn, value);
+                pawn.needs.AllNeeds?.Clear();
+            }
+            catch
+            {
+            }
+
+            string[] fieldNames =
+            {
+                "mood",
+                "food",
+                "rest",
+                "joy",
+                "beauty",
+                "comfort",
+                "roomsize",
+                "outdoors",
+                "chemical_Alcohol",
+                "chemical_Smokeleaf",
+                "chemical_Ambrosia",
+                "chemical_GoJuice",
+                "chemical_Psychoid",
+                "chemical_WakeUp",
+                "chemical_Luciferium"
+            };
+
+            for (int i = 0; i < fieldNames.Length; i++)
+            {
+                ClearNeedTrackerField(pawn, fieldNames[i]);
+            }
+        }
+
+        private static void ClearNeedTrackerField(Pawn pawn, string fieldName)
+        {
+            if (pawn?.needs == null || fieldName.NullOrEmpty())
+            {
+                return;
+            }
+
+            try
+            {
+                FieldInfo field = AccessTools.Field(pawn.needs.GetType(), fieldName);
+                field?.SetValue(pawn.needs, null);
             }
             catch
             {
             }
         }
 
-        public static void RemoveZombieMalnutrition(Pawn pawn)
+        private static void ClearZombieHungerState(Pawn pawn)
         {
-            if (!IsZombie(pawn) || pawn?.health?.hediffSet == null)
+            if (!IsZombie(pawn) || pawn?.health?.hediffSet == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
             {
                 return;
             }
@@ -258,60 +267,33 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            Hediff malnutrition = pawn.health.hediffSet.GetFirstHediffOfDef(malnutritionDef);
-            if (malnutrition == null)
-            {
-                return;
-            }
+            List<Hediff> hungerHediffs = pawn.health.hediffSet.hediffs
+                .Where(hediff => hediff != null && hediff.def == malnutritionDef)
+                .ToList();
 
-            try
+            for (int i = 0; i < hungerHediffs.Count; i++)
             {
-                pawn.health.RemoveHediff(malnutrition);
-            }
-            catch
-            {
+                try
+                {
+                    pawn.health.RemoveHediff(hungerHediffs[i]);
+                }
+                catch
+                {
+                }
             }
         }
 
-        private static void EnsureZombieGuestTrackerSafe(Pawn pawn)
+        private static void ClearZombieGuestState(Pawn pawn)
         {
             if (pawn == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
             {
                 return;
             }
 
-            object guestTracker = null;
             try
             {
-                guestTracker = pawn.guest;
-            }
-            catch
-            {
-            }
-
-            if (guestTracker == null)
-            {
-                try
-                {
-                    ConstructorInfo ctor = AccessTools.Constructor(typeof(Pawn_GuestTracker), new[] { typeof(Pawn) });
-                    guestTracker = ctor?.Invoke(new object[] { pawn });
-                    SetPawnField(pawn, "guest", guestTracker);
-                    SetPawnField(pawn, "guestInt", guestTracker);
-                }
-                catch
-                {
-                }
-            }
-
-            if (guestTracker == null)
-            {
-                return;
-            }
-
-            try
-            {
-                AccessTools.Field(guestTracker.GetType(), "hostFactionInt")?.SetValue(guestTracker, null);
-                AccessTools.Field(guestTracker.GetType(), "hostFaction")?.SetValue(guestTracker, null);
+                FieldInfo guestField = AccessTools.Field(typeof(Pawn), "guest") ?? AccessTools.Field(typeof(Pawn), "guestInt");
+                guestField?.SetValue(pawn, null);
             }
             catch
             {
@@ -319,20 +301,11 @@ namespace CustomizableZombieHorde
 
             try
             {
-                object noInteraction = null;
-                Type interactionModeType = AccessTools.TypeByName("RimWorld.GuestInteractionModeDef")
-                    ?? AccessTools.TypeByName("RimWorld.PrisonerInteractionModeDef");
-                if (interactionModeType != null)
+                object guest = pawn.guest;
+                if (guest != null)
                 {
-                    Type defDatabaseType = typeof(DefDatabase<>).MakeGenericType(interactionModeType);
-                    MethodInfo getNamedSilentFail = AccessTools.Method(defDatabaseType, "GetNamedSilentFail", new[] { typeof(string) });
-                    noInteraction = getNamedSilentFail?.Invoke(null, new object[] { "NoInteraction" });
-                }
-
-                if (noInteraction != null)
-                {
-                    AccessTools.Field(guestTracker.GetType(), "interactionMode")?.SetValue(guestTracker, noInteraction);
-                    AccessTools.Field(guestTracker.GetType(), "interactionModeInt")?.SetValue(guestTracker, noInteraction);
+                    AccessTools.Field(guest.GetType(), "hostFactionInt")?.SetValue(guest, null);
+                    AccessTools.Field(guest.GetType(), "hostFaction")?.SetValue(guest, null);
                 }
             }
             catch
@@ -2249,11 +2222,6 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (!ShouldRunZombiePrepNow(pawn))
-            {
-                return;
-            }
-
             NormalizeCoreZombieState(pawn);
             TryEndZombieMentalState(pawn);
             StripAllUsableItems(pawn);
@@ -2262,29 +2230,6 @@ namespace CustomizableZombieHorde
             SetZombieDisplayName(pawn);
             EnsureZombieInfectionState(pawn);
             TryRecoverFromSpawnIncap(pawn);
-        }
-
-        private static bool ShouldRunZombiePrepNow(Pawn pawn)
-        {
-            if (pawn == null)
-            {
-                return false;
-            }
-
-            if (Current.Game == null || Find.TickManager == null)
-            {
-                return true;
-            }
-
-            int pawnId = pawn.thingIDNumber;
-            int currentTick = Find.TickManager.TicksGame;
-            if (LastZombiePrepTickByPawnId.TryGetValue(pawnId, out int lastTick) && currentTick - lastTick < ZombiePrepIntervalTicks)
-            {
-                return false;
-            }
-
-            LastZombiePrepTickByPawnId[pawnId] = currentTick;
-            return true;
         }
 
         public static LocomotionUrgency GetZombieUrgency(Pawn pawn)

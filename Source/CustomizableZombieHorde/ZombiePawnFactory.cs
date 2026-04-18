@@ -16,11 +16,6 @@ namespace CustomizableZombieHorde
         [ThreadStatic]
         public static bool SuppressAutoFinalizePatch;
 
-        private static readonly System.Collections.Generic.Dictionary<int, int> LastVisualIntegrityCheckTickByPawnId = new System.Collections.Generic.Dictionary<int, int>();
-        private const int VisualIntegrityRecheckIntervalTicks = 2500;
-        private static TattooDef cachedNoFaceTattoo;
-        private static TattooDef cachedNoBodyTattoo;
-
         public static Pawn GenerateZombie(PawnKindDef kind, Faction faction)
         {
             return GenerateZombie(kind, faction, initialSpawn: true);
@@ -416,7 +411,6 @@ namespace CustomizableZombieHorde
 
             ZombieUtility.RefreshDrownedState(pawn);
             ZombieUtility.NormalizeCoreZombieState(pawn);
-            ZombieUtility.RemoveZombieMalnutrition(pawn);
             if (pawn.needs?.mood != null)
             {
                 pawn.needs.mood.CurLevel = 0.05f;
@@ -960,24 +954,6 @@ namespace CustomizableZombieHorde
             }
         }
 
-        public static bool MaybeEnsureZombieVisualIntegrity(Pawn pawn, bool markGraphicsDirty = false)
-        {
-            if (pawn?.story == null || pawn.RaceProps?.Humanlike != true)
-            {
-                return false;
-            }
-
-            int currentTick = Find.TickManager?.TicksGame ?? 0;
-            int pawnId = pawn.thingIDNumber;
-            if (LastVisualIntegrityCheckTickByPawnId.TryGetValue(pawnId, out int lastTick) && currentTick - lastTick < VisualIntegrityRecheckIntervalTicks)
-            {
-                return false;
-            }
-
-            LastVisualIntegrityCheckTickByPawnId[pawnId] = currentTick;
-            return EnsureZombieVisualIntegrity(pawn, markGraphicsDirty);
-        }
-
         public static bool EnsureZombieVisualIntegrity(Pawn pawn, bool markGraphicsDirty = true)
         {
             if (pawn?.story == null || pawn.RaceProps?.Humanlike != true)
@@ -1091,31 +1067,6 @@ namespace CustomizableZombieHorde
         }
 
         private static TattooDef GetNoTattoo(string areaKey)
-        {
-            if (areaKey == "Face")
-            {
-                if (cachedNoFaceTattoo == null)
-                {
-                    cachedNoFaceTattoo = ResolveNoTattoo(areaKey);
-                }
-
-                return cachedNoFaceTattoo;
-            }
-
-            if (areaKey == "Body")
-            {
-                if (cachedNoBodyTattoo == null)
-                {
-                    cachedNoBodyTattoo = ResolveNoTattoo(areaKey);
-                }
-
-                return cachedNoBodyTattoo;
-            }
-
-            return ResolveNoTattoo(areaKey);
-        }
-
-        private static TattooDef ResolveNoTattoo(string areaKey)
         {
             return DefDatabase<TattooDef>.AllDefsListForReading
                 .FirstOrDefault(def => def != null
