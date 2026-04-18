@@ -2309,29 +2309,6 @@ namespace CustomizableZombieHorde
 
 
 
-    [HarmonyPatch(typeof(Pawn_NeedsTracker), "NeedsTrackerTick")]
-    public static class Patch_Pawn_NeedsTracker_NeedsTrackerTick_HostileZombieSkip
-    {
-        public static bool Prefix(Pawn_NeedsTracker __instance)
-        {
-            Pawn pawn = null;
-            try
-            {
-                pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
-            }
-            catch
-            {
-            }
-
-            if (pawn != null && ZombieUtility.IsZombie(pawn) && !ZombieLurkerUtility.IsLurker(pawn) && !ZombieUtility.IsPlayerAlignedZombie(pawn))
-            {
-                return false;
-            }
-
-            return true;
-        }
-    }
-
     [HarmonyPatch(typeof(Pawn_NeedsTracker), "NeedsTrackerTickInterval")]
     public static class Patch_Pawn_NeedsTracker_NeedsTrackerTickInterval_HostileZombieSkip
     {
