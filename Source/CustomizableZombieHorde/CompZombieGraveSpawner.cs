@@ -12,8 +12,6 @@ namespace CustomizableZombieHorde
         public int maxBurstCount = 2;
         public int minRespawnTicks = 1800;
         public int maxRespawnTicks = 3600;
-        public int maxNearbyZombies = 8;
-        public int nearbyZombieRadius = 10;
 
         public CompProperties_ZombieGraveSpawner()
         {
@@ -87,14 +85,8 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (!CanSpawnBurstNow())
-            {
-                ScheduleNextBurst(delayForCongestion: true);
-                return;
-            }
-
             int count = Props.initialBurstCount < 1 ? 1 : Props.initialBurstCount;
-            ZombieSpawnHelper.SpawnVariantPackAround(parent.Map, parent.Position, Variant, count, ZombieSpawnEventType.HuddledPack, ignoreCap: false);
+            ZombieSpawnHelper.SpawnVariantPackAround(parent.Map, parent.Position, Variant, count, ZombieSpawnEventType.HuddledPack, ignoreCap: true);
             ScheduleNextBurst();
         }
 
@@ -122,61 +114,14 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            if (!CanSpawnBurstNow())
-            {
-                ScheduleNextBurst(delayForCongestion: true);
-                return;
-            }
-
             int count = Rand.RangeInclusive(Props.minBurstCount, Props.maxBurstCount < Props.minBurstCount ? Props.minBurstCount : Props.maxBurstCount);
-            ZombieSpawnHelper.SpawnVariantPackAround(parent.Map, parent.Position, Variant, count, ZombieSpawnEventType.HuddledPack, ignoreCap: false);
+            ZombieSpawnHelper.SpawnVariantPackAround(parent.Map, parent.Position, Variant, count, ZombieSpawnEventType.HuddledPack, ignoreCap: true);
         }
 
-        private bool CanSpawnBurstNow()
-        {
-            if (parent?.Map == null || parent.Destroyed)
-            {
-                return false;
-            }
-
-            if (ZombieSpawnHelper.GetRemainingCapacity(parent.Map) <= 0)
-            {
-                return false;
-            }
-
-            int radius = Props.nearbyZombieRadius < 1 ? 1 : Props.nearbyZombieRadius;
-            int maxNearby = Props.maxNearbyZombies < 1 ? 1 : Props.maxNearbyZombies;
-            int nearbyZombieCount = 0;
-            foreach (Pawn pawn in parent.Map.mapPawns.AllPawnsSpawned)
-            {
-                if (!ZombieUtility.IsZombie(pawn) || pawn.Dead || pawn.Destroyed)
-                {
-                    continue;
-                }
-
-                if (pawn.PositionHeld.DistanceTo(parent.Position) <= radius)
-                {
-                    nearbyZombieCount++;
-                    if (nearbyZombieCount >= maxNearby)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        private void ScheduleNextBurst(bool delayForCongestion = false)
+        private void ScheduleNextBurst()
         {
             int minTicks = Props.minRespawnTicks < 250 ? 250 : Props.minRespawnTicks;
             int maxTicks = Props.maxRespawnTicks < minTicks ? minTicks : Props.maxRespawnTicks;
-            if (delayForCongestion)
-            {
-                minTicks += 1200;
-                maxTicks += 2400;
-            }
-
             nextBurstTick = (Find.TickManager?.TicksGame ?? 0) + Rand.RangeInclusive(minTicks, maxTicks);
         }
     }
