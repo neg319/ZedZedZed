@@ -317,6 +317,23 @@ namespace CustomizableZombieHorde
             }
         }
 
+        private static void ClearNeedTrackerField(Pawn pawn, string fieldName)
+        {
+            if (pawn?.needs == null || fieldName.NullOrEmpty())
+            {
+                return;
+            }
+
+            try
+            {
+                FieldInfo field = AccessTools.Field(pawn.needs.GetType(), fieldName);
+                field?.SetValue(pawn.needs, null);
+            }
+            catch
+            {
+            }
+        }
+
         public static void RemoveZombieMalnutrition(Pawn pawn)
         {
             if (!IsZombie(pawn) || pawn?.health?.hediffSet == null)
