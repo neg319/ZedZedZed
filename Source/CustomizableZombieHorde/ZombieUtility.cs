@@ -124,11 +124,7 @@ namespace CustomizableZombieHorde
             }
 
             ForceZombieFaction(pawn);
-            RestoreHostileZombieNeedTracker(pawn);
             EnsureZombieGuestTrackerSafe(pawn);
-            EnsureEmotionlessZombie(pawn);
-            RemoveHostileZombieNeeds(pawn);
-            ClearZombieHungerState(pawn);
             ClearZombieIdeoligion(pawn);
             EnsureZombieCannibalTrait(pawn);
         }
@@ -184,22 +180,58 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            NeedDef joyDef = DefDatabase<NeedDef>.GetNamedSilentFail("Joy");
-            if (joyDef == null)
+            HashSet<string> keepNeedDefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                return;
-            }
+                "Food",
+                "Rest"
+            };
 
             for (int i = pawn.needs.AllNeeds.Count - 1; i >= 0; i--)
             {
                 Need need = pawn.needs.AllNeeds[i];
-                if (need?.def == joyDef)
+                string defName = need?.def?.defName;
+                if (defName.NullOrEmpty() || !keepNeedDefs.Contains(defName))
                 {
                     pawn.needs.AllNeeds.RemoveAt(i);
                 }
             }
 
-            ClearNeedTrackerField(pawn, "joy");
+            string[] fieldNames =
+            {
+                "mood",
+                "joy",
+                "beauty",
+                "comfort",
+                "roomsize",
+                "outdoors",
+                "chemical_Alcohol",
+                "chemical_Smokeleaf",
+                "chemical_Ambrosia",
+                "chemical_GoJuice",
+                "chemical_Psychoid",
+                "chemical_WakeUp",
+                "chemical_Luciferium"
+            };
+
+            for (int i = 0; i < fieldNames.Length; i++)
+            {
+                ClearNeedTrackerField(pawn, fieldNames[i]);
+            }
+
+            RemoveHostileZombieFoodNeed(pawn);
+
+            try
+            {
+                if (pawn.needs.rest != null)
+                {
+                    pawn.needs.rest.CurLevelPercentage = 1f;
+                }
+            }
+            catch
+            {
+            }
+
+            RemoveZombieMalnutrition(pawn);
         }
 
         private static void RemoveHostileZombieFoodNeed(Pawn pawn)
@@ -237,8 +269,7 @@ namespace CustomizableZombieHorde
                     rebuildTracker = pawn.needs.AllNeeds == null
                         || pawn.needs.AllNeeds.Count == 0
                         || pawn.needs.food == null
-                        || pawn.needs.mood == null
-                        || pawn.needs.rest == null;
+                        || pawn.needs.mood == null;
                 }
             }
             catch
@@ -312,107 +343,6 @@ namespace CustomizableZombieHorde
             catch
             {
             }
-        }
-
-        private static void RemoveHostileZombieNeeds(Pawn pawn)
-        {
-            if (!IsZombie(pawn) || pawn?.needs == null || pawn.needs.AllNeeds == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
-            {
-                return;
-            }
-
-            HashSet<string> coreNeedDefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "Food",
-                "Rest",
-                "Mood"
-            };
-
-            for (int i = pawn.needs.AllNeeds.Count - 1; i >= 0; i--)
-            {
-                Need need = pawn.needs.AllNeeds[i];
-                string defName = need?.def?.defName;
-                if (!defName.NullOrEmpty() && !coreNeedDefs.Contains(defName))
-                {
-                    pawn.needs.AllNeeds.RemoveAt(i);
-                }
-            }
-
-            string[] fieldNames =
-            {
-                "joy",
-                "beauty",
-                "comfort",
-                "roomsize",
-                "outdoors",
-                "chemical_Alcohol",
-                "chemical_Smokeleaf",
-                "chemical_Ambrosia",
-                "chemical_GoJuice",
-                "chemical_Psychoid",
-                "chemical_WakeUp",
-                "chemical_Luciferium"
-            };
-
-            for (int i = 0; i < fieldNames.Length; i++)
-            {
-                ClearNeedTrackerField(pawn, fieldNames[i]);
-            }
-        }
-
-        private static void ClearNeedTrackerField(Pawn pawn, string fieldName)
-        {
-            if (pawn?.needs == null || fieldName.NullOrEmpty())
-            {
-                return;
-            }
-
-            try
-            {
-                FieldInfo field = AccessTools.Field(pawn.needs.GetType(), fieldName);
-                field?.SetValue(pawn.needs, null);
-            }
-            catch
-            {
-            }
-        }
-
-        public static void MaintainHostileZombieNeedState(Pawn pawn)
-        {
-            if (!IsZombie(pawn) || pawn?.needs == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
-            {
-                return;
-            }
-
-            RemoveZombieMalnutrition(pawn);
-            RemoveHostileZombieFoodNeed(pawn);
-
-            try
-            {
-                if (pawn.needs.rest != null)
-                {
-                    pawn.needs.rest.CurLevelPercentage = 1f;
-                }
-            }
-            catch
-            {
-            }
-
-            try
-            {
-                if (pawn.needs.mood != null && pawn.needs.mood.CurLevel < 0.05f)
-                {
-                    pawn.needs.mood.CurLevel = 0.05f;
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        private static void ClearZombieHungerState(Pawn pawn)
-        {
-            MaintainHostileZombieNeedState(pawn);
         }
 
         private static void EnsureZombieGuestTrackerSafe(Pawn pawn)
@@ -2397,6 +2327,7 @@ namespace CustomizableZombieHorde
             }
 
             NormalizeCoreZombieState(pawn);
+            EnsureEmotionlessZombie(pawn);
             TryEndZombieMentalState(pawn);
             StripAllUsableItems(pawn);
             TrimZombieApparel(pawn);
