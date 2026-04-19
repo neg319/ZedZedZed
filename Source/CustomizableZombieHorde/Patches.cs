@@ -2202,6 +2202,54 @@ namespace CustomizableZombieHorde
         }
     }
 
+
+    [HarmonyPatch(typeof(Pawn_NeedsTracker), "NeedsTrackerTick")]
+    public static class Patch_PawnNeedsTracker_NeedsTrackerTick
+    {
+        public static bool Prefix(Pawn_NeedsTracker __instance)
+        {
+            Pawn pawn = null;
+            try
+            {
+                pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            }
+            catch
+            {
+            }
+
+            if (pawn == null || !ZombieUtility.IsZombie(pawn) || ZombieLurkerUtility.IsLurker(pawn) || ZombieUtility.IsPlayerAlignedZombie(pawn))
+            {
+                return true;
+            }
+
+            ZombieUtility.MaintainHostileZombieNeedState(pawn);
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Pawn_GuestTracker), "GuestTrackerTick")]
+    public static class Patch_PawnGuestTracker_GuestTrackerTick
+    {
+        public static bool Prefix(Pawn_GuestTracker __instance)
+        {
+            Pawn pawn = null;
+            try
+            {
+                pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
+            }
+            catch
+            {
+            }
+
+            if (pawn == null || !ZombieUtility.IsZombie(pawn) || ZombieLurkerUtility.IsLurker(pawn) || ZombieUtility.IsPlayerAlignedZombie(pawn))
+            {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
     [HarmonyPatch(typeof(Pawn_GuestTracker), "get_Recruitable")]
     public static class Patch_PawnGuestTracker_Recruitable
     {

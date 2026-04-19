@@ -124,7 +124,8 @@ namespace CustomizableZombieHorde
             }
 
             ForceZombieFaction(pawn);
-            ClearZombieGuestState(pawn);
+            RestoreHostileZombieNeedTracker(pawn);
+            EnsureZombieGuestTrackerSafe(pawn);
             EnsureEmotionlessZombie(pawn);
             RemoveHostileZombieNeeds(pawn);
             ClearZombieHungerState(pawn);
@@ -183,23 +184,25 @@ namespace CustomizableZombieHorde
                 return;
             }
 
-            NeedDef moodDef = DefDatabase<NeedDef>.GetNamedSilentFail("Mood");
             NeedDef joyDef = DefDatabase<NeedDef>.GetNamedSilentFail("Joy");
+            if (joyDef == null)
+            {
+                return;
+            }
 
             for (int i = pawn.needs.AllNeeds.Count - 1; i >= 0; i--)
             {
                 Need need = pawn.needs.AllNeeds[i];
-                if (need?.def == moodDef || need?.def == joyDef)
+                if (need?.def == joyDef)
                 {
                     pawn.needs.AllNeeds.RemoveAt(i);
                 }
             }
 
-            ClearNeedTrackerField(pawn, "mood");
             ClearNeedTrackerField(pawn, "joy");
         }
 
-        private static void RemoveHostileZombieNeeds(Pawn pawn)
+        private static void RemoveHostileZombieFoodNeed(Pawn pawn)
         {
             if (!IsZombie(pawn) || pawn?.needs == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
             {
@@ -208,17 +211,135 @@ namespace CustomizableZombieHorde
 
             try
             {
-                pawn.needs.AllNeeds?.Clear();
+                if (pawn.needs.food != null)
+                {
+                    pawn.needs.food.CurLevelPercentage = 1f;
+                }
             }
             catch
             {
             }
+        }
+
+        private static void RestoreHostileZombieNeedTracker(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
+            {
+                return;
+            }
+
+            bool rebuildTracker = pawn.needs == null;
+
+            try
+            {
+                if (!rebuildTracker)
+                {
+                    rebuildTracker = pawn.needs.AllNeeds == null
+                        || pawn.needs.AllNeeds.Count == 0
+                        || pawn.needs.food == null
+                        || pawn.needs.mood == null
+                        || pawn.needs.rest == null;
+                }
+            }
+            catch
+            {
+                rebuildTracker = true;
+            }
+
+            if (rebuildTracker)
+            {
+                try
+                {
+                    ConstructorInfo ctor = AccessTools.Constructor(typeof(Pawn_NeedsTracker), new[] { typeof(Pawn) });
+                    object tracker = ctor?.Invoke(new object[] { pawn });
+                    SetPawnField(pawn, "needs", tracker);
+                    SetPawnField(pawn, "needsInt", tracker);
+                }
+                catch
+                {
+                }
+            }
+
+            try
+            {
+                AccessTools.Method(pawn.needs?.GetType(), "AddOrRemoveNeedsAsAppropriate")?.Invoke(pawn.needs, null);
+            }
+            catch
+            {
+            }
+        }
+
+        private static void SetPawnField(Pawn pawn, string fieldName, object value)
+        {
+            if (pawn == null || fieldName.NullOrEmpty())
+            {
+                return;
+            }
+
+            try
+            {
+                FieldInfo field = AccessTools.Field(typeof(Pawn), fieldName);
+                field?.SetValue(pawn, value);
+            }
+            catch
+            {
+            }
+        }
+
+        public static void RemoveZombieMalnutrition(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn?.health?.hediffSet == null)
+            {
+                return;
+            }
+
+            HediffDef malnutritionDef = HediffDefOf.Malnutrition ?? DefDatabase<HediffDef>.GetNamedSilentFail("Malnutrition");
+            if (malnutritionDef == null)
+            {
+                return;
+            }
+
+            Hediff malnutrition = pawn.health.hediffSet.GetFirstHediffOfDef(malnutritionDef);
+            if (malnutrition == null)
+            {
+                return;
+            }
+
+            try
+            {
+                pawn.health.RemoveHediff(malnutrition);
+            }
+            catch
+            {
+            }
+        }
+
+        private static void RemoveHostileZombieNeeds(Pawn pawn)
+        {
+            if (!IsZombie(pawn) || pawn?.needs == null || pawn.needs.AllNeeds == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
+            {
+                return;
+            }
+
+            HashSet<string> coreNeedDefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Food",
+                "Rest",
+                "Mood"
+            };
+
+            for (int i = pawn.needs.AllNeeds.Count - 1; i >= 0; i--)
+            {
+                Need need = pawn.needs.AllNeeds[i];
+                string defName = need?.def?.defName;
+                if (!defName.NullOrEmpty() && !coreNeedDefs.Contains(defName))
+                {
+                    pawn.needs.AllNeeds.RemoveAt(i);
+                }
+            }
 
             string[] fieldNames =
             {
-                "mood",
-                "food",
-                "rest",
                 "joy",
                 "beauty",
                 "comfort",
@@ -256,28 +377,33 @@ namespace CustomizableZombieHorde
             }
         }
 
-        public static void RemoveZombieMalnutrition(Pawn pawn)
+        public static void MaintainHostileZombieNeedState(Pawn pawn)
         {
-            if (!IsZombie(pawn) || pawn?.health?.hediffSet == null)
+            if (!IsZombie(pawn) || pawn?.needs == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
             {
                 return;
             }
 
-            HediffDef malnutritionDef = HediffDefOf.Malnutrition ?? DefDatabase<HediffDef>.GetNamedSilentFail("Malnutrition");
-            if (malnutritionDef == null)
-            {
-                return;
-            }
+            RemoveZombieMalnutrition(pawn);
+            RemoveHostileZombieFoodNeed(pawn);
 
-            Hediff malnutrition = pawn.health.hediffSet.GetFirstHediffOfDef(malnutritionDef);
-            if (malnutrition == null)
+            try
             {
-                return;
+                if (pawn.needs.rest != null)
+                {
+                    pawn.needs.rest.CurLevelPercentage = 1f;
+                }
+            }
+            catch
+            {
             }
 
             try
             {
-                pawn.health.RemoveHediff(malnutrition);
+                if (pawn.needs.mood != null && pawn.needs.mood.CurLevel < 0.05f)
+                {
+                    pawn.needs.mood.CurLevel = 0.05f;
+                }
             }
             catch
             {
@@ -286,44 +412,48 @@ namespace CustomizableZombieHorde
 
         private static void ClearZombieHungerState(Pawn pawn)
         {
-            if (!IsZombie(pawn) || pawn?.health?.hediffSet == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
-            {
-                return;
-            }
-
-            HediffDef malnutritionDef = HediffDefOf.Malnutrition ?? DefDatabase<HediffDef>.GetNamedSilentFail("Malnutrition");
-            if (malnutritionDef == null)
-            {
-                return;
-            }
-
-            List<Hediff> hungerHediffs = pawn.health.hediffSet.hediffs
-                .Where(hediff => hediff != null && hediff.def == malnutritionDef)
-                .ToList();
-
-            for (int i = 0; i < hungerHediffs.Count; i++)
-            {
-                try
-                {
-                    pawn.health.RemoveHediff(hungerHediffs[i]);
-                }
-                catch
-                {
-                }
-            }
+            MaintainHostileZombieNeedState(pawn);
         }
 
-        private static void ClearZombieGuestState(Pawn pawn)
+        private static void EnsureZombieGuestTrackerSafe(Pawn pawn)
         {
             if (pawn == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
             {
                 return;
             }
 
+            object guestTracker = null;
             try
             {
-                FieldInfo guestField = AccessTools.Field(typeof(Pawn), "guest") ?? AccessTools.Field(typeof(Pawn), "guestInt");
-                guestField?.SetValue(pawn, null);
+                guestTracker = pawn.guest;
+            }
+            catch
+            {
+            }
+
+            if (guestTracker == null)
+            {
+                try
+                {
+                    ConstructorInfo ctor = AccessTools.Constructor(typeof(Pawn_GuestTracker), new[] { typeof(Pawn) });
+                    guestTracker = ctor?.Invoke(new object[] { pawn });
+                    SetPawnField(pawn, "guest", guestTracker);
+                    SetPawnField(pawn, "guestInt", guestTracker);
+                }
+                catch
+                {
+                }
+            }
+
+            if (guestTracker == null)
+            {
+                return;
+            }
+
+            try
+            {
+                AccessTools.Field(guestTracker.GetType(), "hostFactionInt")?.SetValue(guestTracker, null);
+                AccessTools.Field(guestTracker.GetType(), "hostFaction")?.SetValue(guestTracker, null);
             }
             catch
             {
@@ -331,11 +461,20 @@ namespace CustomizableZombieHorde
 
             try
             {
-                object guest = pawn.guest;
-                if (guest != null)
+                object noInteraction = null;
+                Type interactionModeType = AccessTools.TypeByName("RimWorld.GuestInteractionModeDef")
+                    ?? AccessTools.TypeByName("RimWorld.PrisonerInteractionModeDef");
+                if (interactionModeType != null)
                 {
-                    AccessTools.Field(guest.GetType(), "hostFactionInt")?.SetValue(guest, null);
-                    AccessTools.Field(guest.GetType(), "hostFaction")?.SetValue(guest, null);
+                    Type defDatabaseType = typeof(DefDatabase<>).MakeGenericType(interactionModeType);
+                    MethodInfo getNamedSilentFail = AccessTools.Method(defDatabaseType, "GetNamedSilentFail", new[] { typeof(string) });
+                    noInteraction = getNamedSilentFail?.Invoke(null, new object[] { "NoInteraction" });
+                }
+
+                if (noInteraction != null)
+                {
+                    AccessTools.Field(guestTracker.GetType(), "interactionMode")?.SetValue(guestTracker, noInteraction);
+                    AccessTools.Field(guestTracker.GetType(), "interactionModeInt")?.SetValue(guestTracker, noInteraction);
                 }
             }
             catch
