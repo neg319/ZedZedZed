@@ -175,82 +175,10 @@ namespace CustomizableZombieHorde
 
         public static void EnsureEmotionlessZombie(Pawn pawn)
         {
-            if (!IsZombie(pawn) || pawn?.needs == null || pawn.needs.AllNeeds == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
-            {
-                return;
-            }
-
-            HashSet<string> keepNeedDefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "Food",
-                "Rest"
-            };
-
-            for (int i = pawn.needs.AllNeeds.Count - 1; i >= 0; i--)
-            {
-                Need need = pawn.needs.AllNeeds[i];
-                string defName = need?.def?.defName;
-                if (defName.NullOrEmpty() || !keepNeedDefs.Contains(defName))
-                {
-                    pawn.needs.AllNeeds.RemoveAt(i);
-                }
-            }
-
-            string[] fieldNames =
-            {
-                "mood",
-                "joy",
-                "beauty",
-                "comfort",
-                "roomsize",
-                "outdoors",
-                "chemical_Alcohol",
-                "chemical_Smokeleaf",
-                "chemical_Ambrosia",
-                "chemical_GoJuice",
-                "chemical_Psychoid",
-                "chemical_WakeUp",
-                "chemical_Luciferium"
-            };
-
-            for (int i = 0; i < fieldNames.Length; i++)
-            {
-                ClearNeedTrackerField(pawn, fieldNames[i]);
-            }
-
-            RemoveHostileZombieFoodNeed(pawn);
-
-            try
-            {
-                if (pawn.needs.rest != null)
-                {
-                    pawn.needs.rest.CurLevelPercentage = 1f;
-                }
-            }
-            catch
-            {
-            }
-
-            RemoveZombieMalnutrition(pawn);
         }
 
         private static void RemoveHostileZombieFoodNeed(Pawn pawn)
         {
-            if (!IsZombie(pawn) || pawn?.needs == null || ZombieLurkerUtility.IsLurker(pawn) || IsPlayerAlignedZombie(pawn))
-            {
-                return;
-            }
-
-            try
-            {
-                if (pawn.needs.food != null)
-                {
-                    pawn.needs.food.CurLevelPercentage = 1f;
-                }
-            }
-            catch
-            {
-            }
         }
 
         private static void RestoreHostileZombieNeedTracker(Pawn pawn)
@@ -311,23 +239,6 @@ namespace CustomizableZombieHorde
             {
                 FieldInfo field = AccessTools.Field(typeof(Pawn), fieldName);
                 field?.SetValue(pawn, value);
-            }
-            catch
-            {
-            }
-        }
-
-        private static void ClearNeedTrackerField(Pawn pawn, string fieldName)
-        {
-            if (pawn?.needs == null || fieldName.NullOrEmpty())
-            {
-                return;
-            }
-
-            try
-            {
-                FieldInfo field = AccessTools.Field(pawn.needs.GetType(), fieldName);
-                field?.SetValue(pawn.needs, null);
             }
             catch
             {
@@ -2344,7 +2255,6 @@ namespace CustomizableZombieHorde
             }
 
             NormalizeCoreZombieState(pawn);
-            EnsureEmotionlessZombie(pawn);
             TryEndZombieMentalState(pawn);
             StripAllUsableItems(pawn);
             TrimZombieApparel(pawn);
