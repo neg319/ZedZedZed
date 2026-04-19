@@ -19,6 +19,7 @@ namespace CustomizableZombieHorde
         private sealed class PullState
         {
             public int targetId;
+            public Pawn targetPawn;
             public int expireTick;
             public int nextEscapeTick;
             public int nextMaintenanceTick;
@@ -36,7 +37,7 @@ namespace CustomizableZombieHorde
             }
 
             int ticksGame = Find.TickManager.TicksGame;
-            CleanupInvalidPulls(ticksGame);
+            HashSet<int> seenGrabbers = new HashSet<int>();
 
             foreach (Map map in Find.Maps)
             {
@@ -47,6 +48,7 @@ namespace CustomizableZombieHorde
                         continue;
                     }
 
+                    seenGrabbers.Add(pawn.thingIDNumber);
                     if (HasActiveTongue(pawn))
                     {
                         UpdateActivePull(pawn, ticksGame);
@@ -57,6 +59,8 @@ namespace CustomizableZombieHorde
                     }
                 }
             }
+
+            CleanupInvalidPulls(ticksGame, seenGrabbers);
         }
 
         public static bool HasActiveTongue(Pawn pawn)
@@ -80,6 +84,7 @@ namespace CustomizableZombieHorde
             ActivePulls[grabber.thingIDNumber] = new PullState
             {
                 targetId = prey.thingIDNumber,
+                targetPawn = prey,
                 expireTick = ticksGame + 3600,
                 nextEscapeTick = ticksGame + EscapeRollInterval,
                 nextMaintenanceTick = ticksGame,
@@ -167,7 +172,7 @@ namespace CustomizableZombieHorde
             }
         }
 
-        private static void CleanupInvalidPulls(int ticksGame)
+        private static void CleanupInvalidPulls(int ticksGame, HashSet<int> seenGrabbers)
         {
             List<int> removeIds = new List<int>();
             foreach (KeyValuePair<int, PullState> pair in ActivePulls)
@@ -178,18 +183,16 @@ namespace CustomizableZombieHorde
                     continue;
                 }
 
-                Pawn grabber = FindThing(pair.Key) as Pawn;
-                if (grabber == null || grabber.Dead || grabber.Destroyed || !grabber.Spawned)
+                if (seenGrabbers == null || !seenGrabbers.Contains(pair.Key))
                 {
                     removeIds.Add(pair.Key);
                     continue;
                 }
 
-                Pawn prey = ResolveTarget(grabber, pair.Value);
-                if (prey == null)
+                Pawn prey = pair.Value.targetPawn;
+                if (prey == null || prey.Dead || prey.Destroyed || !prey.Spawned)
                 {
                     removeIds.Add(pair.Key);
-                    continue;
                 }
             }
 
@@ -201,7 +204,7 @@ namespace CustomizableZombieHorde
 
         private static Pawn ResolveTarget(Pawn grabber, PullState state)
         {
-            Pawn prey = FindThing(state.targetId) as Pawn;
+            Pawn prey = state?.targetPawn;
             if (prey == null || prey.Dead || prey.Destroyed || !prey.Spawned || ZombieUtility.ShouldZombieIgnoreTarget(grabber, prey) || prey.Map != grabber.Map)
             {
                 return null;
@@ -251,19 +254,6 @@ namespace CustomizableZombieHorde
             return true;
         }
 
-        private static Thing FindThing(int thingId)
-        {
-            foreach (Map map in Find.Maps)
-            {
-                Thing thing = map.listerThings.AllThings.FirstOrDefault(t => t.thingIDNumber == thingId);
-                if (thing != null)
-                {
-                    return thing;
-                }
-            }
-
-            return null;
-        }
 
         private static bool IsTargetAlreadyGrabbed(Pawn prey)
         {

@@ -542,7 +542,7 @@ namespace CustomizableZombieHorde
             Pawn pawn = Traverse.Create(__instance).Field("pawn").GetValue<Pawn>();
             if (ZombieUtility.IsZombie(pawn))
             {
-                ZombiePawnFactory.EnsureZombieVisualIntegrity(pawn, markGraphicsDirty: false);
+                ZombiePawnFactory.MaybeEnsureZombieVisualIntegrity(pawn, markGraphicsDirty: false);
             }
         }
 
@@ -2273,6 +2273,5 @@ namespace CustomizableZombieHorde
             return false;
         }
     }
-
 
 }
